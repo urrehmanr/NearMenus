@@ -1,0 +1,592 @@
+/**
+ * Admin Styles for NearMenus Theme
+ * 
+ * @package NearMenus
+ */
+
+/* === Meta Box Styles === */
+.nearmenus-meta-box {
+    padding: 0;
+}
+
+.nearmenus-meta-box .inside {
+    margin: 0;
+    padding: 15px;
+}
+
+.meta-box-field {
+    margin-bottom: 20px;
+}
+
+.meta-box-field:last-child {
+    margin-bottom: 0;
+}
+
+.meta-box-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #23282d;
+}
+
+.meta-box-field input[type="text"],
+.meta-box-field input[type="email"],
+.meta-box-field input[type="url"],
+.meta-box-field input[type="tel"],
+.meta-box-field input[type="number"],
+.meta-box-field textarea,
+.meta-box-field select {
+    width: 100%;
+    max-width: 400px;
+}
+
+.meta-box-field textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.meta-box-field .description {
+    margin-top: 5px;
+    font-style: italic;
+    color: #666;
+    font-size: 13px;
+}
+
+/* === Restaurant Info Meta Box === */
+.restaurant-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 782px) {
+    .restaurant-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.rating-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rating-field input {
+    width: 80px !important;
+}
+
+.rating-stars {
+    color: #ffb900;
+    font-size: 16px;
+}
+
+/* === Operating Hours Meta Box === */
+.hours-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 10px;
+    align-items: center;
+}
+
+.hours-grid label {
+    margin-bottom: 0 !important;
+}
+
+.hours-grid input {
+    max-width: 200px !important;
+}
+
+/* === Menu Meta Box === */
+.menu-builder {
+    border: 1px solid #ddd;
+    background: #fff;
+}
+
+.menu-category {
+    border-bottom: 1px solid #ddd;
+}
+
+.menu-category:last-child {
+    border-bottom: none;
+}
+
+.category-header {
+    background: #f9f9f9;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.category-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0;
+}
+
+.category-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-small {
+    padding: 5px 10px;
+    font-size: 12px;
+    height: auto;
+    line-height: 1.2;
+}
+
+.btn-danger {
+    background: #dc3232;
+    border-color: #dc3232;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c62d2d;
+    border-color: #c62d2d;
+}
+
+.menu-items {
+    padding: 15px;
+}
+
+.menu-item {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.menu-item:last-child {
+    margin-bottom: 0;
+}
+
+.menu-item-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.menu-item-title {
+    font-weight: 600;
+    margin: 0;
+}
+
+.menu-item-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+@media (max-width: 782px) {
+    .menu-item-fields {
+        grid-template-columns: 1fr;
+    }
+}
+
+.menu-item-field {
+    margin-bottom: 0;
+}
+
+.menu-item-description {
+    grid-column: 1 / -1;
+}
+
+.menu-item-options {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.menu-item-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.menu-item-checkbox input {
+    width: auto !important;
+}
+
+.add-menu-category,
+.add-menu-item {
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin: 15px 0;
+}
+
+.add-menu-category:hover,
+.add-menu-item:hover {
+    background: #005a87;
+}
+
+/* === Taxonomy Fields === */
+.term-icon-field,
+.term-color-field {
+    margin-bottom: 20px;
+}
+
+.term-icon-field label,
+.term-color-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.term-icon-field input,
+.term-color-field input {
+    width: 100%;
+    max-width: 300px;
+}
+
+.color-preview {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* === Admin Columns === */
+.column-restaurant_rating {
+    width: 100px;
+}
+
+.column-restaurant_cuisine {
+    width: 120px;
+}
+
+.column-restaurant_location {
+    width: 120px;
+}
+
+.column-restaurant_features {
+    width: 150px;
+}
+
+.rating-column {
+    color: #ffb900;
+}
+
+.cuisine-tags,
+.location-tags,
+.feature-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.admin-tag {
+    background: #f0f0f1;
+    color: #50575e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.admin-tag.cuisine {
+    background: #e7f3ff;
+    color: #0073aa;
+}
+
+.admin-tag.location {
+    background: #f0f6fc;
+    color: #0969da;
+}
+
+.admin-tag.feature {
+    background: #f6ffed;
+    color: #52c41a;
+}
+
+/* === Media Upload === */
+.menu-item-image-preview {
+    max-width: 100px;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+.upload-image-btn {
+    background: #f0f0f1;
+    border: 1px solid #ccd0d4;
+    color: #50575e;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.upload-image-btn:hover {
+    background: #e9e9ea;
+}
+
+.remove-image-btn {
+    background: #dc3232;
+    border: 1px solid #dc3232;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+.remove-image-btn:hover {
+    background: #c62d2d;
+}
+
+/* === Restaurant Quick Edit === */
+.quick-edit-restaurant .inline-edit-col {
+    float: left;
+    width: 50%;
+}
+
+.quick-edit-restaurant .inline-edit-col:last-child {
+    float: right;
+}
+
+.quick-edit-restaurant .inline-edit-save {
+    clear: both;
+}
+
+/* === Help Text === */
+.help-text {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.help-text strong {
+    font-weight: 600;
+}
+
+/* === Error States === */
+.error-field {
+    border-color: #dc3232 !important;
+    box-shadow: 0 0 2px rgba(220, 50, 50, 0.3) !important;
+}
+
+.field-error {
+    color: #dc3232;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+/* === Loading States === */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* === Responsive Adjustments === */
+@media (max-width: 782px) {
+    .restaurant-info-grid,
+    .menu-item-fields {
+        grid-template-columns: 1fr;
+    }
+    
+    .category-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .category-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .hours-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-item-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* === Accessibility === */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus states */
+.add-menu-category:focus,
+.add-menu-item:focus,
+.btn-small:focus,
+.upload-image-btn:focus,
+.remove-image-btn:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+/* === Custom Post Type Icon === */
+.menu-icon-nearmenus::before {
+    content: '\f325';
+}
+
+/* === Dashboard Widget Styles === */
+.nearmenus-dashboard-widget .widget-content {
+    padding: 12px;
+}
+
+.restaurant-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 600;
+    color: #0073aa;
+    display: block;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* === Import/Export Styles === */
+.import-export-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.import-export-section h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.file-upload-area {
+    border: 2px dashed #ddd;
+    padding: 40px;
+    text-align: center;
+    border-radius: 4px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+.file-upload-area.dragover {
+    border-color: #0073aa;
+    background: #f0f8ff;
+}
+
+.file-upload-area input[type="file"] {
+    display: none;
+}
+
+.file-upload-label {
+    cursor: pointer;
+    color: #0073aa;
+    font-weight: 600;
+}
+
+.file-upload-label:hover {
+    color: #005a87;
+}
+
+/* === Performance Indicators === */
+.performance-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.metric-item {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0073aa;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.metric-good .metric-value {
+    color: #46b450;
+}
+
+.metric-warning .metric-value {
+    color: #ffb900;
+}
+
+.metric-error .metric-value {
+    color: #dc3232;
+}
