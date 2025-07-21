@@ -147,6 +147,7 @@ class NearMenus_SEO {
         
         // Add menu if available
         $menu_items = get_post_meta($post->ID, '_restaurant_menu', true);
+<<<<<<< HEAD
         if ($menu_items && is_array($menu_items)) {
             $menu_schema = array();
             foreach ($menu_items as $category) {
@@ -173,6 +174,28 @@ class NearMenus_SEO {
                     'hasMenuSection' => $menu_schema,
                 );
             }
+=======
+        if ($menu_items) {
+            $menu_schema = array();
+            foreach ($menu_items as $category => $items) {
+                foreach ($items as $item) {
+                    $menu_schema[] = array(
+                        '@type' => 'MenuItem',
+                        'name' => $item['name'],
+                        'description' => $item['description'],
+                        'offers' => array(
+                            '@type' => 'Offer',
+                            'price' => $item['price'],
+                            'priceCurrency' => 'USD',
+                        ),
+                    );
+                }
+            }
+            $schema['hasMenu'] = array(
+                '@type' => 'Menu',
+                'hasMenuSection' => $menu_schema,
+            );
+>>>>>>> 0dd8083008e16f933004a1035f47f0a5e02939ad
         }
         
         echo '<script type="application/ld+json">' . "\n";
