@@ -85,22 +85,47 @@ add_action('after_setup_theme', 'nearmenus_setup');
  * Enqueue scripts and styles
  */
 function nearmenus_scripts() {
-    // Enqueue main stylesheet
-    wp_enqueue_style(
-        'nearmenus-style',
-        NEARMENUS_THEME_URI . '/assets/dist/css/main.min.css',
-        array(),
-        NEARMENUS_VERSION
-    );
+    // Try minified CSS first, fallback to regular CSS
+    $css_path_min = NEARMENUS_THEME_DIR . '/assets/dist/css/main.min.css';
+    $css_path_reg = NEARMENUS_THEME_DIR . '/assets/css/main.css';
+    
+    if (file_exists($css_path_min)) {
+        wp_enqueue_style(
+            'nearmenus-style',
+            NEARMENUS_THEME_URI . '/assets/dist/css/main.min.css',
+            array(),
+            NEARMENUS_VERSION
+        );
+    } elseif (file_exists($css_path_reg)) {
+        wp_enqueue_style(
+            'nearmenus-style',
+            NEARMENUS_THEME_URI . '/assets/css/main.css',
+            array(),
+            NEARMENUS_VERSION
+        );
+    }
 
-    // Enqueue main script
-    wp_enqueue_script(
-        'nearmenus-script',
-        NEARMENUS_THEME_URI . '/assets/dist/js/main.min.js',
-        array(),
-        NEARMENUS_VERSION,
-        true
-    );
+    // Try minified JS first, fallback to regular JS
+    $js_path_min = NEARMENUS_THEME_DIR . '/assets/dist/js/main.min.js';
+    $js_path_reg = NEARMENUS_THEME_DIR . '/assets/js/main.js';
+    
+    if (file_exists($js_path_min)) {
+        wp_enqueue_script(
+            'nearmenus-script',
+            NEARMENUS_THEME_URI . '/assets/dist/js/main.min.js',
+            array(),
+            NEARMENUS_VERSION,
+            true
+        );
+    } elseif (file_exists($js_path_reg)) {
+        wp_enqueue_script(
+            'nearmenus-script',
+            NEARMENUS_THEME_URI . '/assets/js/main.js',
+            array(),
+            NEARMENUS_VERSION,
+            true
+        );
+    }
 
     // Localize script for AJAX (attached to main script)
     wp_localize_script('nearmenus-script', 'nearmenus_ajax', array(
@@ -114,6 +139,22 @@ function nearmenus_scripts() {
     // Comment reply script
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
+    }
+    
+    // Emergency inline CSS if main CSS fails to load
+    if (!file_exists($css_path_min) && !file_exists($css_path_reg)) {
+        wp_register_style('nearmenus-emergency', false);
+        wp_enqueue_style('nearmenus-emergency');
+        $emergency_css = "
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .hero-section { background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 60px 0; text-align: center; }
+        .restaurant-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .btn-primary { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 4px; text-decoration: none; display: inline-block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        header { background: white; border-bottom: 1px solid #e5e7eb; padding: 20px 0; }
+        ";
+        wp_add_inline_style('nearmenus-emergency', $emergency_css);
     }
 }
 add_action('wp_enqueue_scripts', 'nearmenus_scripts');
