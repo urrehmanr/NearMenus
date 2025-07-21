@@ -77,19 +77,11 @@ get_header(); ?>
                 <?php get_template_part('template-parts/filter-controls'); ?>
             </div>
             
-            <!-- Active Filters Display -->
-            <?php get_template_part('template-parts/active-filters'); ?>
-            
             <!-- Main Content Area -->
-            <div class="grid lg:grid-cols-4 gap-8">
-                
-                <!-- Sidebar Filters -->
-                <div class="lg:col-span-1">
-                    <?php get_template_part('template-parts/filter-sidebar'); ?>
-                </div>
+            <div class="grid lg:grid-cols-1 gap-8">
                 
                 <!-- Results Grid -->
-                <div class="lg:col-span-3">
+                <div class="w-full">
                     <?php if (have_posts()) : ?>
                     <div id="restaurant-results" class="grid md:grid-cols-2 gap-6">
                         <?php

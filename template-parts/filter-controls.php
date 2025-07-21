@@ -241,8 +241,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add loading state
             document.body.classList.add('filtering');
             
-            // Submit form via AJAX
-            nearMenusSearch.performSearch(new FormData(filterForm));
+            // Submit form
+            filterForm.submit();
         });
     });
     <?php endif; ?>
@@ -277,9 +277,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
             }
             
-            // Auto-submit if AJAX enabled
+            // Auto-submit if enabled
             <?php if (get_theme_mod('nearmenus_ajax_search', true)): ?>
-            nearMenusSearch.performSearch(new FormData(filterForm));
+            filterForm.submit();
             <?php endif; ?>
         });
     });

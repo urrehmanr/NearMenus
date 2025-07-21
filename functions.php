@@ -97,22 +97,13 @@ function nearmenus_scripts() {
     wp_enqueue_script(
         'nearmenus-script',
         NEARMENUS_THEME_URI . '/assets/js/main.js',
-        array('jquery'),
+        array(),
         NEARMENUS_VERSION,
         true
     );
 
-    // Enqueue search script
-    wp_enqueue_script(
-        'nearmenus-search',
-        NEARMENUS_THEME_URI . '/assets/js/search.js',
-        array('jquery'),
-        NEARMENUS_VERSION,
-        true
-    );
-
-    // Localize script for AJAX
-    wp_localize_script('nearmenus-search', 'nearmenus_ajax', array(
+    // Localize script for AJAX (attached to main script)
+    wp_localize_script('nearmenus-script', 'nearmenus_ajax', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('nearmenus_search_nonce'),
         'search_placeholder' => __('Search restaurants, cuisines, or dishes...', 'nearmenus'),
@@ -224,9 +215,23 @@ function nearmenus_pingback_header() {
 add_action('wp_head', 'nearmenus_pingback_header');
 
 /**
- * Admin styles
+ * Admin styles and scripts
  */
-function nearmenus_admin_styles() {
+function nearmenus_admin_styles($hook_suffix) {
+    // Only load on post edit pages and relevant admin pages
+    $allowed_pages = array(
+        'post.php',
+        'post-new.php',
+        'edit.php',
+        'edit-tags.php',
+        'term.php'
+    );
+    
+    if (!in_array($hook_suffix, $allowed_pages)) {
+        return;
+    }
+    
+    // Admin styles
     wp_enqueue_style(
         'nearmenus-admin',
         NEARMENUS_THEME_URI . '/assets/css/admin.css',
@@ -234,12 +239,24 @@ function nearmenus_admin_styles() {
         NEARMENUS_VERSION
     );
     
-    wp_enqueue_script(
-        'nearmenus-admin-js',
-        NEARMENUS_THEME_URI . '/assets/js/admin.js',
-        array('jquery'),
-        NEARMENUS_VERSION,
-        true
-    );
+    // Admin scripts (only on post edit pages)
+    if (in_array($hook_suffix, array('post.php', 'post-new.php'))) {
+        wp_enqueue_script(
+            'nearmenus-admin-js',
+            NEARMENUS_THEME_URI . '/assets/js/admin.js',
+            array('jquery'),
+            NEARMENUS_VERSION,
+            true
+        );
+        
+        // Enqueue WordPress media library
+        wp_enqueue_media();
+        
+        // Localize admin script
+        wp_localize_script('nearmenus-admin-js', 'nearmenusAdmin', array(
+            'nonce' => wp_create_nonce('nearmenus_admin_nonce'),
+            'ajax_url' => admin_url('admin-ajax.php'),
+        ));
+    }
 }
 add_action('admin_enqueue_scripts', 'nearmenus_admin_styles');
