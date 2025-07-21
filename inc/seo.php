@@ -147,26 +147,32 @@ class NearMenus_SEO {
         
         // Add menu if available
         $menu_items = get_post_meta($post->ID, '_restaurant_menu', true);
-        if ($menu_items) {
+        if ($menu_items && is_array($menu_items)) {
             $menu_schema = array();
-            foreach ($menu_items as $category => $items) {
-                foreach ($items as $item) {
-                    $menu_schema[] = array(
-                        '@type' => 'MenuItem',
-                        'name' => $item['name'],
-                        'description' => $item['description'],
-                        'offers' => array(
-                            '@type' => 'Offer',
-                            'price' => $item['price'],
-                            'priceCurrency' => 'USD',
-                        ),
-                    );
+            foreach ($menu_items as $category) {
+                if (is_array($category) && isset($category['items']) && is_array($category['items'])) {
+                    foreach ($category['items'] as $item) {
+                        if (is_array($item) && isset($item['name'])) {
+                            $menu_schema[] = array(
+                                '@type' => 'MenuItem',
+                                'name' => sanitize_text_field($item['name']),
+                                'description' => isset($item['description']) ? sanitize_text_field($item['description']) : '',
+                                'offers' => array(
+                                    '@type' => 'Offer',
+                                    'price' => isset($item['price']) ? floatval($item['price']) : 0,
+                                    'priceCurrency' => 'USD',
+                                ),
+                            );
+                        }
+                    }
                 }
             }
-            $schema['hasMenu'] = array(
-                '@type' => 'Menu',
-                'hasMenuSection' => $menu_schema,
-            );
+            if (!empty($menu_schema)) {
+                $schema['hasMenu'] = array(
+                    '@type' => 'Menu',
+                    'hasMenuSection' => $menu_schema,
+                );
+            }
         }
         
         echo '<script type="application/ld+json">' . "\n";
