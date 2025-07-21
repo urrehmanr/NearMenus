@@ -390,7 +390,7 @@ function nearmenus_sanitize_checkbox($checked) {
 function nearmenus_customize_preview_js() {
     wp_enqueue_script(
         'nearmenus-customizer',
-        get_template_directory_uri() . '/assets/js/customizer.js',
+        get_template_directory_uri() . '/assets/dist/js/customizer.min.js',
         array('customize-preview'),
         wp_get_theme()->get('Version'),
         true
@@ -404,7 +404,7 @@ add_action('customize_preview_init', 'nearmenus_customize_preview_js');
 function nearmenus_customize_controls_js() {
     wp_enqueue_script(
         'nearmenus-customizer-controls',
-        get_template_directory_uri() . '/assets/js/customizer-controls.js',
+        get_template_directory_uri() . '/assets/dist/js/customizer-controls.min.js',
         array('customize-controls'),
         wp_get_theme()->get('Version'),
         true

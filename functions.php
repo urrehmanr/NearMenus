@@ -88,7 +88,7 @@ function nearmenus_scripts() {
     // Enqueue main stylesheet
     wp_enqueue_style(
         'nearmenus-style',
-        NEARMENUS_THEME_URI . '/assets/css/main.css',
+        NEARMENUS_THEME_URI . '/assets/dist/css/main.min.css',
         array(),
         NEARMENUS_VERSION
     );
@@ -96,7 +96,7 @@ function nearmenus_scripts() {
     // Enqueue main script
     wp_enqueue_script(
         'nearmenus-script',
-        NEARMENUS_THEME_URI . '/assets/js/main.js',
+        NEARMENUS_THEME_URI . '/assets/dist/js/main.min.js',
         array(),
         NEARMENUS_VERSION,
         true
@@ -234,7 +234,7 @@ function nearmenus_admin_styles($hook_suffix) {
     // Admin styles
     wp_enqueue_style(
         'nearmenus-admin',
-        NEARMENUS_THEME_URI . '/assets/css/admin.css',
+        NEARMENUS_THEME_URI . '/assets/dist/css/admin.min.css',
         array(),
         NEARMENUS_VERSION
     );
@@ -243,7 +243,7 @@ function nearmenus_admin_styles($hook_suffix) {
     if (in_array($hook_suffix, array('post.php', 'post-new.php'))) {
         wp_enqueue_script(
             'nearmenus-admin-js',
-            NEARMENUS_THEME_URI . '/assets/js/admin.js',
+            NEARMENUS_THEME_URI . '/assets/dist/js/admin.min.js',
             array('jquery'),
             NEARMENUS_VERSION,
             true
