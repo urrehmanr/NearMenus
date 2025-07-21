@@ -26,7 +26,7 @@
         if (!menuContainer.length) return;
 
         // Add new category
-        $(document).on('click', '.add-menu-category', function(e) {
+        $(document).on('click', '#add-menu-category', function(e) {
             e.preventDefault();
             addMenuCategory();
         });
@@ -89,20 +89,25 @@
     function addMenuCategory() {
         var categoryCount = $('.menu-category').length;
         var categoryHtml = `
-            <div class="menu-category">
-                <div class="category-header">
-                    <h4 class="category-title">New Category</h4>
-                    <input type="hidden" name="menu_categories[${categoryCount}][name]" value="New Category">
-                    <div class="category-actions">
-                        <button type="button" class="button btn-small add-menu-item">Add Item</button>
-                        <button type="button" class="button btn-small btn-danger remove-category">Remove</button>
-                    </div>
+            <div class="menu-category" data-index="${categoryCount}">
+                <h4>Menu Category</h4>
+                <table class="widefat">
+                    <tr>
+                        <th><label>Category Name</label></th>
+                        <td>
+                            <input type="text" name="restaurant_menu[${categoryCount}][name]" value="" class="regular-text" placeholder="Enter category name" />
+                            <button type="button" class="button remove-category">Remove Category</button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="menu-items">
+                    <h5>Menu Items</h5>
+                    <button type="button" class="button add-menu-item">Add Item</button>
                 </div>
-                <div class="menu-items"></div>
             </div>
         `;
         
-        $('.menu-builder').append(categoryHtml);
+        $('#menu-categories').append(categoryHtml);
         updateMenuIndices();
     }
 
@@ -110,55 +115,30 @@
      * Add new menu item
      */
     function addMenuItem(categoryContainer) {
-        var categoryIndex = categoryContainer.index();
+        var categoryIndex = categoryContainer.data('index') || categoryContainer.index();
         var itemCount = categoryContainer.find('.menu-item').length;
         
         var itemHtml = `
             <div class="menu-item">
-                <div class="menu-item-header">
-                    <h5 class="menu-item-title">New Menu Item</h5>
-                    <button type="button" class="button btn-small btn-danger remove-menu-item">Remove</button>
-                </div>
-                <div class="menu-item-fields">
-                    <div class="menu-item-field">
-                        <label>Item Name</label>
-                        <input type="text" name="menu_categories[${categoryIndex}][items][${itemCount}][name]" value="New Menu Item" required>
-                    </div>
-                    <div class="menu-item-field">
-                        <label>Price</label>
-                        <input type="text" name="menu_categories[${categoryIndex}][items][${itemCount}][price]" placeholder="0.00">
-                    </div>
-                    <div class="menu-item-field menu-item-description">
-                        <label>Description</label>
-                        <textarea name="menu_categories[${categoryIndex}][items][${itemCount}][description]" rows="3"></textarea>
-                    </div>
-                    <div class="menu-item-field">
-                        <label>Ingredients</label>
-                        <input type="text" name="menu_categories[${categoryIndex}][items][${itemCount}][ingredients]" placeholder="List ingredients...">
-                    </div>
-                    <div class="menu-item-field">
-                        <label>Calories</label>
-                        <input type="number" name="menu_categories[${categoryIndex}][items][${itemCount}][calories]" min="0">
-                    </div>
-                    <div class="menu-item-options">
-                        <label class="menu-item-checkbox">
-                            <input type="checkbox" name="menu_categories[${categoryIndex}][items][${itemCount}][popular]" value="1">
-                            Popular Item
-                        </label>
-                        <label class="menu-item-checkbox">
-                            <input type="checkbox" name="menu_categories[${categoryIndex}][items][${itemCount}][vegetarian]" value="1">
-                            Vegetarian
-                        </label>
-                        <label class="menu-item-checkbox">
-                            <input type="checkbox" name="menu_categories[${categoryIndex}][items][${itemCount}][vegan]" value="1">
-                            Vegan
-                        </label>
-                        <label class="menu-item-checkbox">
-                            <input type="checkbox" name="menu_categories[${categoryIndex}][items][${itemCount}][gluten_free]" value="1">
-                            Gluten Free
-                        </label>
-                    </div>
-                </div>
+                <table class="widefat">
+                    <tr>
+                        <th>Item Name</th>
+                        <td><input type="text" name="restaurant_menu[${categoryIndex}][items][${itemCount}][name]" value="" class="regular-text" placeholder="Enter item name" /></td>
+                        <td rowspan="4"><button type="button" class="button remove-menu-item">Remove Item</button></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td><textarea name="restaurant_menu[${categoryIndex}][items][${itemCount}][description]" class="large-text" rows="2" placeholder="Item description"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>Price</th>
+                        <td><input type="number" step="0.01" name="restaurant_menu[${categoryIndex}][items][${itemCount}][price]" value="" class="regular-text" placeholder="0.00" /></td>
+                    </tr>
+                    <tr>
+                        <th>Popular Item</th>
+                        <td><input type="checkbox" name="restaurant_menu[${categoryIndex}][items][${itemCount}][popular]" value="1" /></td>
+                    </tr>
+                </table>
             </div>
         `;
         

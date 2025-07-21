@@ -81,9 +81,14 @@ class NearMenus_SEO {
         $phone = get_post_meta($post->ID, '_restaurant_phone', true);
         $address = get_post_meta($post->ID, '_restaurant_address', true);
         $website = get_post_meta($post->ID, '_restaurant_website', true);
-        $price_range = wp_get_post_terms($post->ID, 'price-range', array('fields' => 'names'));
+        $price_range = wp_get_post_terms($post->ID, 'price_range', array('fields' => 'names'));
         $cuisines = wp_get_post_terms($post->ID, 'cuisine', array('fields' => 'names'));
         $features = wp_get_post_terms($post->ID, 'features', array('fields' => 'names'));
+        
+        // Handle WP_Error cases
+        if (is_wp_error($price_range)) $price_range = array();
+        if (is_wp_error($cuisines)) $cuisines = array();
+        if (is_wp_error($features)) $features = array();
         
         $hours = array();
         $days = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');

@@ -158,17 +158,15 @@ class NearMenus_Performance {
      * Optimize script loading
      */
     public function optimize_script_loading() {
-        // Remove jQuery migrate
+        // Remove jQuery migrate but keep jQuery core
         if (!is_admin()) {
-            wp_deregister_script('jquery');
-            wp_register_script('jquery', false);
+            wp_deregister_script('jquery-migrate');
         }
         
-        // Move jQuery to footer
+        // Move scripts to footer for better performance
         if (!is_admin()) {
             wp_scripts()->add_data('jquery', 'group', 1);
             wp_scripts()->add_data('jquery-core', 'group', 1);
-            wp_scripts()->add_data('jquery-migrate', 'group', 1);
         }
         
         // Combine and minify CSS (in production)
@@ -202,8 +200,8 @@ class NearMenus_Performance {
      * Add preload hints for critical resources
      */
     public function add_preload_hints() {
-        // Preload critical CSS
-        echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/css/main.css" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">' . "\n";
+        // Preload critical CSS (using minified version)
+        echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/dist/css/main.min.css" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">' . "\n";
         
         // Preload hero image if set
         $hero_bg = get_theme_mod('nearmenus_hero_bg');
@@ -214,8 +212,8 @@ class NearMenus_Performance {
             }
         }
         
-        // Preload main JavaScript
-        echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/js/main.js" as="script">' . "\n";
+        // Preload main JavaScript (using minified version)
+        echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/dist/js/main.min.js" as="script">' . "\n";
     }
     
     /**
