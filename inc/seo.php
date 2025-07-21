@@ -147,8 +147,6 @@ class NearMenus_SEO {
         
         // Add menu if available
         $menu_items = get_post_meta($post->ID, '_restaurant_menu', true);
-<<<<<<< HEAD
-<<<<<<< HEAD
         if ($menu_items && is_array($menu_items)) {
             $menu_schema = array();
             foreach ($menu_items as $category) {
@@ -175,44 +173,6 @@ class NearMenus_SEO {
                     'hasMenuSection' => $menu_schema,
                 );
             }
-=======
-        if ($menu_items) {
-=======
-        if ($menu_items && is_array($menu_items)) {
->>>>>>> edeec9de1dad545e86b94b222c248ca0c975e5d8
-            $menu_schema = array();
-            foreach ($menu_items as $category) {
-                if (is_array($category) && isset($category['items']) && is_array($category['items'])) {
-                    foreach ($category['items'] as $item) {
-                        if (is_array($item) && isset($item['name'])) {
-                            $menu_schema[] = array(
-                                '@type' => 'MenuItem',
-                                'name' => sanitize_text_field($item['name']),
-                                'description' => isset($item['description']) ? sanitize_text_field($item['description']) : '',
-                                'offers' => array(
-                                    '@type' => 'Offer',
-                                    'price' => isset($item['price']) ? floatval($item['price']) : 0,
-                                    'priceCurrency' => 'USD',
-                                ),
-                            );
-                        }
-                    }
-                }
-            }
-<<<<<<< HEAD
-            $schema['hasMenu'] = array(
-                '@type' => 'Menu',
-                'hasMenuSection' => $menu_schema,
-            );
->>>>>>> 0dd8083008e16f933004a1035f47f0a5e02939ad
-=======
-            if (!empty($menu_schema)) {
-                $schema['hasMenu'] = array(
-                    '@type' => 'Menu',
-                    'hasMenuSection' => $menu_schema,
-                );
-            }
->>>>>>> edeec9de1dad545e86b94b222c248ca0c975e5d8
         }
         
         echo '<script type="application/ld+json">' . "\n";
