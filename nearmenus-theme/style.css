@@ -1,0 +1,15 @@
+/*
+Theme Name: NearMenus Restaurant Directory
+Description: A comprehensive restaurant discovery platform theme based on the React NearMenus application. Features advanced search, filtering, and restaurant management capabilities.
+Version: 1.0.0
+Author: Theme Developer
+Author URI: https://nearmenus.com
+Text Domain: nearmenus
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+This theme is built to replicate the functionality of the React NearMenus application
+with WordPress-native features including custom taxonomies, fields, and templates.
+*/
+
+@import url('assets/css/main.css');
