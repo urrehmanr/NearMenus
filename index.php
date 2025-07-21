@@ -47,6 +47,8 @@ get_header(); ?>
             <div id="restaurant-grid" class="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
                 <?php
                 $posts_per_page = get_theme_mod('nearmenus_posts_per_page', 8);
+                
+                // First try to get restaurant posts with meta
                 $featured_restaurants = new WP_Query(array(
                     'post_type' => 'post',
                     'posts_per_page' => $posts_per_page,
@@ -62,6 +64,18 @@ get_header(); ?>
                     'order' => 'DESC',
                 ));
                 
+                // If no restaurant posts found, show all published posts
+                if (!$featured_restaurants->have_posts()) {
+                    wp_reset_postdata();
+                    $featured_restaurants = new WP_Query(array(
+                        'post_type' => 'post',
+                        'posts_per_page' => $posts_per_page,
+                        'post_status' => 'publish',
+                        'orderby' => 'date',
+                        'order' => 'DESC',
+                    ));
+                }
+                
                 if ($featured_restaurants->have_posts()) :
                     while ($featured_restaurants->have_posts()) : $featured_restaurants->the_post();
                         get_template_part('template-parts/restaurant-card');
@@ -70,8 +84,11 @@ get_header(); ?>
                 else :
                     echo '<div class="col-span-full text-center py-16">';
                     echo '<div class="text-6xl mb-4">🍽️</div>';
-                    echo '<h3 class="text-xl font-semibold mb-2">' . __('No restaurants found', 'nearmenus') . '</h3>';
-                    echo '<p class="text-gray-600">' . __('Start adding restaurant posts to see them here.', 'nearmenus') . '</p>';
+                    echo '<h3 class="text-xl font-semibold mb-2">' . __('No posts found', 'nearmenus') . '</h3>';
+                    echo '<p class="text-gray-600 mb-4">' . __('Start by creating some posts. They will display here automatically.', 'nearmenus') . '</p>';
+                    if (current_user_can('publish_posts')) {
+                        echo '<a href="' . admin_url('post-new.php') . '" class="btn-primary">' . __('Create First Post', 'nearmenus') . '</a>';
+                    }
                     echo '</div>';
                 endif;
                 ?>

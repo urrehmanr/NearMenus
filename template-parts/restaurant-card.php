@@ -7,6 +7,8 @@
  */
 
 $post_id = get_the_ID();
+
+// Get restaurant meta (may be empty for regular posts)
 $rating = get_post_meta($post_id, '_restaurant_rating', true);
 $review_count = get_post_meta($post_id, '_restaurant_review_count', true);
 $phone = get_post_meta($post_id, '_restaurant_phone', true);
@@ -15,10 +17,18 @@ $is_open = get_post_meta($post_id, '_restaurant_is_open', true);
 $has_delivery = get_post_meta($post_id, '_restaurant_has_delivery', true);
 $special_offer = get_post_meta($post_id, '_restaurant_special_offer', true);
 
-// Get taxonomies
+// Check if this is a restaurant post (has restaurant meta)
+$is_restaurant = !empty($rating) || !empty($phone) || !empty($address);
+
+// Get taxonomies (will be empty for regular posts)
 $cuisines = get_the_terms($post_id, 'cuisine');
 $locations = get_the_terms($post_id, 'location');
 $price_ranges = get_the_terms($post_id, 'price_range');
+
+// Use categories for regular posts if no restaurant taxonomies
+if (!$is_restaurant) {
+    $cuisines = get_the_category($post_id);
+}
 ?>
 
 <article class="restaurant-card bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-lg transition-shadow group">
@@ -87,8 +97,8 @@ $price_ranges = get_the_terms($post_id, 'price_range');
                 </a>
             </h3>
             
-            <!-- Rating & Reviews -->
-            <?php if ($rating) : ?>
+            <!-- Rating & Reviews (for restaurant posts) -->
+            <?php if ($is_restaurant && $rating) : ?>
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center space-x-2">
                     <?php echo nearmenus_display_rating($rating); ?>
@@ -106,6 +116,14 @@ $price_ranges = get_the_terms($post_id, 'price_range');
                     <?php echo nearmenus_get_price_range_display($price_ranges[0]->slug); ?>
                 </div>
                 <?php endif; ?>
+            </div>
+            <?php elseif (!$is_restaurant) : ?>
+            <!-- Post Date (for regular posts) -->
+            <div class="flex items-center text-sm text-gray-500 mb-2">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <?php echo get_the_date(); ?>
             </div>
             <?php endif; ?>
         </div>
