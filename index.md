@@ -4,7 +4,7 @@
 This comprehensive development plan outlines the creation of a modern, high-performance WordPress blog theme following 2025's best practices. The theme will be built with minimal CSS/JavaScript, full Gutenberg compatibility, and optimized for Core Web Vitals.
 
 ## Theme Specifications
-- **Theme Name**: ModernBlog2025
+- **Theme Name**: GPress
 - **Architecture**: Block-based Full Site Editing (FSE) theme
 - **Performance Target**: 95+ Lighthouse score
 - **Compatibility**: WordPress 6.4+ with Gutenberg blocks
@@ -90,9 +90,9 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 
 ## 🏗️ Technical Architecture
 
-### File Structure
+### Final File Structure
 ```
-modernblog2025/
+gpress/
 ├── style.css                 # Main stylesheet with theme header
 ├── index.php                 # PHP fallback template
 ├── functions.php              # Theme functions and setup
@@ -125,6 +125,8 @@ modernblog2025/
 ├── languages/                 # Translation files
 └── patterns/                  # Block patterns
 ```
+
+> **Note**: Files are created progressively throughout the development steps. Each step creates only the files needed for that phase, ensuring the theme remains installable and testable at every stage.
 
 ### Technology Stack
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (minimal)
@@ -198,6 +200,16 @@ Upon completion, the theme will achieve:
 5. Document your customizations
 
 This development plan ensures the creation of a professional, high-performance WordPress theme that meets 2025's web standards and provides an exceptional user experience across all devices and accessibility needs.
+
+## 🧪 Progressive Testing Strategy
+
+Each step includes specific testing instructions to ensure the theme remains functional throughout development:
+
+- **Installation Testing**: Verify theme activates without errors
+- **Functionality Testing**: Confirm new features work as expected  
+- **Performance Testing**: Monitor Core Web Vitals and Lighthouse scores
+- **Accessibility Testing**: Validate WCAG compliance at each stage
+- **Cross-browser Testing**: Ensure compatibility across major browsers
 
 ---
 

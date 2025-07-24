@@ -1,34 +1,58 @@
-# Step 3: theme.json Setup for Full Site Editing
+# Step 3: theme.json Setup for FSE
 
-## Objective
-Configure the `theme.json` file to enable Full Site Editing (FSE) capabilities, define global styles, typography, colors, and layout settings for optimal performance and user experience.
+## Overview
+This step creates the essential `theme.json` file that enables Full Site Editing (FSE) capabilities for the GPress theme. This file controls global styles, color palettes, typography, layout settings, and block configurations for optimal performance and consistency.
 
-## What You'll Learn
-- theme.json structure and configuration
-- Global styling with theme.json
-- Typography and color systems
-- Layout and spacing controls
-- Block customization and styling
-- Performance optimization through theme.json
+## Objectives
+- Create the `theme.json` configuration file
+- Enable Full Site Editing (FSE) capabilities
+- Define global typography and color systems
+- Configure layout and spacing controls
+- Optimize performance through theme.json settings
+- Ensure compatibility with Gutenberg blocks
+
+## Files to Create in This Step
+
+### Updated Directory Structure
+```
+gpress/
+├── style.css                # (already exists)
+├── index.php                # (already exists)
+├── functions.php             # (already exists)
+├── README.md                # (already exists)
+├── .gitignore               # (already exists)
+├── theme.json               # (new file - created in this step)
+├── inc/                     # (already exists)
+│   ├── theme-setup.php      # (already exists)
+│   ├── enqueue-scripts.php  # (already exists)
+│   ├── customizer.php       # (already exists)
+│   └── block-patterns.php   # (already exists)
+└── assets/                  # (already exists)
+    └── js/                  # (already exists)
+        ├── skip-link-focus-fix.js  # (already exists)
+        └── customizer.js     # (already exists)
+```
 
 ## Understanding theme.json
 
 The `theme.json` file is the central configuration file for modern WordPress themes. It controls:
 - Global styles and settings
-- Block editor appearance
-- Typography systems
-- Color palettes
-- Layout and spacing
-- Custom CSS properties
+- Block editor appearance and capabilities
+- Typography systems with fluid scaling
+- Color palettes and customization
+- Layout constraints and spacing systems
+- Performance optimizations through CSS custom properties
 
-## Complete theme.json Configuration
+## Step-by-Step Implementation
 
-Create `theme.json` in your theme root directory:
+### 1. Create theme.json
+
+Create the `theme.json` file in your theme root directory:
 
 ```json
 {
     "$schema": "https://schemas.wp.org/trunk/theme.json",
-    "version": 2,
+    "version": 3,
     "settings": {
         "appearanceTools": true,
         "useRootPaddingAwareAlignments": true,
@@ -73,6 +97,11 @@ Create `theme.json` in your theme root directory:
                     "name": "X-Large",
                     "size": "3rem",
                     "slug": "x-large"
+                },
+                {
+                    "name": "XX-Large",
+                    "size": "4rem",
+                    "slug": "xx-large"
                 }
             ]
         },
@@ -84,42 +113,53 @@ Create `theme.json` in your theme root directory:
             "defaultGradients": false,
             "defaultPalette": false,
             "duotone": [],
-            "gradients": [],
-            "palette": [
+            "gradients": [
                 {
-                    "name": "Primary",
-                    "slug": "primary",
-                    "color": "#2c3e50"
+                    "name": "Primary to Secondary",
+                    "slug": "primary-secondary",
+                    "gradient": "linear-gradient(135deg, var(--wp--preset--color--primary) 0%, var(--wp--preset--color--secondary) 100%)"
                 },
                 {
-                    "name": "Secondary",
-                    "slug": "secondary",
+                    "name": "Light to Dark",
+                    "slug": "light-dark",
+                    "gradient": "linear-gradient(180deg, var(--wp--preset--color--light) 0%, var(--wp--preset--color--dark) 100%)"
+                }
+            ],
+            "palette": [
+                {
+                    "name": "Primary Blue",
+                    "slug": "primary",
                     "color": "#3498db"
                 },
                 {
-                    "name": "Accent",
-                    "slug": "accent",
-                    "color": "#e74c3c"
+                    "name": "Secondary Blue",
+                    "slug": "secondary",
+                    "color": "#2980b9"
                 },
                 {
-                    "name": "Success",
-                    "slug": "success",
+                    "name": "Accent Green",
+                    "slug": "accent",
                     "color": "#27ae60"
                 },
                 {
-                    "name": "Warning",
+                    "name": "Warning Orange",
                     "slug": "warning",
                     "color": "#f39c12"
                 },
                 {
-                    "name": "Light",
-                    "slug": "light",
-                    "color": "#f8f9fa"
+                    "name": "Danger Red",
+                    "slug": "danger",
+                    "color": "#e74c3c"
                 },
                 {
-                    "name": "Dark",
+                    "name": "Dark Text",
                     "slug": "dark",
                     "color": "#2c3e50"
+                },
+                {
+                    "name": "Light Background",
+                    "slug": "light",
+                    "color": "#f8f9fa"
                 },
                 {
                     "name": "White",
@@ -195,14 +235,9 @@ Create `theme.json` in your theme root directory:
                     "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif"
                 },
                 {
-                    "name": "Georgia",
-                    "slug": "georgia",
-                    "fontFamily": "Georgia, serif"
-                },
-                {
-                    "name": "Times",
-                    "slug": "times",
-                    "fontFamily": "'Times New Roman', Times, serif"
+                    "name": "Serif",
+                    "slug": "serif",
+                    "fontFamily": "Georgia, 'Times New Roman', Times, serif"
                 },
                 {
                     "name": "Monospace",
@@ -299,6 +334,11 @@ Create `theme.json` in your theme root directory:
                     "name": "Large",
                     "slug": "large",
                     "shadow": "0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)"
+                },
+                {
+                    "name": "Extra Large",
+                    "slug": "x-large",
+                    "shadow": "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)"
                 }
             ]
         },
@@ -331,6 +371,11 @@ Create `theme.json` in your theme root directory:
                             "name": "Extra Large",
                             "slug": "x-large",
                             "size": "2.5rem"
+                        },
+                        {
+                            "name": "Huge",
+                            "slug": "huge",
+                            "size": "3rem"
                         }
                     ]
                 }
@@ -361,6 +406,30 @@ Create `theme.json` in your theme root directory:
             "core/separator": {
                 "color": {
                     "background": true
+                }
+            },
+            "core/cover": {
+                "color": {
+                    "background": true,
+                    "text": true
+                },
+                "spacing": {
+                    "padding": true,
+                    "margin": true
+                }
+            },
+            "core/group": {
+                "spacing": {
+                    "padding": true,
+                    "margin": true,
+                    "blockGap": true
+                },
+                "color": {
+                    "background": true,
+                    "text": true
+                },
+                "border": {
+                    "radius": true
                 }
             }
         }
@@ -626,6 +695,19 @@ Create `theme.json` in your theme root directory:
                 "color": {
                     "background": "var(--wp--preset--color--gray-200)"
                 }
+            },
+            "core/cover": {
+                "color": {
+                    "text": "var(--wp--preset--color--white)"
+                },
+                "spacing": {
+                    "padding": {
+                        "top": "3rem",
+                        "bottom": "3rem",
+                        "left": "2rem",
+                        "right": "2rem"
+                    }
+                }
             }
         }
     },
@@ -661,186 +743,173 @@ Create `theme.json` in your theme root directory:
 }
 ```
 
-## Performance Optimization Features
+### 2. Update functions.php for FSE Support
 
-### 1. CSS Custom Properties Generation
-The `theme.json` automatically generates CSS custom properties:
+Add this to your existing `functions.php` after the existing content:
 
-```css
-/* Auto-generated by WordPress */
-:root {
-    --wp--preset--color--primary: #2c3e50;
-    --wp--preset--color--secondary: #3498db;
-    --wp--preset--font-size--medium: 1rem;
-    --wp--preset--spacing--small: 1rem;
-    /* ... and many more */
+```php
+/**
+ * Add FSE-specific theme support
+ */
+function gpress_fse_setup() {
+    // Add support for block templates
+    add_theme_support('block-templates');
+    
+    // Add support for block template parts
+    add_theme_support('block-template-parts');
+    
+    // Remove core block patterns (we'll add our own)
+    remove_theme_support('core-block-patterns');
 }
+add_action('after_setup_theme', 'gpress_fse_setup', 20);
+
+/**
+ * Enqueue theme.json styles for the editor
+ */
+function gpress_editor_styles() {
+    // The theme.json will automatically be loaded
+    // This function is for any additional editor styles if needed
+    wp_enqueue_style(
+        'gpress-editor-style',
+        get_template_directory_uri() . '/assets/css/editor-style.css',
+        array(),
+        GPRESS_VERSION
+    );
+}
+add_action('enqueue_block_editor_assets', 'gpress_editor_styles');
 ```
-
-### 2. Reduced CSS Bloat
-By disabling default palettes and gradients:
-- Removes unused WordPress default CSS
-- Generates only needed custom properties
-- Reduces total CSS size
-
-### 3. Fluid Typography
-Fluid font sizes automatically scale between viewports:
-- Better responsive design
-- Fewer media queries needed
-- Improved performance
 
 ## Key Configuration Explanations
 
 ### Layout Settings
-```json
-"layout": {
-    "contentSize": "800px",    // Max width for normal content
-    "wideSize": "1200px"       // Max width for wide-aligned blocks
-}
-```
+- **contentSize**: Maximum width for normal content (800px)
+- **wideSize**: Maximum width for wide-aligned blocks (1200px)
+- **useRootPaddingAwareAlignments**: Enables better alignment handling
 
 ### Typography System
-```json
-"typography": {
-    "fluid": true,             // Enable fluid typography
-    "customFontSize": false,   // Disable custom font sizes
-    "fontFamilies": [...]      // Define font stack
-}
-```
+- **fluid**: Enables responsive font sizes that scale between devices
+- **customFontSize**: Disabled to maintain consistency
+- **fontFamilies**: System fonts for performance and compatibility
 
 ### Color System
-```json
-"color": {
-    "custom": false,           // Disable custom color picker
-    "defaultPalette": false,   // Remove WordPress default colors
-    "palette": [...]           // Define theme colors
-}
-```
+- **custom**: Disabled to prevent color picker abuse
+- **defaultPalette**: Disabled to remove WordPress defaults
+- **palette**: Carefully curated brand colors with semantic naming
 
 ### Spacing System
-```json
-"spacing": {
-    "spacingScale": {          // Generate consistent spacing
-        "operator": "*",
-        "increment": 1.5,
-        "steps": 7
-    }
-}
+- **spacingScale**: Generates consistent spacing using mathematical progression
+- **spacingSizes**: Predefined spacing options for editors
+
+### Performance Features
+- Disables unnecessary default WordPress styles
+- Generates optimized CSS custom properties
+- Enables fluid typography for fewer media queries
+- Uses system fonts to avoid external font loading
+
+## Testing Instructions
+
+After completing this step, perform these comprehensive tests:
+
+### 1. JSON Validation Test
+```bash
+# Validate the JSON syntax
+node -pe "JSON.parse(require('fs').readFileSync('theme.json', 'utf8'))"
+# or use an online JSON validator
 ```
 
-## Block-Specific Styling
+### 2. Theme Activation Test
+1. Refresh WordPress Admin → Appearance → Themes
+2. Re-activate the GPress theme
+3. Verify no errors appear
+4. Check that FSE features are enabled
 
-The theme.json allows targeting specific blocks:
+### 3. Block Editor Test
+1. Create a new post
+2. Test the following features:
+   - **Color Palette**: Check that GPress colors appear in color settings
+   - **Font Sizes**: Verify custom font sizes are available
+   - **Spacing**: Test padding/margin controls show custom spacing
+   - **Typography**: Check font family options
+   - **Shadows**: Verify shadow presets are available
 
-```json
-"blocks": {
-    "core/heading": {
-        "typography": {
-            "fontSizes": [...]
-        }
-    },
-    "core/button": {
-        "border": {
-            "radius": true
-        }
-    }
-}
-```
+### 4. Frontend Styling Test
+1. Add various blocks to a test post (headings, paragraphs, buttons, quotes)
+2. Publish the post and view it on the frontend
+3. Verify that theme.json styles are being applied
+4. Check responsive behavior at different screen sizes
 
-## Template Parts Configuration
+### 5. Site Editor Test (WordPress 5.9+)
+1. Go to Appearance → Site Editor (if available)
+2. Verify templates and template parts are accessible
+3. Test global styles interface
+4. Check theme color and typography settings
 
-Define reusable template parts:
+### 6. Performance Test
+1. Run Lighthouse test on homepage
+2. Should maintain 90+ performance score
+3. Check that CSS custom properties are generated
+4. Verify no console errors
 
-```json
-"templateParts": [
-    {
-        "name": "header",
-        "title": "Header",
-        "area": "header"
-    }
-]
-```
+### 7. Customizer Test
+1. Go to Appearance → Customize
+2. Check Global Styles section (if available)
+3. Test color and typography changes
+4. Verify changes apply in real-time
 
-## Verification Checklist
+### 8. Accessibility Test
+1. Verify proper color contrast with new color palette
+2. Check that font sizes remain readable
+3. Test keyboard navigation in block editor
 
-After creating theme.json:
+## Expected Results
 
-- [ ] File is valid JSON (use JSON validator)
-- [ ] Theme editor shows correct colors
-- [ ] Font sizes appear in editor
-- [ ] Spacing presets are available
-- [ ] Block styles are applied correctly
-- [ ] No console errors in block editor
+After completing Step 3, you should have:
 
-## Testing the Configuration
-
-1. **Block Editor Test:**
-   - Create a new post
-   - Verify color palette appears
-   - Test font size options
-   - Check spacing controls
-
-2. **Frontend Test:**
-   - View published content
-   - Verify styles are applied
-   - Check responsive behavior
-   - Test performance impact
-
-3. **Customizer Test:**
-   - Check global styles interface
-   - Test color changes
-   - Verify typography updates
-
-## Next Steps
-
-In Step 4, we'll create block templates that utilize the theme.json configuration for consistent styling and layout.
+- ✅ A valid `theme.json` file with comprehensive configuration
+- ✅ Full Site Editing (FSE) capabilities enabled
+- ✅ Custom color palette available in block editor
+- ✅ Fluid typography system working across devices
+- ✅ Consistent spacing system throughout the theme
+- ✅ Optimized CSS custom properties generated
+- ✅ Enhanced block editor experience
+- ✅ Foundation for block templates and template parts
 
 ## Performance Benefits
 
-1. **Reduced CSS**: Only necessary styles are generated
-2. **Consistent Design**: Global styles prevent style conflicts
-3. **Better Caching**: CSS custom properties are cacheable
-4. **Fluid Typography**: Better performance across devices
-5. **Minimal JavaScript**: No JS needed for style management
+1. **Reduced CSS Bloat**: Only necessary styles are generated
+2. **CSS Custom Properties**: Automatic generation for consistent theming
+3. **Fluid Typography**: Better responsive design with fewer media queries
+4. **Consistent Design System**: Global styles prevent style conflicts
+5. **Better Caching**: CSS custom properties are cacheable
+6. **Minimal JavaScript**: No JS needed for style management
 
-## Advanced Configuration Options
+## Next Step
 
-### Custom CSS Variables
-Add custom CSS properties in styles:
-
-```json
-"styles": {
-    "css": "--custom-variable: value;"
-}
-```
-
-### Responsive Breakpoints
-Configure responsive behavior:
-
-```json
-"settings": {
-    "custom": {
-        "breakpoints": {
-            "tablet": "768px",
-            "desktop": "1024px"
-        }
-    }
-}
-```
+Proceed to [Step 4: Block Templates Creation](./step-04-block-templates.md) to create HTML block templates that utilize the theme.json configuration for consistent styling and layout.
 
 ## Troubleshooting
 
-**Colors not appearing:**
-- Check JSON syntax validity
-- Verify palette array structure
-- Clear browser cache
+**Colors not appearing in editor:**
+- Check JSON syntax validity using a JSON validator
+- Verify palette array structure is correct
+- Clear browser cache and editor cache
 
 **Font sizes not working:**
-- Ensure fontSize is enabled
-- Check fontSizes array format
-- Verify fluid typography settings
+- Ensure fontSize setting is enabled in typography
+- Check fontSizes array format matches specification
+- Verify fluid typography settings are correct
 
-**Styles not applying:**
-- Check block-specific settings
-- Verify CSS custom property names
-- Ensure theme.json is in root directory
+**Styles not applying on frontend:**
+- Check that theme.json is in the root directory
+- Verify CSS custom property names are correctly generated
+- Ensure no conflicting styles in style.css
+
+**FSE not working:**
+- Confirm WordPress version is 5.9 or higher
+- Check that block template support is added in functions.php
+- Verify theme.json version is set to 2 or 3
+
+**Performance issues:**
+- Confirm default palettes and gradients are disabled
+- Check that unnecessary WordPress defaults are removed
+- Verify theme.json is properly formatted and not causing parsing errors
