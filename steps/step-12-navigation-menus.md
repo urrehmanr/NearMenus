@@ -1,402 +1,590 @@
-# Step 12: Navigation & Menus
+# Step 12: Advanced Navigation & Menu Systems
 
-## Objective
-Implement advanced navigation and menu systems for the **GPress** theme with improved accessibility, mobile optimization, and modern UX patterns. Create multiple navigation areas, implement keyboard navigation, and ensure WCAG compliance with intelligent conditional asset loading.
+## Overview
+This step implements comprehensive navigation and menu systems with advanced accessibility features, mobile optimization, and intelligent asset loading. We'll create multiple navigation areas, breadcrumb systems, and custom menu enhancements while ensuring WCAG 2.1 AA compliance and optimal performance.
+
+## Objectives
+- Implement multiple navigation menu registration and management
+- Create accessible navigation components with ARIA support
+- Build responsive mobile navigation with touch optimization
+- Develop breadcrumb navigation with structured data
+- Establish conditional asset loading for navigation features
+- Integrate custom menu item fields and advanced styling
 
 ## What You'll Learn
-- Multiple navigation menu registration and management
-- Conditional navigation asset loading for optimal performance
-- Accessible navigation components with ARIA support
-- Mobile-responsive navigation implementation
-- Breadcrumb navigation with structured data
-- Custom menu item fields and mega menu support
-- Advanced keyboard navigation patterns
+- Advanced WordPress navigation menu registration and customization
+- Accessible navigation design patterns and ARIA implementation
+- Mobile-first navigation architecture and touch interactions
+- Breadcrumb system development with SEO optimization
+- Conditional PHP and JavaScript loading for navigation features
+- Performance optimization for navigation-heavy sites
 
-## Files to Create in This Step
+## Files Structure for This Step
 
+### 📁 Files to CREATE:
 ```
-assets/css/
-├── navigation.css           # Advanced navigation styles
-├── navigation.min.css       # Minified navigation styles
-├── breadcrumbs.css         # Breadcrumb navigation styles
-└── mobile-nav.css          # Mobile navigation specific styles
-
-assets/js/
-├── navigation.js           # Navigation functionality
-├── navigation.min.js       # Minified navigation script
-├── mobile-menu.js          # Mobile menu interactions
-└── breadcrumbs.js          # Breadcrumb enhancements
-
 inc/
-├── navigation-system.php   # Navigation system management
-├── navigation-walker.php   # Custom navigation walker
-├── breadcrumbs.php        # Breadcrumb functionality
-├── menu-customizer.php    # Menu customization features
-└── navigation-assets.php   # Conditional navigation assets
+├── navigation-system.php          # Navigation system management
+├── navigation-walker.php          # Custom navigation walker
+├── breadcrumbs.php                # Breadcrumb functionality
+├── menu-customizer.php            # Menu customization features
+└── navigation-optimization.php    # Navigation performance optimization
 
 parts/
-├── navigation.html        # Main navigation template
-├── mobile-menu.html      # Mobile menu template
-├── breadcrumbs.html      # Breadcrumbs template
-└── social-links.html     # Social navigation template
+├── navigation.html                # Main navigation template part
+├── mobile-menu.html               # Mobile menu template part
+├── breadcrumbs.html               # Breadcrumbs template part
+├── social-navigation.html         # Social navigation template part
+└── skip-links.html                # Skip links for accessibility
+
+assets/css/
+├── navigation.css                 # Main navigation styles
+├── navigation-mobile.css          # Mobile navigation styles
+├── breadcrumbs.css               # Breadcrumb styles
+├── menu-animations.css           # Navigation animations
+└── navigation-print.css          # Print-specific navigation styles
+
+assets/js/
+├── navigation.js                 # Main navigation functionality
+├── mobile-menu.js               # Mobile menu interactions
+├── breadcrumbs.js               # Breadcrumb enhancements
+├── keyboard-navigation.js       # Keyboard navigation support
+└── navigation-analytics.js      # Navigation usage analytics
 ```
 
-## 1. Create Navigation System Management
+### 📝 Files to UPDATE:
+```
+functions.php                     # Include navigation files and initialization
+inc/theme-setup.php              # Register navigation menus and support
+inc/enqueue-scripts.php          # Conditional navigation asset loading
+style.css                        # Base navigation integration styles
+README.md                        # Document navigation features and usage
+theme.json                       # Add navigation-specific settings and styles
+```
 
-### File: `inc/navigation-system.php`
+### 🎯 Optimization Features Implemented:
+- Conditional asset loading based on navigation usage detection
+- Lazy loading for complex menu structures and mega menus
+- Optimized keyboard navigation with focus management
+- Advanced caching strategies for menu rendering
+- Performance monitoring for navigation interactions
+- Mobile-optimized touch gestures and animations
+- Progressive enhancement for all navigation features
+
+## Step-by-Step Implementation
+
+### 1. Create Navigation System Management
+
+Create `inc/navigation-system.php`:
+
 ```php
 <?php
 /**
  * Navigation System Management for GPress Theme
+ * Implements advanced navigation with conditional loading and accessibility
  *
  * @package GPress
+ * @subpackage Navigation
  * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
- * Initialize navigation system
+ * GPress Navigation System Manager
+ * 
+ * @since 1.0.0
  */
-function gpress_init_navigation_system() {
-    // Register navigation menus
-    add_action('after_setup_theme', 'gpress_register_nav_menus');
-    
-    // Conditional navigation asset loading
-    add_action('wp_enqueue_scripts', 'gpress_conditional_navigation_assets');
-    
-    // Enhance navigation with custom walker
-    add_filter('wp_nav_menu_args', 'gpress_enhance_nav_menu_args');
-    
-    // Add menu item custom fields
-    add_action('wp_nav_menu_item_custom_fields', 'gpress_add_menu_item_fields', 10, 2);
-    add_action('wp_update_nav_menu_item', 'gpress_save_menu_item_fields', 10, 2);
-    
-    // Navigation body classes
-    add_filter('body_class', 'gpress_navigation_body_classes');
-    
-    // Navigation enhancements
-    add_action('wp_footer', 'gpress_navigation_accessibility_script');
-}
-add_action('after_setup_theme', 'gpress_init_navigation_system');
+class GPress_Navigation_System {
 
-/**
- * Register navigation menus
- */
-function gpress_register_nav_menus() {
-    register_nav_menus(array(
-        'primary'    => __('Primary Navigation', 'gpress'),
-        'secondary'  => __('Secondary Navigation', 'gpress'),
-        'footer'     => __('Footer Navigation', 'gpress'),
-        'social'     => __('Social Media Links', 'gpress'),
-        'mobile'     => __('Mobile Navigation', 'gpress'),
-        'utility'    => __('Utility Menu', 'gpress')
-    ));
-}
-
-/**
- * Conditional navigation asset loading
- */
-function gpress_conditional_navigation_assets() {
-    $load_navigation = false;
-    $load_mobile = false;
-    $load_breadcrumbs = false;
-    
-    // Check if navigation features are needed
-    if (has_nav_menu('primary') || has_nav_menu('secondary')) {
-        $load_navigation = true;
-    }
-    
-    // Check for mobile menu
-    if (wp_is_mobile() || has_nav_menu('mobile')) {
-        $load_mobile = true;
-    }
-    
-    // Check for breadcrumbs
-    if (!is_front_page() && get_theme_mod('enable_breadcrumbs', true)) {
-        $load_breadcrumbs = true;
-    }
-    
-    // Always load basic navigation styles
-    wp_enqueue_style(
-        'gpress-navigation-base',
-        get_theme_file_uri('/assets/css/navigation-base.css'),
-        array('gpress-style'),
-        GPRESS_VERSION
-    );
-    
-    if ($load_navigation) {
-        wp_enqueue_style(
-            'gpress-navigation',
-            get_theme_file_uri('/assets/css/navigation.css'),
-            array('gpress-navigation-base'),
-            GPRESS_VERSION
-        );
+    /**
+     * Initialize navigation system
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('after_setup_theme', array(__CLASS__, 'register_nav_menus'));
+        add_action('wp_enqueue_scripts', array(__CLASS__, 'conditional_navigation_assets'));
+        add_filter('wp_nav_menu_args', array(__CLASS__, 'enhance_nav_menu_args'));
+        add_filter('body_class', array(__CLASS__, 'navigation_body_classes'));
+        add_action('wp_footer', array(__CLASS__, 'navigation_accessibility_script'));
         
-        wp_enqueue_script(
-            'gpress-navigation',
-            get_theme_file_uri('/assets/js/navigation.js'),
-            array('jquery'),
-            GPRESS_VERSION,
-            array('strategy' => 'defer', 'in_footer' => true)
-        );
-        
-        // Localize navigation script
-        wp_localize_script('gpress-navigation', 'gpressNav', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('gpress_nav_nonce'),
-            'strings' => array(
-                'menu_toggle' => __('Toggle menu', 'gpress'),
-                'submenu_toggle' => __('Toggle submenu', 'gpress'),
-                'close_menu' => __('Close menu', 'gpress'),
-                'open_menu' => __('Open menu', 'gpress'),
-                'menu_expanded' => __('Menu expanded', 'gpress'),
-                'menu_collapsed' => __('Menu collapsed', 'gpress')
-            )
+        // Admin enhancements
+        add_action('admin_init', array(__CLASS__, 'setup_menu_admin'));
+        add_action('wp_nav_menu_item_custom_fields', array(__CLASS__, 'add_menu_item_fields'), 10, 2);
+        add_action('wp_update_nav_menu_item', array(__CLASS__, 'save_menu_item_fields'), 10, 2);
+    }
+
+    /**
+     * Register navigation menus
+     *
+     * @since 1.0.0
+     */
+    public static function register_nav_menus() {
+        register_nav_menus(array(
+            'primary'         => __('Primary Navigation', 'gpress'),
+            'secondary'       => __('Secondary Navigation', 'gpress'),
+            'footer'          => __('Footer Navigation', 'gpress'),
+            'social'          => __('Social Media Links', 'gpress'),
+            'mobile'          => __('Mobile Navigation', 'gpress'),
+            'utility'         => __('Utility Menu', 'gpress'),
+            'breadcrumb'      => __('Breadcrumb Enhancement', 'gpress'),
+            'cta'             => __('Call-to-Action Menu', 'gpress'),
         ));
     }
-    
-    if ($load_mobile) {
+
+    /**
+     * Conditional navigation asset loading
+     *
+     * @since 1.0.0
+     */
+    public static function conditional_navigation_assets() {
+        $load_navigation = false;
+        $load_mobile = false;
+        $load_breadcrumbs = false;
+        $load_animations = false;
+        
+        // Check if navigation features are needed
+        if (has_nav_menu('primary') || has_nav_menu('secondary') || has_nav_menu('mobile')) {
+            $load_navigation = true;
+        }
+        
+        // Check for mobile optimization needs
+        if (wp_is_mobile() || has_nav_menu('mobile') || get_theme_mod('enable_mobile_menu', true)) {
+            $load_mobile = true;
+        }
+        
+        // Check for breadcrumbs
+        if (!is_front_page() && get_theme_mod('enable_breadcrumbs', true)) {
+            $load_breadcrumbs = true;
+        }
+        
+        // Check for animations
+        if (get_theme_mod('enable_menu_animations', true) && !wp_is_mobile()) {
+            $load_animations = true;
+        }
+        
+        // Load base navigation styles (always needed)
         wp_enqueue_style(
-            'gpress-mobile-nav',
-            get_theme_file_uri('/assets/css/mobile-nav.css'),
-            array('gpress-navigation'),
+            'gpress-navigation-base',
+            get_theme_file_uri('/assets/css/navigation-base.css'),
+            array('gpress-style'),
             GPRESS_VERSION
         );
         
-        wp_enqueue_script(
-            'gpress-mobile-menu',
-            get_theme_file_uri('/assets/js/mobile-menu.js'),
-            array('gpress-navigation'),
-            GPRESS_VERSION,
-            array('strategy' => 'defer', 'in_footer' => true)
-        );
-    }
-    
-    if ($load_breadcrumbs) {
-        wp_enqueue_style(
-            'gpress-breadcrumbs',
-            get_theme_file_uri('/assets/css/breadcrumbs.css'),
-            array('gpress-navigation-base'),
-            GPRESS_VERSION
-        );
-        
-        wp_enqueue_script(
-            'gpress-breadcrumbs',
-            get_theme_file_uri('/assets/js/breadcrumbs.js'),
-            array('jquery'),
-            GPRESS_VERSION,
-            array('strategy' => 'defer', 'in_footer' => true)
-        );
-    }
-}
-
-/**
- * Enhance navigation menu args
- */
-function gpress_enhance_nav_menu_args($args) {
-    if (!isset($args['walker'])) {
-        require_once get_theme_file_path('/inc/navigation-walker.php');
-        $args['walker'] = new GPress_Walker_Nav_Menu();
-    }
-    
-    // Add container classes based on menu location
-    if (isset($args['theme_location'])) {
-        $args['container_class'] = 'nav-container nav-' . $args['theme_location'];
-        $args['menu_class'] = 'nav-menu nav-' . $args['theme_location'] . '-menu';
-    }
-    
-    return $args;
-}
-
-/**
- * Add menu item custom fields
- */
-function gpress_add_menu_item_fields($item_id, $item) {
-    $icon = get_post_meta($item_id, '_menu_item_icon', true);
-    $description = get_post_meta($item_id, '_menu_item_description', true);
-    $badge = get_post_meta($item_id, '_menu_item_badge', true);
-    $highlight = get_post_meta($item_id, '_menu_item_highlight', true);
-    ?>
-    <div class="gpress-menu-item-options">
-        <p class="description description-wide">
-            <label for="edit-menu-item-icon-<?php echo $item_id; ?>">
-                <?php _e('Menu Icon', 'gpress'); ?><br>
-                <input type="text" id="edit-menu-item-icon-<?php echo $item_id; ?>" 
-                       class="widefat" name="menu-item-icon[<?php echo $item_id; ?>]" 
-                       value="<?php echo esc_attr($icon); ?>" 
-                       placeholder="<?php esc_attr_e('🏠 or text', 'gpress'); ?>">
-            </label>
-        </p>
-        
-        <p class="description description-wide">
-            <label for="edit-menu-item-description-<?php echo $item_id; ?>">
-                <?php _e('Description', 'gpress'); ?><br>
-                <textarea id="edit-menu-item-description-<?php echo $item_id; ?>" 
-                          class="widefat" name="menu-item-description[<?php echo $item_id; ?>]" 
-                          rows="3"><?php echo esc_textarea($description); ?></textarea>
-            </label>
-        </p>
-        
-        <p class="description description-thin">
-            <label for="edit-menu-item-badge-<?php echo $item_id; ?>">
-                <?php _e('Badge', 'gpress'); ?><br>
-                <input type="text" id="edit-menu-item-badge-<?php echo $item_id; ?>" 
-                       class="widefat" name="menu-item-badge[<?php echo $item_id; ?>]" 
-                       value="<?php echo esc_attr($badge); ?>" 
-                       placeholder="<?php esc_attr_e('New', 'gpress'); ?>">
-            </label>
-        </p>
-        
-        <p class="description description-thin">
-            <label for="edit-menu-item-highlight-<?php echo $item_id; ?>">
-                <input type="checkbox" id="edit-menu-item-highlight-<?php echo $item_id; ?>" 
-                       name="menu-item-highlight[<?php echo $item_id; ?>]" value="1" 
-                       <?php checked($highlight, 1); ?>>
-                <?php _e('Highlight Item', 'gpress'); ?>
-            </label>
-        </p>
-    </div>
-    <?php
-}
-
-/**
- * Save menu item custom fields
- */
-function gpress_save_menu_item_fields($menu_id, $menu_item_db_id) {
-    $fields = array('menu-item-icon', 'menu-item-description', 'menu-item-badge', 'menu-item-highlight');
-    
-    foreach ($fields as $field) {
-        $key = str_replace('-', '_', $field);
-        
-        if (isset($_POST[$field][$menu_item_db_id])) {
-            $value = $_POST[$field][$menu_item_db_id];
+        if ($load_navigation) {
+            wp_enqueue_style(
+                'gpress-navigation',
+                get_theme_file_uri('/assets/css/navigation.css'),
+                array('gpress-navigation-base'),
+                GPRESS_VERSION
+            );
             
-            if ($field === 'menu-item-highlight') {
-                $value = (bool) $value;
+            wp_enqueue_script(
+                'gpress-navigation',
+                get_theme_file_uri('/assets/js/navigation.js'),
+                array('jquery'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+            
+            // Localize navigation script
+            wp_localize_script('gpress-navigation', 'gpressNav', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('gpress_nav_nonce'),
+                'isMobile' => wp_is_mobile(),
+                'settings' => array(
+                    'menuAnimations' => get_theme_mod('enable_menu_animations', true),
+                    'mobileBreakpoint' => get_theme_mod('mobile_breakpoint', 768),
+                    'submenuDelay' => get_theme_mod('submenu_delay', 150),
+                ),
+                'strings' => array(
+                    'menu_toggle' => __('Toggle menu', 'gpress'),
+                    'submenu_toggle' => __('Toggle submenu', 'gpress'),
+                    'close_menu' => __('Close menu', 'gpress'),
+                    'open_menu' => __('Open menu', 'gpress'),
+                    'menu_expanded' => __('Menu expanded', 'gpress'),
+                    'menu_collapsed' => __('Menu collapsed', 'gpress'),
+                    'loading' => __('Loading menu...', 'gpress'),
+                )
+            ));
+        }
+        
+        if ($load_mobile) {
+            wp_enqueue_style(
+                'gpress-navigation-mobile',
+                get_theme_file_uri('/assets/css/navigation-mobile.css'),
+                array('gpress-navigation'),
+                GPRESS_VERSION
+            );
+            
+            wp_enqueue_script(
+                'gpress-mobile-menu',
+                get_theme_file_uri('/assets/js/mobile-menu.js'),
+                array('gpress-navigation'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+        
+        if ($load_breadcrumbs) {
+            wp_enqueue_style(
+                'gpress-breadcrumbs',
+                get_theme_file_uri('/assets/css/breadcrumbs.css'),
+                array('gpress-navigation-base'),
+                GPRESS_VERSION
+            );
+            
+            wp_enqueue_script(
+                'gpress-breadcrumbs',
+                get_theme_file_uri('/assets/js/breadcrumbs.js'),
+                array('jquery'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+        
+        if ($load_animations) {
+            wp_enqueue_style(
+                'gpress-menu-animations',
+                get_theme_file_uri('/assets/css/menu-animations.css'),
+                array('gpress-navigation'),
+                GPRESS_VERSION
+            );
+        }
+        
+        // Always load keyboard navigation support
+        wp_enqueue_script(
+            'gpress-keyboard-navigation',
+            get_theme_file_uri('/assets/js/keyboard-navigation.js'),
+            array('gpress-navigation'),
+            GPRESS_VERSION,
+            array('strategy' => 'defer', 'in_footer' => true)
+        );
+    }
+
+    /**
+     * Enhance navigation menu args
+     *
+     * @since 1.0.0
+     */
+    public static function enhance_nav_menu_args($args) {
+        if (!isset($args['walker'])) {
+            require_once get_theme_file_path('/inc/navigation-walker.php');
+            $args['walker'] = new GPress_Walker_Nav_Menu();
+        }
+        
+        // Add container classes based on menu location
+        if (isset($args['theme_location'])) {
+            $location = $args['theme_location'];
+            $args['container_class'] = "nav-container nav-{$location}";
+            $args['menu_class'] = "nav-menu nav-{$location}-menu";
+            
+            // Add ARIA labels based on location
+            switch ($location) {
+                case 'primary':
+                    $args['menu_aria_label'] = __('Main navigation', 'gpress');
+                    break;
+                case 'secondary':
+                    $args['menu_aria_label'] = __('Secondary navigation', 'gpress');
+                    break;
+                case 'footer':
+                    $args['menu_aria_label'] = __('Footer navigation', 'gpress');
+                    break;
+                case 'mobile':
+                    $args['menu_aria_label'] = __('Mobile navigation', 'gpress');
+                    break;
+                default:
+                    $args['menu_aria_label'] = sprintf(__('%s navigation', 'gpress'), ucfirst($location));
+            }
+        }
+        
+        return $args;
+    }
+
+    /**
+     * Add menu item custom fields
+     *
+     * @since 1.0.0
+     */
+    public static function add_menu_item_fields($item_id, $item) {
+        $icon = get_post_meta($item_id, '_menu_item_icon', true);
+        $description = get_post_meta($item_id, '_menu_item_description', true);
+        $badge = get_post_meta($item_id, '_menu_item_badge', true);
+        $highlight = get_post_meta($item_id, '_menu_item_highlight', true);
+        $mega_menu = get_post_meta($item_id, '_menu_item_mega_menu', true);
+        ?>
+        <div class="gpress-menu-item-options">
+            <p class="description description-wide">
+                <label for="edit-menu-item-icon-<?php echo $item_id; ?>">
+                    <?php _e('Menu Icon', 'gpress'); ?><br>
+                    <input type="text" id="edit-menu-item-icon-<?php echo $item_id; ?>" 
+                           class="widefat" name="menu-item-icon[<?php echo $item_id; ?>]" 
+                           value="<?php echo esc_attr($icon); ?>" 
+                           placeholder="<?php esc_attr_e('🏠 or dashicon-home', 'gpress'); ?>">
+                    <small><?php _e('Use emoji or dashicon class name', 'gpress'); ?></small>
+                </label>
+            </p>
+            
+            <p class="description description-wide">
+                <label for="edit-menu-item-description-<?php echo $item_id; ?>">
+                    <?php _e('Description', 'gpress'); ?><br>
+                    <textarea id="edit-menu-item-description-<?php echo $item_id; ?>" 
+                              class="widefat" name="menu-item-description[<?php echo $item_id; ?>]" 
+                              rows="3" placeholder="<?php esc_attr_e('Brief description for accessibility', 'gpress'); ?>"><?php echo esc_textarea($description); ?></textarea>
+                </label>
+            </p>
+            
+            <p class="description description-thin">
+                <label for="edit-menu-item-badge-<?php echo $item_id; ?>">
+                    <?php _e('Badge Text', 'gpress'); ?><br>
+                    <input type="text" id="edit-menu-item-badge-<?php echo $item_id; ?>" 
+                           class="widefat" name="menu-item-badge[<?php echo $item_id; ?>]" 
+                           value="<?php echo esc_attr($badge); ?>" 
+                           placeholder="<?php esc_attr_e('New', 'gpress'); ?>">
+                </label>
+            </p>
+            
+            <p class="description description-thin">
+                <label for="edit-menu-item-highlight-<?php echo $item_id; ?>">
+                    <input type="checkbox" id="edit-menu-item-highlight-<?php echo $item_id; ?>" 
+                           name="menu-item-highlight[<?php echo $item_id; ?>]" value="1" 
+                           <?php checked($highlight, 1); ?>>
+                    <?php _e('Highlight Item', 'gpress'); ?>
+                </label>
+            </p>
+            
+            <p class="description description-thin">
+                <label for="edit-menu-item-mega-menu-<?php echo $item_id; ?>">
+                    <input type="checkbox" id="edit-menu-item-mega-menu-<?php echo $item_id; ?>" 
+                           name="menu-item-mega-menu[<?php echo $item_id; ?>]" value="1" 
+                           <?php checked($mega_menu, 1); ?>>
+                    <?php _e('Enable Mega Menu', 'gpress'); ?>
+                </label>
+            </p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Save menu item custom fields
+     *
+     * @since 1.0.0
+     */
+    public static function save_menu_item_fields($menu_id, $menu_item_db_id) {
+        $fields = array(
+            'menu-item-icon' => '_menu_item_icon',
+            'menu-item-description' => '_menu_item_description',
+            'menu-item-badge' => '_menu_item_badge',
+            'menu-item-highlight' => '_menu_item_highlight',
+            'menu-item-mega-menu' => '_menu_item_mega_menu',
+        );
+        
+        foreach ($fields as $field => $meta_key) {
+            if (isset($_POST[$field][$menu_item_db_id])) {
+                $value = $_POST[$field][$menu_item_db_id];
+                
+                if (in_array($field, array('menu-item-highlight', 'menu-item-mega-menu'))) {
+                    $value = (bool) $value;
+                } else {
+                    $value = sanitize_text_field($value);
+                }
+                
+                update_post_meta($menu_item_db_id, $meta_key, $value);
             } else {
-                $value = sanitize_text_field($value);
+                delete_post_meta($menu_item_db_id, $meta_key);
             }
-            
-            update_post_meta($menu_item_db_id, '_' . $key, $value);
-        } else {
-            delete_post_meta($menu_item_db_id, '_' . $key);
         }
     }
-}
 
-/**
- * Navigation body classes
- */
-function gpress_navigation_body_classes($classes) {
-    if (has_nav_menu('primary')) {
-        $classes[] = 'has-primary-menu';
-    }
-    
-    if (wp_is_mobile()) {
-        $classes[] = 'is-mobile-device';
-    }
-    
-    if (get_theme_mod('enable_mega_menu', false)) {
-        $classes[] = 'has-mega-menu';
-    }
-    
-    if (get_theme_mod('enable_breadcrumbs', true)) {
-        $classes[] = 'has-breadcrumbs';
-    }
-    
-    return $classes;
-}
-
-/**
- * Navigation accessibility script
- */
-function gpress_navigation_accessibility_script() {
-    if (!wp_script_is('gpress-navigation', 'enqueued')) {
-        return;
-    }
-    ?>
-    <script>
-    // Basic navigation accessibility enhancements
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add ARIA labels to menu toggles
-        const menuToggles = document.querySelectorAll('.menu-toggle, .mobile-menu-toggle');
-        menuToggles.forEach(function(toggle) {
-            if (!toggle.getAttribute('aria-label')) {
-                toggle.setAttribute('aria-label', '<?php echo esc_js(__('Toggle navigation menu', 'gpress')); ?>');
-            }
-        });
-        
-        // Announce navigation changes to screen readers
-        function announceNavChange(message) {
-            const announcement = document.createElement('div');
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.setAttribute('aria-atomic', 'true');
-            announcement.className = 'screen-reader-text';
-            announcement.textContent = message;
-            
-            document.body.appendChild(announcement);
-            
-            setTimeout(function() {
-                document.body.removeChild(announcement);
-            }, 1000);
+    /**
+     * Navigation body classes
+     *
+     * @since 1.0.0
+     */
+    public static function navigation_body_classes($classes) {
+        // Check for navigation menus
+        if (has_nav_menu('primary')) {
+            $classes[] = 'has-primary-menu';
         }
         
-        // Monitor navigation state changes
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'aria-expanded') {
-                    const isExpanded = mutation.target.getAttribute('aria-expanded') === 'true';
-                    const message = isExpanded ? 
-                        '<?php echo esc_js(__('Navigation menu opened', 'gpress')); ?>' : 
-                        '<?php echo esc_js(__('Navigation menu closed', 'gpress')); ?>';
-                    announceNavChange(message);
+        if (has_nav_menu('secondary')) {
+            $classes[] = 'has-secondary-menu';
+        }
+        
+        if (wp_is_mobile()) {
+            $classes[] = 'is-mobile-device';
+        }
+        
+        if (get_theme_mod('enable_mega_menu', false)) {
+            $classes[] = 'has-mega-menu';
+        }
+        
+        if (get_theme_mod('enable_breadcrumbs', true)) {
+            $classes[] = 'has-breadcrumbs';
+        }
+        
+        if (get_theme_mod('enable_menu_animations', true)) {
+            $classes[] = 'has-menu-animations';
+        }
+        
+        return $classes;
+    }
+
+    /**
+     * Setup menu admin enhancements
+     *
+     * @since 1.0.0
+     */
+    public static function setup_menu_admin() {
+        add_action('admin_enqueue_scripts', array(__CLASS__, 'admin_assets'));
+        add_filter('wp_edit_nav_menu_walker', array(__CLASS__, 'custom_admin_walker'));
+    }
+
+    /**
+     * Enqueue admin assets for menu management
+     *
+     * @since 1.0.0
+     */
+    public static function admin_assets($hook) {
+        if ($hook === 'nav-menus.php') {
+            wp_enqueue_style(
+                'gpress-menu-admin',
+                get_theme_file_uri('/assets/css/admin-menu.css'),
+                array(),
+                GPRESS_VERSION
+            );
+
+            wp_enqueue_script(
+                'gpress-menu-admin',
+                get_theme_file_uri('/assets/js/admin-menu.js'),
+                array('jquery'),
+                GPRESS_VERSION,
+                array('in_footer' => true)
+            );
+        }
+    }
+
+    /**
+     * Navigation accessibility script
+     *
+     * @since 1.0.0
+     */
+    public static function navigation_accessibility_script() {
+        if (!wp_script_is('gpress-navigation', 'enqueued')) {
+            return;
+        }
+        ?>
+        <script>
+        // Enhanced navigation accessibility
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add skip links if missing
+            if (!document.querySelector('.skip-navigation')) {
+                const skipLink = document.createElement('a');
+                skipLink.href = '#main';
+                skipLink.className = 'skip-navigation screen-reader-text';
+                skipLink.textContent = '<?php echo esc_js(__('Skip to main content', 'gpress')); ?>';
+                document.body.insertBefore(skipLink, document.body.firstChild);
+            }
+            
+            // Enhance menu toggles with ARIA
+            const menuToggles = document.querySelectorAll('.menu-toggle, .mobile-menu-toggle');
+            menuToggles.forEach(function(toggle) {
+                if (!toggle.getAttribute('aria-label')) {
+                    toggle.setAttribute('aria-label', '<?php echo esc_js(__('Toggle navigation menu', 'gpress')); ?>');
+                }
+                
+                if (!toggle.getAttribute('aria-expanded')) {
+                    toggle.setAttribute('aria-expanded', 'false');
                 }
             });
+            
+            // Live region for navigation announcements
+            let liveRegion = document.getElementById('nav-live-region');
+            if (!liveRegion) {
+                liveRegion = document.createElement('div');
+                liveRegion.id = 'nav-live-region';
+                liveRegion.setAttribute('aria-live', 'polite');
+                liveRegion.setAttribute('aria-atomic', 'true');
+                liveRegion.className = 'screen-reader-text';
+                document.body.appendChild(liveRegion);
+            }
+            
+            // Announce navigation changes
+            function announceNavChange(message) {
+                liveRegion.textContent = message;
+                setTimeout(function() {
+                    liveRegion.textContent = '';
+                }, 1000);
+            }
+            
+            // Monitor ARIA state changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'aria-expanded') {
+                        const isExpanded = mutation.target.getAttribute('aria-expanded') === 'true';
+                        const message = isExpanded ? 
+                            '<?php echo esc_js(__('Navigation menu opened', 'gpress')); ?>' : 
+                            '<?php echo esc_js(__('Navigation menu closed', 'gpress')); ?>';
+                        announceNavChange(message);
+                    }
+                });
+            });
+            
+            menuToggles.forEach(function(toggle) {
+                observer.observe(toggle, { attributes: true });
+            });
         });
-        
-        menuToggles.forEach(function(toggle) {
-            observer.observe(toggle, { attributes: true });
-        });
-    });
-    </script>
-    <?php
+        </script>
+        <?php
+    }
 }
+
+// Initialize the navigation system
+GPress_Navigation_System::init();
 ```
 
-## 2. Create Custom Navigation Walker
+### 2. Create Custom Navigation Walker
 
-### File: `inc/navigation-walker.php`
+Create `inc/navigation-walker.php`:
+
 ```php
 <?php
 /**
  * GPress Navigation Walker
+ * Advanced walker for accessible and optimized navigation menus
  *
  * @package GPress
+ * @subpackage Navigation
  * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
- * Custom walker for navigation menus
+ * Custom walker for navigation menus with enhanced accessibility
+ * 
+ * @since 1.0.0
  */
 class GPress_Walker_Nav_Menu extends Walker_Nav_Menu {
     
     /**
      * Start element output
+     *
+     * @since 1.0.0
      */
     function start_el(&$output, $item, $depth = 0, $args = null, $id = 0) {
         $indent = ($depth) ? str_repeat("\t", $depth) : '';
         
         $classes = empty($item->classes) ? array() : (array) $item->classes;
         $classes[] = 'menu-item-' . $item->ID;
+        
+        // Add depth-based classes
+        $classes[] = 'menu-item-depth-' . $depth;
         
         // Add accessibility classes
         if (in_array('menu-item-has-children', $classes)) {
@@ -409,13 +597,18 @@ class GPress_Walker_Nav_Menu extends Walker_Nav_Menu {
             $classes[] = 'menu-item-highlight';
         }
         
+        $mega_menu = get_post_meta($item->ID, '_menu_item_mega_menu', true);
+        if ($mega_menu) {
+            $classes[] = 'menu-item-mega-menu';
+        }
+        
         $class_names = join(' ', apply_filters('nav_menu_css_class', array_filter($classes), $item, $args));
         $class_names = $class_names ? ' class="' . esc_attr($class_names) . '"' : '';
         
         $id = apply_filters('nav_menu_item_id', 'menu-item-' . $item->ID, $item, $args);
         $id = $id ? ' id="' . esc_attr($id) . '"' : '';
         
-        // Create list item
+        // Create list item with improved structure
         $output .= $indent . '<li' . $id . $class_names .'>';
         
         // Build link attributes
@@ -424,22 +617,40 @@ class GPress_Walker_Nav_Menu extends Walker_Nav_Menu {
         $attributes .= !empty($item->xfn) ? ' rel="' . esc_attr($item->xfn) . '"' : '';
         $attributes .= !empty($item->url) ? ' href="' . esc_attr($item->url) . '"' : '';
         
-        // Add ARIA attributes for accessibility
+        // Add ARIA attributes for enhanced accessibility
         if (in_array('menu-item-has-children', $classes)) {
             $attributes .= ' aria-expanded="false"';
             $attributes .= ' aria-haspopup="true"';
+            $submenu_id = 'submenu-' . $item->ID;
+            $attributes .= ' aria-controls="' . $submenu_id . '"';
         }
         
-        // Build link content
+        // Add description as aria-describedby if available
+        $description = get_post_meta($item->ID, '_menu_item_description', true);
+        if ($description) {
+            $desc_id = 'menu-desc-' . $item->ID;
+            $attributes .= ' aria-describedby="' . $desc_id . '"';
+        }
+        
+        // Build link content with enhanced structure
         $item_output = isset($args->before) ? $args->before : '';
         $item_output .= '<a' . $attributes . '>';
+        
+        // Menu item inner wrapper
+        $item_output .= '<span class="menu-item-inner">';
         
         // Add icon if specified
         $icon = get_post_meta($item->ID, '_menu_item_icon', true);
         if ($icon) {
-            $item_output .= '<span class="menu-icon" aria-hidden="true">' . esc_html($icon) . '</span>';
+            // Check if it's a dashicon or emoji
+            if (strpos($icon, 'dashicon') !== false) {
+                $item_output .= '<span class="menu-icon dashicons ' . esc_attr($icon) . '" aria-hidden="true"></span>';
+            } else {
+                $item_output .= '<span class="menu-icon" aria-hidden="true">' . esc_html($icon) . '</span>';
+            }
         }
         
+        // Menu text wrapper
         $item_output .= '<span class="menu-text">';
         $item_output .= isset($args->link_before) ? $args->link_before : '';
         $item_output .= apply_filters('the_title', $item->title, $item->ID);
@@ -449,20 +660,24 @@ class GPress_Walker_Nav_Menu extends Walker_Nav_Menu {
         // Add badge if specified
         $badge = get_post_meta($item->ID, '_menu_item_badge', true);
         if ($badge) {
-            $item_output .= '<span class="menu-badge" aria-label="' . esc_attr($badge) . '">' . esc_html($badge) . '</span>';
+            $item_output .= '<span class="menu-badge" aria-label="' . esc_attr(sprintf(__('%s badge', 'gpress'), $badge)) . '">' . esc_html($badge) . '</span>';
         }
         
-        // Add submenu indicator
+        // Add submenu indicator for parent items
         if (in_array('menu-item-has-children', $classes)) {
-            $item_output .= '<span class="submenu-indicator" aria-hidden="true"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+            $item_output .= '<span class="submenu-indicator" aria-hidden="true">';
+            $item_output .= '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">';
+            $item_output .= '<path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+            $item_output .= '</svg>';
+            $item_output .= '</span>';
         }
         
+        $item_output .= '</span>'; // Close menu-item-inner
         $item_output .= '</a>';
         
-        // Add description if available
-        $description = get_post_meta($item->ID, '_menu_item_description', true);
+        // Add description if available (for screen readers)
         if ($description) {
-            $item_output .= '<span class="menu-description">' . esc_html($description) . '</span>';
+            $item_output .= '<span id="' . $desc_id . '" class="menu-description screen-reader-text">' . esc_html($description) . '</span>';
         }
         
         $item_output .= isset($args->after) ? $args->after : '';
@@ -471,117 +686,230 @@ class GPress_Walker_Nav_Menu extends Walker_Nav_Menu {
     }
     
     /**
-     * Start submenu output
+     * Start submenu output with enhanced accessibility
+     *
+     * @since 1.0.0
      */
     function start_lvl(&$output, $depth = 0, $args = null) {
         $indent = str_repeat("\t", $depth);
-        $output .= "\n$indent<ul class=\"sub-menu\" role=\"menu\">\n";
+        
+        // Add unique ID for ARIA controls
+        $submenu_id = '';
+        if (isset($this->current_item_id)) {
+            $submenu_id = ' id="submenu-' . $this->current_item_id . '"';
+        }
+        
+        $output .= "\n$indent<ul class=\"sub-menu sub-menu-depth-{$depth}\" role=\"menu\"$submenu_id>\n";
     }
     
     /**
      * End submenu output
+     *
+     * @since 1.0.0
      */
     function end_lvl(&$output, $depth = 0, $args = null) {
         $indent = str_repeat("\t", $depth);
         $output .= "$indent</ul>\n";
     }
+    
+    /**
+     * Store current item ID for submenu ARIA controls
+     *
+     * @since 1.0.0
+     */
+    function start_el_before(&$output, $item, $depth = 0, $args = null, $id = 0) {
+        $this->current_item_id = $item->ID;
+    }
 }
 ```
 
-## 3. Create Breadcrumb Functionality
+### 3. Create Breadcrumb Functionality
 
-### File: `inc/breadcrumbs.php`
+Create `inc/breadcrumbs.php`:
+
 ```php
 <?php
 /**
  * Breadcrumb Functionality for GPress Theme
+ * SEO-optimized breadcrumbs with structured data and accessibility
  *
  * @package GPress
+ * @subpackage Navigation
  * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
- * Initialize breadcrumb system
+ * GPress Breadcrumb System Manager
+ * 
+ * @since 1.0.0
  */
-function gpress_init_breadcrumbs() {
-    // Add breadcrumb display
-    add_action('gpress_breadcrumbs', 'gpress_display_breadcrumbs');
-    
-    // Add structured data for breadcrumbs
-    add_action('wp_head', 'gpress_breadcrumbs_schema');
-    
-    // Add breadcrumb styles conditionally
-    add_action('wp_enqueue_scripts', 'gpress_conditional_breadcrumb_assets');
-}
-add_action('after_setup_theme', 'gpress_init_breadcrumbs');
+class GPress_Breadcrumbs {
 
-/**
- * Display breadcrumb navigation
- */
-function gpress_display_breadcrumbs() {
-    // Don't display on homepage
-    if (is_front_page() || !get_theme_mod('enable_breadcrumbs', true)) {
-        return;
+    /**
+     * Initialize breadcrumb system
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('gpress_breadcrumbs', array(__CLASS__, 'display_breadcrumbs'));
+        add_action('wp_head', array(__CLASS__, 'breadcrumbs_schema'));
+        add_filter('body_class', array(__CLASS__, 'breadcrumb_body_classes'));
     }
-    
-    global $post;
-    $breadcrumbs = array();
-    $separator = '<span class="breadcrumb-separator" aria-hidden="true">›</span>';
-    
-    // Home link
-    $breadcrumbs[] = '<a href="' . esc_url(home_url('/')) . '" aria-label="' . esc_attr__('Home', 'gpress') . '">
-        <span class="breadcrumb-icon" aria-hidden="true">🏠</span>
-        <span class="breadcrumb-text">' . __('Home', 'gpress') . '</span>
-    </a>';
-    
-    if (is_single()) {
-        // Single post
+
+    /**
+     * Display breadcrumb navigation with enhanced accessibility
+     *
+     * @since 1.0.0
+     */
+    public static function display_breadcrumbs() {
+        // Don't display on homepage or if disabled
+        if (is_front_page() || !get_theme_mod('enable_breadcrumbs', true)) {
+            return;
+        }
+        
+        global $post;
+        $breadcrumbs = array();
+        $separator = '<span class="breadcrumb-separator" aria-hidden="true">›</span>';
+        $position = 1;
+        
+        // Home link with enhanced structure
+        $breadcrumbs[] = array(
+            'url' => home_url('/'),
+            'title' => get_bloginfo('name'),
+            'position' => $position++,
+            'icon' => '🏠',
+            'aria_label' => __('Home', 'gpress')
+        );
+        
+        // Context-specific breadcrumb generation
+        if (is_single()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_single_breadcrumbs($post, $position));
+        } elseif (is_page()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_page_breadcrumbs($post, $position));
+        } elseif (is_category()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_category_breadcrumbs($position));
+        } elseif (is_tag()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_tag_breadcrumbs($position));
+        } elseif (is_author()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_author_breadcrumbs($position));
+        } elseif (is_search()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_search_breadcrumbs($position));
+        } elseif (is_404()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_404_breadcrumbs($position));
+        } elseif (is_archive()) {
+            $breadcrumbs = array_merge($breadcrumbs, self::get_archive_breadcrumbs($position));
+        }
+        
+        self::render_breadcrumbs($breadcrumbs, $separator);
+    }
+
+    /**
+     * Get breadcrumbs for single posts
+     *
+     * @since 1.0.0
+     */
+    private static function get_single_breadcrumbs($post, $position) {
+        $breadcrumbs = array();
         $post_type = get_post_type();
         
         if ($post_type === 'post') {
             // Blog posts
             $blog_page = get_option('page_for_posts');
             if ($blog_page) {
-                $breadcrumbs[] = '<a href="' . esc_url(get_permalink($blog_page)) . '">' . esc_html(get_the_title($blog_page)) . '</a>';
+                $breadcrumbs[] = array(
+                    'url' => get_permalink($blog_page),
+                    'title' => get_the_title($blog_page),
+                    'position' => $position++
+                );
             }
             
-            // Categories
+            // Primary category
             $categories = get_the_category();
             if ($categories) {
                 $main_category = $categories[0];
-                $breadcrumbs[] = '<a href="' . esc_url(get_category_link($main_category->term_id)) . '">' . esc_html($main_category->name) . '</a>';
+                $breadcrumbs[] = array(
+                    'url' => get_category_link($main_category->term_id),
+                    'title' => $main_category->name,
+                    'position' => $position++
+                );
             }
         } else {
             // Custom post types
             $post_type_object = get_post_type_object($post_type);
             if ($post_type_object && $post_type_object->has_archive) {
-                $breadcrumbs[] = '<a href="' . esc_url(get_post_type_archive_link($post_type)) . '">' . esc_html($post_type_object->labels->name) . '</a>';
+                $breadcrumbs[] = array(
+                    'url' => get_post_type_archive_link($post_type),
+                    'title' => $post_type_object->labels->name,
+                    'position' => $position++
+                );
+            }
+            
+            // Hierarchical custom post types
+            if (is_post_type_hierarchical($post_type) && $post->post_parent) {
+                $ancestors = get_post_ancestors($post->ID);
+                $ancestors = array_reverse($ancestors);
+                
+                foreach ($ancestors as $ancestor) {
+                    $breadcrumbs[] = array(
+                        'url' => get_permalink($ancestor),
+                        'title' => get_the_title($ancestor),
+                        'position' => $position++
+                    );
+                }
             }
         }
         
         // Current post
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . esc_html(get_the_title()) . '</span>';
+        $breadcrumbs[] = array(
+            'title' => get_the_title(),
+            'position' => $position++,
+            'current' => true
+        );
         
-    } elseif (is_page()) {
-        // Pages
+        return $breadcrumbs;
+    }
+
+    /**
+     * Get breadcrumbs for pages
+     *
+     * @since 1.0.0
+     */
+    private static function get_page_breadcrumbs($post, $position) {
+        $breadcrumbs = array();
+        
         if ($post->post_parent) {
             $ancestors = get_post_ancestors($post->ID);
             $ancestors = array_reverse($ancestors);
             
             foreach ($ancestors as $ancestor) {
-                $breadcrumbs[] = '<a href="' . esc_url(get_permalink($ancestor)) . '">' . esc_html(get_the_title($ancestor)) . '</a>';
+                $breadcrumbs[] = array(
+                    'url' => get_permalink($ancestor),
+                    'title' => get_the_title($ancestor),
+                    'position' => $position++
+                );
             }
         }
         
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . esc_html(get_the_title()) . '</span>';
+        $breadcrumbs[] = array(
+            'title' => get_the_title(),
+            'position' => $position++,
+            'current' => true
+        );
         
-    } elseif (is_category()) {
-        // Category archives
+        return $breadcrumbs;
+    }
+
+    /**
+     * Get breadcrumbs for category archives
+     *
+     * @since 1.0.0
+     */
+    private static function get_category_breadcrumbs($position) {
+        $breadcrumbs = array();
         $category = get_queried_object();
         
         if ($category->parent) {
@@ -590,433 +918,368 @@ function gpress_display_breadcrumbs() {
             
             foreach ($ancestors as $ancestor) {
                 $ancestor_category = get_category($ancestor);
-                $breadcrumbs[] = '<a href="' . esc_url(get_category_link($ancestor)) . '">' . esc_html($ancestor_category->name) . '</a>';
-            }
-        }
-        
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . esc_html($category->name) . '</span>';
-        
-    } elseif (is_tag()) {
-        // Tag archives
-        $tag = get_queried_object();
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Tag: %s', 'gpress'), esc_html($tag->name)) . '</span>';
-        
-    } elseif (is_author()) {
-        // Author archives
-        $author = get_queried_object();
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Author: %s', 'gpress'), esc_html($author->display_name)) . '</span>';
-        
-    } elseif (is_search()) {
-        // Search results
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Search results for: %s', 'gpress'), esc_html(get_search_query())) . '</span>';
-        
-    } elseif (is_404()) {
-        // 404 page
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . __('Page not found', 'gpress') . '</span>';
-        
-    } elseif (is_archive()) {
-        // Other archives
-        $archive_title = get_the_archive_title();
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . esc_html($archive_title) . '</span>';
-    }
-    
-    // Output breadcrumbs
-    if (!empty($breadcrumbs)) {
-        echo '<nav class="breadcrumb-navigation" role="navigation" aria-label="' . esc_attr__('Breadcrumb', 'gpress') . '">';
-        echo '<div class="breadcrumb-container">';
-        echo implode(' ' . $separator . ' ', $breadcrumbs);
-        echo '</div>';
-        echo '</nav>';
-    }
-}
-
-/**
- * Add breadcrumbs schema markup
- */
-function gpress_breadcrumbs_schema() {
-    if (is_front_page() || !get_theme_mod('enable_breadcrumbs', true)) {
-        return;
-    }
-    
-    global $post;
-    $breadcrumbs = array();
-    $position = 1;
-    
-    // Home
-    $breadcrumbs[] = array(
-        '@type' => 'ListItem',
-        'position' => $position++,
-        'name' => get_bloginfo('name'),
-        'item' => home_url('/')
-    );
-    
-    // Add other breadcrumb items based on context
-    if (is_single() || is_page()) {
-        if ($post && $post->post_parent) {
-            $ancestors = get_post_ancestors($post->ID);
-            $ancestors = array_reverse($ancestors);
-            
-            foreach ($ancestors as $ancestor) {
                 $breadcrumbs[] = array(
-                    '@type' => 'ListItem',
-                    'position' => $position++,
-                    'name' => get_the_title($ancestor),
-                    'item' => get_permalink($ancestor)
+                    'url' => get_category_link($ancestor),
+                    'title' => $ancestor_category->name,
+                    'position' => $position++
                 );
             }
         }
         
-        if ($post) {
-            $breadcrumbs[] = array(
-                '@type' => 'ListItem',
-                'position' => $position++,
-                'name' => get_the_title(),
-                'item' => get_permalink()
-            );
+        $breadcrumbs[] = array(
+            'title' => $category->name,
+            'position' => $position++,
+            'current' => true
+        );
+        
+        return $breadcrumbs;
+    }
+
+    /**
+     * Get breadcrumbs for tag archives
+     *
+     * @since 1.0.0
+     */
+    private static function get_tag_breadcrumbs($position) {
+        $tag = get_queried_object();
+        return array(
+            array(
+                'title' => sprintf(__('Tag: %s', 'gpress'), $tag->name),
+                'position' => $position,
+                'current' => true
+            )
+        );
+    }
+
+    /**
+     * Get breadcrumbs for author archives
+     *
+     * @since 1.0.0
+     */
+    private static function get_author_breadcrumbs($position) {
+        $author = get_queried_object();
+        return array(
+            array(
+                'title' => sprintf(__('Author: %s', 'gpress'), $author->display_name),
+                'position' => $position,
+                'current' => true
+            )
+        );
+    }
+
+    /**
+     * Get breadcrumbs for search results
+     *
+     * @since 1.0.0
+     */
+    private static function get_search_breadcrumbs($position) {
+        return array(
+            array(
+                'title' => sprintf(__('Search results for: %s', 'gpress'), get_search_query()),
+                'position' => $position,
+                'current' => true
+            )
+        );
+    }
+
+    /**
+     * Get breadcrumbs for 404 pages
+     *
+     * @since 1.0.0
+     */
+    private static function get_404_breadcrumbs($position) {
+        return array(
+            array(
+                'title' => __('Page not found', 'gpress'),
+                'position' => $position,
+                'current' => true
+            )
+        );
+    }
+
+    /**
+     * Get breadcrumbs for other archives
+     *
+     * @since 1.0.0
+     */
+    private static function get_archive_breadcrumbs($position) {
+        $archive_title = get_the_archive_title();
+        return array(
+            array(
+                'title' => $archive_title,
+                'position' => $position,
+                'current' => true
+            )
+        );
+    }
+
+    /**
+     * Render breadcrumbs with enhanced accessibility
+     *
+     * @since 1.0.0
+     */
+    private static function render_breadcrumbs($breadcrumbs, $separator) {
+        if (empty($breadcrumbs)) {
+            return;
         }
-    } elseif (is_category()) {
-        $category = get_queried_object();
+        
+        echo '<nav class="breadcrumb-navigation" role="navigation" aria-label="' . esc_attr__('Breadcrumb', 'gpress') . '">';
+        echo '<div class="breadcrumb-container">';
+        echo '<ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">';
+        
+        $total = count($breadcrumbs);
+        
+        foreach ($breadcrumbs as $index => $crumb) {
+            $is_last = ($index === $total - 1);
+            $is_current = isset($crumb['current']) && $crumb['current'];
+            
+            echo '<li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
+            
+            if ($is_current || $is_last) {
+                echo '<span class="breadcrumb-current" aria-current="page" itemprop="name">';
+                if (isset($crumb['icon'])) {
+                    echo '<span class="breadcrumb-icon" aria-hidden="true">' . esc_html($crumb['icon']) . '</span>';
+                }
+                echo esc_html($crumb['title']);
+                echo '</span>';
+            } else {
+                echo '<a href="' . esc_url($crumb['url']) . '" itemprop="item"';
+                if (isset($crumb['aria_label'])) {
+                    echo ' aria-label="' . esc_attr($crumb['aria_label']) . '"';
+                }
+                echo '>';
+                if (isset($crumb['icon'])) {
+                    echo '<span class="breadcrumb-icon" aria-hidden="true">' . esc_html($crumb['icon']) . '</span>';
+                }
+                echo '<span itemprop="name">' . esc_html($crumb['title']) . '</span>';
+                echo '</a>';
+            }
+            
+            echo '<meta itemprop="position" content="' . esc_attr($crumb['position']) . '">';
+            
+            if (!$is_last) {
+                echo ' ' . $separator . ' ';
+            }
+            
+            echo '</li>';
+        }
+        
+        echo '</ol>';
+        echo '</div>';
+        echo '</nav>';
+    }
+
+    /**
+     * Add breadcrumbs schema markup to head
+     *
+     * @since 1.0.0
+     */
+    public static function breadcrumbs_schema() {
+        if (is_front_page() || !get_theme_mod('enable_breadcrumbs', true)) {
+            return;
+        }
+        
+        // Schema is now included in the rendered breadcrumbs with microdata
+        // This provides additional JSON-LD for enhanced SEO
+        
+        global $post;
+        $breadcrumbs = array();
+        $position = 1;
+        
+        // Home
         $breadcrumbs[] = array(
             '@type' => 'ListItem',
             'position' => $position++,
-            'name' => $category->name,
-            'item' => get_category_link($category->term_id)
-        );
-    }
-    
-    if (count($breadcrumbs) > 1) {
-        $schema = array(
-            '@context' => 'https://schema.org',
-            '@type' => 'BreadcrumbList',
-            'itemListElement' => $breadcrumbs
+            'name' => get_bloginfo('name'),
+            'item' => home_url('/')
         );
         
-        echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
+        // Add context-specific items
+        if (is_single() || is_page()) {
+            if ($post && $post->post_parent) {
+                $ancestors = get_post_ancestors($post->ID);
+                $ancestors = array_reverse($ancestors);
+                
+                foreach ($ancestors as $ancestor) {
+                    $breadcrumbs[] = array(
+                        '@type' => 'ListItem',
+                        'position' => $position++,
+                        'name' => get_the_title($ancestor),
+                        'item' => get_permalink($ancestor)
+                    );
+                }
+            }
+            
+            if ($post) {
+                $breadcrumbs[] = array(
+                    '@type' => 'ListItem',
+                    'position' => $position++,
+                    'name' => get_the_title(),
+                    'item' => get_permalink()
+                );
+            }
+        }
+        
+        if (count($breadcrumbs) > 1) {
+            $schema = array(
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => $breadcrumbs
+            );
+            
+            echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
+        }
+    }
+
+    /**
+     * Add breadcrumb-specific body classes
+     *
+     * @since 1.0.0
+     */
+    public static function breadcrumb_body_classes($classes) {
+        if (!is_front_page() && get_theme_mod('enable_breadcrumbs', true)) {
+            $classes[] = 'has-breadcrumbs';
+            
+            if (is_single()) {
+                $classes[] = 'breadcrumb-single';
+            } elseif (is_page()) {
+                $classes[] = 'breadcrumb-page';
+            } elseif (is_archive()) {
+                $classes[] = 'breadcrumb-archive';
+            }
+        }
+        
+        return $classes;
     }
 }
 
+// Initialize the breadcrumb system
+GPress_Breadcrumbs::init();
+```
+
+### 4. Update Functions.php
+
+Update `functions.php`:
+
+```php
 /**
- * Conditional breadcrumb asset loading
+ * Load Advanced Navigation Components
+ * Conditional loading based on navigation needs and features
+ *
+ * @since 1.0.0
  */
-function gpress_conditional_breadcrumb_assets() {
-    if (!is_front_page() && get_theme_mod('enable_breadcrumbs', true)) {
-        wp_enqueue_style(
-            'gpress-breadcrumbs',
-            get_theme_file_uri('/assets/css/breadcrumbs.css'),
-            array('gpress-style'),
-            GPRESS_VERSION
-        );
+function gpress_load_navigation_components() {
+    // Core navigation system (always loaded)
+    require_once get_theme_file_path('/inc/navigation-system.php');
+    require_once get_theme_file_path('/inc/navigation-walker.php');
+    
+    // Conditional components based on theme settings
+    if (get_theme_mod('enable_breadcrumbs', true)) {
+        require_once get_theme_file_path('/inc/breadcrumbs.php');
+    }
+    
+    // Admin-only components
+    if (is_admin()) {
+        require_once get_theme_file_path('/inc/menu-customizer.php');
+        require_once get_theme_file_path('/inc/navigation-optimization.php');
     }
 }
-```
+add_action('after_setup_theme', 'gpress_load_navigation_components');
 
-## 4. Create Navigation JavaScript
-
-### File: `assets/js/navigation.js`
-```javascript
 /**
- * GPress Navigation JavaScript
+ * Add navigation-specific theme support
+ *
+ * @since 1.0.0
  */
-document.addEventListener('DOMContentLoaded', function() {
+function gpress_add_navigation_theme_support() {
+    // Core navigation features
+    add_theme_support('menus');
+    add_theme_support('custom-header');
     
-    // Initialize navigation components
-    initPrimaryNavigation();
-    initMobileMenu();
-    initSubmenus();
-    initKeyboardNavigation();
-    initAccessibilityFeatures();
+    // Enhanced navigation features
+    add_theme_support('nav-menu-item-custom-fields');
+    add_theme_support('mega-menus');
+    add_theme_support('breadcrumb-navigation');
     
-    /**
-     * Initialize primary navigation
-     */
-    function initPrimaryNavigation() {
-        const primaryNav = document.querySelector('.primary-navigation');
-        if (!primaryNav) return;
-        
-        // Add responsive classes
-        updateNavigationClasses();
-        
-        // Handle window resize
-        window.addEventListener('resize', debounce(updateNavigationClasses, 100));
-    }
-    
-    /**
-     * Initialize mobile menu
-     */
-    function initMobileMenu() {
-        const mobileToggle = document.querySelector('.mobile-menu-toggle, .menu-toggle');
-        const mobileMenu = document.querySelector('.mobile-menu, .mobile-navigation');
-        const mobileClose = document.querySelector('.mobile-menu-close');
-        
-        if (!mobileToggle || !mobileMenu) return;
-        
-        mobileToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleMobileMenu();
-        });
-        
-        if (mobileClose) {
-            mobileClose.addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleMobileMenu();
-            });
-        }
-        
-        // Close on escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && mobileMenu.classList.contains('is-open')) {
-                toggleMobileMenu();
-                mobileToggle.focus();
-            }
-        });
-        
-        // Close on outside click
-        document.addEventListener('click', function(e) {
-            if (mobileMenu.classList.contains('is-open') && 
-                !mobileMenu.contains(e.target) && 
-                !mobileToggle.contains(e.target)) {
-                toggleMobileMenu();
-            }
-        });
-        
-        function toggleMobileMenu() {
-            const isOpen = mobileMenu.classList.contains('is-open');
-            
-            if (isOpen) {
-                mobileMenu.classList.remove('is-open');
-                mobileToggle.setAttribute('aria-expanded', 'false');
-                document.body.classList.remove('mobile-menu-open');
-                
-                // Restore focus
-                mobileToggle.focus();
-            } else {
-                mobileMenu.classList.add('is-open');
-                mobileToggle.setAttribute('aria-expanded', 'true');
-                document.body.classList.add('mobile-menu-open');
-                
-                // Focus first menu item
-                const firstMenuItem = mobileMenu.querySelector('a');
-                if (firstMenuItem) {
-                    firstMenuItem.focus();
-                }
-            }
-        }
-    }
-    
-    /**
-     * Initialize submenu functionality
-     */
-    function initSubmenus() {
-        const menuItems = document.querySelectorAll('.menu-item-has-children > a, .has-submenu > a');
-        
-        menuItems.forEach(function(item) {
-            // Add keyboard support
-            item.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowDown' || e.key === 'Enter') {
-                    e.preventDefault();
-                    const submenu = this.nextElementSibling;
-                    if (submenu) {
-                        const firstSubmenuItem = submenu.querySelector('a');
-                        if (firstSubmenuItem) {
-                            firstSubmenuItem.focus();
-                        }
-                    }
-                }
-            });
-            
-            // Handle click for touch devices
-            item.addEventListener('click', function(e) {
-                if (window.innerWidth <= 768) {
-                    e.preventDefault();
-                    const expanded = this.getAttribute('aria-expanded') === 'true';
-                    this.setAttribute('aria-expanded', !expanded);
-                    
-                    const submenu = this.nextElementSibling;
-                    if (submenu) {
-                        submenu.style.display = expanded ? 'none' : 'block';
-                    }
-                }
-            });
-        });
-        
-        // Handle submenu item navigation
-        const submenuItems = document.querySelectorAll('.sub-menu a');
-        
-        submenuItems.forEach(function(item, index, items) {
-            item.addEventListener('keydown', function(e) {
-                switch (e.key) {
-                    case 'ArrowDown':
-                        e.preventDefault();
-                        const nextItem = items[index + 1];
-                        if (nextItem) {
-                            nextItem.focus();
-                        }
-                        break;
-                        
-                    case 'ArrowUp':
-                        e.preventDefault();
-                        if (index === 0) {
-                            // Focus parent menu item
-                            const parentItem = this.closest('.menu-item-has-children, .has-submenu').querySelector('> a');
-                            if (parentItem) {
-                                parentItem.focus();
-                            }
-                        } else {
-                            const prevItem = items[index - 1];
-                            if (prevItem) {
-                                prevItem.focus();
-                            }
-                        }
-                        break;
-                        
-                    case 'Escape':
-                        e.preventDefault();
-                        const parentMenuItem = this.closest('.menu-item-has-children, .has-submenu').querySelector('> a');
-                        if (parentMenuItem) {
-                            parentMenuItem.focus();
-                            parentMenuItem.setAttribute('aria-expanded', 'false');
-                        }
-                        break;
-                }
-            });
-        });
-    }
-    
-    /**
-     * Initialize keyboard navigation
-     */
-    function initKeyboardNavigation() {
-        const menuItems = document.querySelectorAll('.nav-menu a');
-        
-        menuItems.forEach(function(item, index, items) {
-            item.addEventListener('keydown', function(e) {
-                let targetItem = null;
-                
-                switch (e.key) {
-                    case 'ArrowLeft':
-                        if (index > 0) {
-                            targetItem = items[index - 1];
-                        }
-                        break;
-                        
-                    case 'ArrowRight':
-                        if (index < items.length - 1) {
-                            targetItem = items[index + 1];
-                        }
-                        break;
-                        
-                    case 'Home':
-                        targetItem = items[0];
-                        break;
-                        
-                    case 'End':
-                        targetItem = items[items.length - 1];
-                        break;
-                }
-                
-                if (targetItem) {
-                    e.preventDefault();
-                    targetItem.focus();
-                }
-            });
-        });
-    }
-    
-    /**
-     * Initialize accessibility features
-     */
-    function initAccessibilityFeatures() {
-        // Add ARIA labels where missing
-        const menuToggles = document.querySelectorAll('.menu-toggle, .mobile-menu-toggle');
-        menuToggles.forEach(function(toggle) {
-            if (!toggle.getAttribute('aria-label')) {
-                toggle.setAttribute('aria-label', gpressNav.strings.menu_toggle);
-            }
-        });
-        
-        // Add ARIA expanded attributes
-        const submenuParents = document.querySelectorAll('.menu-item-has-children > a, .has-submenu > a');
-        submenuParents.forEach(function(parent) {
-            if (!parent.getAttribute('aria-expanded')) {
-                parent.setAttribute('aria-expanded', 'false');
-            }
-        });
-        
-        // Add role attributes where needed
-        const submenus = document.querySelectorAll('.sub-menu');
-        submenus.forEach(function(submenu) {
-            submenu.setAttribute('role', 'menu');
-        });
-    }
-    
-    /**
-     * Update navigation classes based on screen size
-     */
-    function updateNavigationClasses() {
-        const isMobile = window.innerWidth <= 768;
-        document.body.classList.toggle('is-mobile-nav', isMobile);
-        document.body.classList.toggle('is-desktop-nav', !isMobile);
-    }
-    
-    /**
-     * Debounce function for performance
-     */
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    
-    // Smooth scrolling for anchor links
-    const anchorLinks = document.querySelectorAll('a[href^="#"]');
-    anchorLinks.forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                e.preventDefault();
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-    
-    // Performance optimization: Intersection Observer for menu animations
-    if ('IntersectionObserver' in window) {
-        const navObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('nav-item-visible');
-                }
-            });
-        }, { threshold: 0.1 });
-        
-        const navItems = document.querySelectorAll('.menu-item');
-        navItems.forEach(function(item) {
-            navObserver.observe(item);
-        });
-    }
-});
+    // Accessibility features
+    add_theme_support('skip-links');
+    add_theme_support('aria-navigation');
+}
+add_action('after_setup_theme', 'gpress_add_navigation_theme_support');
 ```
 
-## 5. Create Navigation Styles
+### 5. Update Theme Setup
 
-### File: `assets/css/navigation.css`
+Update `inc/theme-setup.php`:
+
+```php
+/**
+ * Add navigation-specific image sizes
+ *
+ * @since 1.0.0
+ */
+function gpress_add_navigation_image_sizes() {
+    // Logo variations for different contexts
+    add_image_size('logo-mobile', 120, 40, false);
+    add_image_size('logo-retina', 240, 80, false);
+    add_image_size('menu-icon', 24, 24, true);
+}
+add_action('after_setup_theme', 'gpress_add_navigation_image_sizes');
+
+/**
+ * Register additional navigation areas for enhanced flexibility
+ *
+ * @since 1.0.0
+ */
+function gpress_register_extended_menus() {
+    register_nav_menus(array(
+        'header-utility' => __('Header Utility Menu', 'gpress'),
+        'footer-secondary' => __('Footer Secondary Menu', 'gpress'),
+        'quick-links' => __('Quick Links Menu', 'gpress'),
+    ));
+}
+add_action('after_setup_theme', 'gpress_register_extended_menus');
+```
+
+### 6. Update Style.css
+
+Update `style.css`:
+
 ```css
-/* GPress Navigation Styles */
+/**
+ * Navigation Base Styles
+ * Foundation styles for all navigation components
+ *
+ * @since 1.0.0
+ */
 
-/* Main Navigation */
+/* Skip Links for Accessibility */
+.skip-navigation {
+    position: absolute;
+    left: -9999px;
+    top: 1rem;
+    z-index: 999999;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    background: var(--wp--preset--color--primary);
+    color: var(--wp--preset--color--background);
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 2px solid var(--wp--preset--color--primary);
+}
+
+.skip-navigation:focus {
+    left: 1rem;
+    outline: 3px solid var(--wp--preset--color--accent);
+    outline-offset: 2px;
+}
+
+/* Main Navigation Container */
 .main-navigation {
     background: var(--wp--preset--color--background);
     border-bottom: 1px solid var(--wp--preset--color--border);
-    padding: 1rem 0;
+    padding: 0.75rem 0;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -1024,31 +1287,47 @@ document.addEventListener('DOMContentLoaded', function() {
     transition: all 0.3s ease;
 }
 
+.main-navigation.scrolled {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(15px);
+}
+
 .nav-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
+    max-width: var(--wp--style--global--content-size);
     margin: 0 auto;
     padding: 0 1rem;
 }
 
-.nav-primary-menu,
-.nav-secondary-menu {
+/* Logo and Site Branding */
+.site-logo {
+    flex-shrink: 0;
+    margin-right: 2rem;
+}
+
+.site-logo img {
+    height: auto;
+    max-height: 60px;
+    width: auto;
+}
+
+/* Primary Navigation Menu */
+.nav-primary-menu {
     display: flex;
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 1rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
-.nav-primary-menu .menu-item,
-.nav-secondary-menu .menu-item {
+.nav-primary-menu .menu-item {
     position: relative;
 }
 
-.nav-primary-menu a,
-.nav-secondary-menu a {
+.nav-primary-menu a {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -1058,69 +1337,88 @@ document.addEventListener('DOMContentLoaded', function() {
     border-radius: 8px;
     transition: all 0.3s ease;
     font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
 }
 
 .nav-primary-menu a:hover,
-.nav-primary-menu a:focus,
-.nav-secondary-menu a:hover,
-.nav-secondary-menu a:focus {
+.nav-primary-menu a:focus {
     background: var(--wp--preset--color--primary);
     color: var(--wp--preset--color--background);
     outline: 2px solid var(--wp--preset--color--primary);
     outline-offset: 2px;
+    transform: translateY(-1px);
 }
 
-/* Menu Icons and Badges */
+/* Current Menu Item */
+.nav-primary-menu .current-menu-item > a,
+.nav-primary-menu .current-menu-ancestor > a {
+    background: var(--wp--preset--color--background-secondary);
+    color: var(--wp--preset--color--primary);
+    font-weight: 600;
+}
+
+/* Menu Icons and Enhancements */
 .menu-icon {
     font-size: 1.1em;
     flex-shrink: 0;
 }
 
+.menu-icon.dashicons {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
 .menu-badge {
     background: var(--wp--preset--color--accent);
     color: var(--wp--preset--color--background);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     padding: 0.125rem 0.375rem;
     border-radius: 12px;
-    font-weight: 600;
+    font-weight: 700;
     margin-left: 0.25rem;
     flex-shrink: 0;
+    line-height: 1;
 }
 
-.menu-item-highlight a {
+.menu-item-highlight > a {
     background: var(--wp--preset--color--accent);
     color: var(--wp--preset--color--background);
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(var(--wp--preset--color--accent-rgb), 0.3);
 }
 
-/* Submenu Styles */
+/* Submenu Indicator */
 .has-submenu .submenu-indicator {
-    margin-left: 0.25rem;
+    margin-left: auto;
     transition: transform 0.3s ease;
     flex-shrink: 0;
+    opacity: 0.7;
 }
 
 .has-submenu[aria-expanded="true"] .submenu-indicator {
     transform: rotate(180deg);
 }
 
+/* Submenu Styles */
 .sub-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 0.5rem);
     left: 0;
     background: var(--wp--preset--color--background);
     border: 1px solid var(--wp--preset--color--border);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
-    min-width: 220px;
+    min-width: 240px;
     z-index: 1001;
     list-style: none;
     margin: 0;
-    padding: 0.5rem 0;
+    padding: 0.75rem 0;
 }
 
 .has-submenu:hover .sub-menu,
@@ -1133,155 +1431,115 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .sub-menu .menu-item {
     width: 100%;
+    margin: 0;
 }
 
 .sub-menu a {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.25rem;
     border-radius: 0;
     width: 100%;
     margin: 0;
+    font-size: 0.9rem;
 }
 
 .sub-menu a:hover,
 .sub-menu a:focus {
     background: var(--wp--preset--color--background-secondary);
     color: var(--wp--preset--color--foreground);
+    transform: none;
 }
 
-/* Mobile Navigation */
+/* Navigation Actions (Search, Social, etc.) */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.header-search {
+    display: none;
+}
+
+.header-social .wp-block-social-link {
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.header-social .wp-block-social-link:hover {
+    background: var(--wp--preset--color--primary);
+    transform: translateY(-2px);
+}
+
+/* Mobile Menu Toggle */
 .mobile-menu-toggle {
     display: none;
     background: none;
-    border: none;
+    border: 2px solid var(--wp--preset--color--border);
     cursor: pointer;
     padding: 0.5rem;
     color: var(--wp--preset--color--foreground);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     border-radius: 8px;
     transition: all 0.3s ease;
+    min-height: 44px;
+    min-width: 44px;
 }
 
 .mobile-menu-toggle:hover,
 .mobile-menu-toggle:focus {
     background: var(--wp--preset--color--background-secondary);
+    border-color: var(--wp--preset--color--primary);
     outline: 2px solid var(--wp--preset--color--primary);
     outline-offset: 2px;
 }
 
-.mobile-menu-toggle .hamburger-icon {
-    display: block;
-    transition: transform 0.3s ease;
+/* Screen Reader Text for Accessibility */
+.screen-reader-text {
+    position: absolute !important;
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    word-wrap: normal !important;
 }
 
-.mobile-menu-toggle[aria-expanded="true"] .hamburger-icon {
-    transform: rotate(90deg);
-}
-
-.mobile-navigation {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+.screen-reader-text:focus {
     background: var(--wp--preset--color--background);
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    overflow-y: auto;
-    padding: 1rem;
-}
-
-.mobile-navigation.is-open {
-    opacity: 1;
-    visibility: visible;
-}
-
-.mobile-menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--wp--preset--color--border);
-}
-
-.mobile-menu-close {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    cursor: pointer;
+    border-radius: 3px;
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.6);
+    clip: auto !important;
     color: var(--wp--preset--color--foreground);
-    padding: 0.25rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.mobile-menu-close:hover,
-.mobile-menu-close:focus {
-    background: var(--wp--preset--color--background-secondary);
-    outline: 2px solid var(--wp--preset--color--primary);
-    outline-offset: 2px;
-}
-
-.mobile-navigation .nav-menu {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.mobile-navigation .menu-item {
-    margin-bottom: 0.5rem;
-}
-
-.mobile-navigation a {
     display: block;
-    padding: 1rem;
-    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    height: auto;
+    left: 5px;
+    line-height: normal;
+    padding: 15px 23px 14px;
     text-decoration: none;
-    color: var(--wp--preset--color--foreground);
-    background: var(--wp--preset--color--background-secondary);
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.mobile-navigation a:hover,
-.mobile-navigation a:focus {
-    background: var(--wp--preset--color--primary);
-    color: var(--wp--preset--color--background);
-    transform: translateX(5px);
-}
-
-/* Social Navigation */
-.social-navigation {
-    display: flex;
-    gap: 0.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.social-navigation a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--wp--preset--color--background-secondary);
-    color: var(--wp--preset--color--foreground-secondary);
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.social-navigation a:hover,
-.social-navigation a:focus {
-    background: var(--wp--preset--color--primary);
-    color: var(--wp--preset--color--background);
-    transform: translateY(-2px);
+    top: 5px;
+    width: auto;
+    z-index: 100000;
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+    .header-search {
+        display: block;
+        max-width: 200px;
+    }
+    
+    .nav-container {
+        padding: 0 0.75rem;
+    }
+    
+    .site-logo {
+        margin-right: 1rem;
+    }
+}
+
 @media (max-width: 768px) {
     .nav-primary-menu,
     .nav-secondary-menu {
@@ -1289,23 +1547,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     .mobile-menu-toggle {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
-    .sub-menu {
-        position: static;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        box-shadow: none;
-        border: none;
-        background: transparent;
-        padding-left: 1rem;
+    .header-search {
+        max-width: 150px;
+    }
+    
+    .header-social {
         display: none;
     }
     
-    .has-submenu[aria-expanded="true"] .sub-menu {
-        display: block;
+    .nav-container {
+        padding: 0 0.5rem;
     }
 }
 
@@ -1323,6 +1579,10 @@ document.addEventListener('DOMContentLoaded', function() {
     .sub-menu {
         border-width: 2px;
     }
+    
+    .mobile-menu-toggle {
+        border-width: 3px;
+    }
 }
 
 /* Reduced Motion Support */
@@ -1331,13 +1591,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .sub-menu,
     .mobile-navigation,
     .submenu-indicator,
-    .mobile-menu-toggle .hamburger-icon {
+    .main-navigation {
         transition: none;
     }
     
     .nav-primary-menu a:hover,
-    .mobile-navigation a:hover,
-    .social-navigation a:hover {
+    .header-social .wp-block-social-link:hover {
         transform: none;
     }
 }
@@ -1346,56 +1605,15 @@ document.addEventListener('DOMContentLoaded', function() {
 @media print {
     .main-navigation,
     .mobile-navigation,
-    .mobile-menu-toggle {
+    .mobile-menu-toggle,
+    .header-search,
+    .header-social {
         display: none;
     }
-}
-
-/* Focus Management */
-.skip-navigation {
-    position: absolute;
-    left: -9999px;
-    top: 1rem;
-    z-index: 999999;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    background: var(--wp--preset--color--primary);
-    color: var(--wp--preset--color--background);
-    border-radius: 4px;
-    font-weight: 600;
-}
-
-.skip-navigation:focus {
-    left: 1rem;
-}
-
-/* Navigation Animation Classes */
-.nav-item-visible {
-    animation: slideInUp 0.6s ease-out;
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+    
+    .skip-navigation {
+        display: none;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Body Classes for Navigation States */
-.mobile-menu-open {
-    overflow: hidden;
-}
-
-.is-mobile-nav .main-navigation {
-    padding: 0.5rem 0;
-}
-
-.is-desktop-nav .mobile-navigation {
-    display: none;
 }
 
 /* Loading States */
@@ -1414,237 +1632,115 @@ document.addEventListener('DOMContentLoaded', function() {
     border: 2px solid var(--wp--preset--color--primary);
     border-top-color: transparent;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: nav-spin 1s linear infinite;
     transform: translate(-50%, -50%);
 }
 
-@keyframes spin {
+@keyframes nav-spin {
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
-```
 
-## 6. Create Breadcrumb Styles
-
-### File: `assets/css/breadcrumbs.css`
-```css
-/* GPress Breadcrumb Styles */
-
-/* Breadcrumb Navigation */
-.breadcrumb-navigation {
-    background: var(--wp--preset--color--background-secondary);
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--wp--preset--color--border);
-    font-size: 0.875rem;
+/* Focus Management */
+.no-js .has-submenu:hover .sub-menu,
+.no-js .has-submenu:focus-within .sub-menu {
+    display: block;
 }
 
-.breadcrumb-container {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.breadcrumb-container a {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: var(--wp--preset--color--foreground-secondary);
-    text-decoration: none;
-    transition: color 0.3s ease;
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
-}
-
-.breadcrumb-container a:hover,
-.breadcrumb-container a:focus {
-    color: var(--wp--preset--color--primary);
-    background: var(--wp--preset--color--background);
-    outline: 2px solid var(--wp--preset--color--primary);
-    outline-offset: 2px;
-}
-
-.breadcrumb-icon {
-    font-size: 0.875em;
-}
-
-.breadcrumb-text {
-    font-weight: 500;
-}
-
-.breadcrumb-current {
-    color: var(--wp--preset--color--foreground);
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-}
-
-.breadcrumb-separator {
-    color: var(--wp--preset--color--foreground-secondary);
-    margin: 0 0.25rem;
-    font-size: 0.75rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .breadcrumb-navigation {
-        padding: 0.5rem 0;
-        font-size: 0.8rem;
-    }
-    
-    .breadcrumb-container {
-        padding: 0 0.5rem;
-    }
-    
-    .breadcrumb-text {
-        display: none;
-    }
-    
-    .breadcrumb-container a {
-        padding: 0.25rem;
-    }
-    
-    .breadcrumb-current {
-        padding: 0.25rem;
-    }
-}
-
-/* High Contrast Mode Support */
-@media (prefers-contrast: high) {
-    .breadcrumb-navigation {
-        border-bottom-width: 2px;
-    }
-    
-    .breadcrumb-container a:hover,
-    .breadcrumb-container a:focus {
-        outline-width: 3px;
-    }
-}
-
-/* Print Styles */
-@media print {
-    .breadcrumb-navigation {
-        background: white;
-        border-bottom: 1px solid black;
-    }
-    
-    .breadcrumb-container a {
-        color: black;
-    }
+/* Live Region for Screen Reader Announcements */
+#nav-live-region {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }
 ```
 
-## 7. Create Template Parts
+## Testing This Step
 
-### File: `parts/navigation.html`
-```html
-<!-- wp:group {"tagName":"nav","className":"main-navigation","layout":{"type":"flex","justifyContent":"space-between","flexWrap":"wrap"}} -->
-<nav class="wp-block-group main-navigation" role="navigation" aria-label="Main navigation">
-    <!-- wp:site-logo {"width":120,"className":"site-logo"} /-->
-    
-    <!-- wp:group {"className":"nav-menu-container","layout":{"type":"flex","flexWrap":"nowrap"}} -->
-    <div class="wp-block-group nav-menu-container">
-        <!-- wp:navigation {"ref":1,"overlayMenu":"mobile","layout":{"type":"flex","setCascadingProperties":true,"justifyContent":"center"},"className":"primary-navigation","fontSize":"medium"} /-->
-        
-        <!-- wp:group {"className":"nav-actions","layout":{"type":"flex","flexWrap":"nowrap"}} -->
-        <div class="wp-block-group nav-actions">
-            <!-- wp:search {"label":"Search","showLabel":false,"placeholder":"Search...","width":250,"widthUnit":"px","buttonText":"Search","buttonPosition":"button-inside","buttonUseIcon":true,"className":"header-search"} /-->
-            
-            <!-- wp:social-links {"iconColor":"foreground","iconColorValue":"var(--wp--preset--color--foreground)","className":"header-social","layout":{"type":"flex","justifyContent":"center"}} -->
-            <ul class="wp-block-social-links has-icon-color header-social">
-                <!-- wp:social-link {"url":"#","service":"twitter","label":"Twitter"} /-->
-                <!-- wp:social-link {"url":"#","service":"facebook","label":"Facebook"} /-->
-                <!-- wp:social-link {"url":"#","service":"instagram","label":"Instagram"} /-->
-            </ul>
-            <!-- /wp:social-links -->
-            
-            <!-- wp:button {"className":"mobile-menu-toggle","fontSize":"small"} -->
-            <div class="wp-block-button mobile-menu-toggle">
-                <button class="wp-block-button__link" aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle mobile menu">
-                    <span class="hamburger-icon" aria-hidden="true">☰</span>
-                    <span class="screen-reader-text">Menu</span>
-                </button>
-            </div>
-            <!-- /wp:button -->
-        </div>
-        <!-- /wp:group -->
-    </div>
-    <!-- /wp:group -->
-</nav>
-<!-- /wp:group -->
+### 1. Navigation Functionality Testing
+```bash
+# Test menu registration
+wp menu list --format=table
+
+# Test conditional asset loading
+curl -s http://yoursite.com/ | grep -E "(navigation\.css|navigation\.js)"
+
+# Check for mobile optimization
+curl -s -A "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)" http://yoursite.com/ | grep "mobile-menu"
 ```
 
-### File: `parts/breadcrumbs.html`
-```html
-<!-- wp:group {"className":"breadcrumb-wrapper","layout":{"type":"constrained"}} -->
-<div class="wp-block-group breadcrumb-wrapper">
-    <!-- wp:html -->
-    <?php
-    if (function_exists('gpress_display_breadcrumbs')) {
-        gpress_display_breadcrumbs();
-    }
-    ?>
-    <!-- /wp:html -->
-</div>
-<!-- /wp:group -->
+### 2. Accessibility Testing
+```bash
+# Test skip links
+curl -s http://yoursite.com/ | grep "skip-navigation"
+
+# Check ARIA attributes
+curl -s http://yoursite.com/ | grep -E "(aria-expanded|aria-haspopup|aria-controls)"
+
+# Validate navigation landmarks
+curl -s http://yoursite.com/ | grep 'role="navigation"'
 ```
 
-## 8. Update Functions.php
+### 3. Breadcrumb Testing
+```bash
+# Test breadcrumb generation
+curl -s http://yoursite.com/sample-page/ | grep "breadcrumb-navigation"
 
-Add to `functions.php`:
+# Check structured data
+curl -s http://yoursite.com/sample-page/ | grep -o '<script type="application/ld+json">.*BreadcrumbList.*</script>'
 
-```php
-// Advanced navigation system
-require_once get_theme_file_path('/inc/navigation-system.php');
-require_once get_theme_file_path('/inc/navigation-walker.php');
-require_once get_theme_file_path('/inc/breadcrumbs.php');
+# Validate microdata
+curl -s http://yoursite.com/sample-page/ | grep -E "(itemscope|itemtype|itemprop)"
 ```
 
-## Testing
+### 4. Mobile Navigation Testing
+```bash
+# Test mobile menu toggle
+curl -s http://yoursite.com/ | grep "mobile-menu-toggle"
 
-1. **Menu Functionality Testing**:
-   - Install and activate the theme
-   - Create primary, secondary, and mobile menus in Appearance > Menus
-   - Test menu item custom fields (icons, badges, descriptions)
-   - Verify conditional asset loading works correctly
-   - Test submenu functionality and mobile menu toggle
+# Check touch target sizes
+curl -s http://yoursite.com/ | grep 'min-height: 44px'
 
-2. **Accessibility Testing**:
-   - Use screen readers (NVDA, JAWS, VoiceOver) for navigation
-   - Test keyboard navigation (arrow keys, Enter, Escape)
-   - Verify ARIA labels and landmark structure
-   - Check skip links functionality and focus management
+# Validate mobile-specific classes
+curl -s http://yoursite.com/ | grep "is-mobile-device"
+```
 
-3. **Mobile Testing**:
-   - Test mobile menu toggle and overlay
-   - Verify touch targets meet 44px minimum requirement
-   - Check responsive navigation behavior across devices
-   - Test keyboard navigation on mobile devices
+### 5. Performance Testing
+```bash
+# Check asset loading
+curl -s http://yoursite.com/ | grep -c "navigation.*\.css"
+curl -s http://yoursite.com/ | grep -c "navigation.*\.js"
 
-4. **Breadcrumb Testing**:
-   - Check breadcrumb generation on various page types
-   - Verify structured data markup appears in source code
-   - Test hierarchical page and category navigation
-   - Validate screen reader announcements
+# Test conditional loading
+curl -s http://yoursite.com/wp-json/wp/v2/menus
 
-5. **Performance Testing**:
-   - Verify navigation assets load conditionally
-   - Check Core Web Vitals impact with navigation
-   - Test loading speed with and without navigation features
-   - Validate no JavaScript errors in console
+# Validate JavaScript errors
+# Use browser console or automated testing tools
+```
 
-## Next Steps
+## Expected Results After This Step
 
-In Step 13, we'll implement comprehensive accessibility features to ensure WCAG 2.1 AA compliance.
+1. **Navigation System**: Complete multi-level navigation with primary, secondary, mobile, and utility menus
+2. **Accessibility Compliance**: Full WCAG 2.1 AA compliance with ARIA support and keyboard navigation
+3. **Mobile Optimization**: Touch-optimized mobile menu with proper gesture support
+4. **Breadcrumb System**: SEO-optimized breadcrumbs with structured data and microdata
+5. **Conditional Loading**: Smart asset loading based on navigation usage and device detection
+6. **Custom Fields**: Enhanced menu items with icons, badges, descriptions, and mega menu support
+7. **Performance**: Optimized navigation rendering with minimal impact on Core Web Vitals
+8. **Progressive Enhancement**: Works without JavaScript while providing enhanced functionality when available
 
-## Key Benefits
+## Next Step
 
-- Conditional navigation asset loading for optimal performance
-- Fully accessible navigation with ARIA support
-- Mobile-optimized responsive design
-- Keyboard navigation compliance
-- SEO-friendly breadcrumb structure with structured data
-- Advanced menu customization options with icons and badges
-- Security-hardened navigation system
-- Progressive enhancement approach for all devices
+In Step 13, we'll implement comprehensive accessibility features to ensure WCAG 2.1 AA compliance across all theme components, building upon the navigation accessibility foundation we've established here.
+
+---
+
+**Step 12 Completed**: Advanced Navigation & Menu Systems ✅
+- Multi-level navigation with enhanced accessibility
+- Mobile-optimized responsive navigation
+- SEO-friendly breadcrumb system with structured data
+- Conditional asset loading for optimal performance
+- Custom menu fields and advanced styling options
+- Complete keyboard navigation support
+- Progressive enhancement approach for all features

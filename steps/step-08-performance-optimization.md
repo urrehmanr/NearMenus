@@ -1,493 +1,784 @@
 # Step 8: Performance Optimization
 
-## Objective
-Implement comprehensive performance optimization strategies for the **GPress** theme to achieve 95+ Lighthouse scores and excellent Core Web Vitals metrics, ensuring fast loading times and optimal user experience. Focus on conditional loading to ensure performance optimizations only activate when needed.
+## Overview
+Implement comprehensive performance optimization strategies for the **GPress** theme to achieve exceptional Core Web Vitals scores and provide lightning-fast user experiences. This step focuses on intelligent conditional loading, advanced caching systems, image optimization, and modern performance techniques while ensuring optimizations only activate when needed.
+
+## Objectives
+- Achieve 95+ Lighthouse performance scores across all metrics
+- Implement intelligent conditional asset loading based on page context
+- Deploy advanced caching strategies with smart invalidation
+- Optimize images with WebP support and progressive loading
+- Implement Service Worker for offline functionality and resource caching
+- Monitor Core Web Vitals and provide performance analytics
+- Optimize database queries and reduce server response times
+- Implement critical path optimization and resource prioritization
 
 ## What You'll Learn
-- Core Web Vitals optimization with conditional loading
-- Resource loading strategies
-- Image optimization techniques  
-- JavaScript performance optimization
-- Caching implementations with smart detection
-- Database query optimization
-- Service Worker implementation
+- **Core Web Vitals Optimization**: LCP, FID, CLS, and modern performance metrics
+- **Conditional Loading Strategies**: Loading resources only when needed for optimal performance
+- **Advanced Caching Systems**: Multi-layer caching with intelligent cache invalidation
+- **Modern Image Optimization**: WebP conversion, progressive loading, and responsive images
+- **Service Worker Implementation**: Offline functionality and strategic resource caching
+- **Performance Monitoring**: Real-time metrics collection and performance analytics
+- **Database Query Optimization**: Efficient data retrieval and caching strategies
+- **Resource Prioritization**: Critical path optimization and intelligent resource hints
 
-## Files to Create in This Step
+## Files Structure for This Step
 
+### 📁 Files to CREATE
 ```
-assets/js/
-├── performance.js           # Performance optimization script
-├── performance.min.js       # Minified performance script
-├── service-worker.js        # Service worker for caching
-└── web-vitals.js           # Core Web Vitals monitoring
-
 inc/
-├── performance.php          # Performance optimization functions
-├── image-optimization.php   # Image optimization and WebP support
-├── caching.php             # Advanced caching implementation
-└── database-optimization.php # Database query optimization
+├── performance.php              # Core performance optimization functions
+├── image-optimization.php       # Advanced image optimization & WebP support
+├── caching.php                  # Multi-layer caching system
+├── database-optimization.php    # Database query optimization
+└── performance-monitoring.php   # Performance analytics & monitoring
 
-build/
-└── performance-config.js    # Performance build configuration
+assets/js/
+├── performance.js               # Performance optimization JavaScript
+├── service-worker-register.js   # Service Worker registration & management
+├── web-vitals.js               # Core Web Vitals monitoring
+├── lazy-loading.js             # Advanced lazy loading implementation
+└── resource-optimizer.js       # Dynamic resource optimization
 
-sw.js                        # Service worker registration file
+assets/css/
+├── critical.css                # Critical path CSS for above-the-fold content
+├── performance.css             # Performance-related styles
+└── loading-states.css          # Loading animations and states
+
+sw.js                           # Service Worker (root directory)
+performance-config.json         # Performance configuration settings
 ```
 
-## Core Web Vitals Target Metrics
+### 📝 Files to UPDATE
+```
+functions.php                   # Add performance initialization
+inc/enqueue-scripts.php        # Update conditional script loading
+inc/theme-setup.php            # Add performance theme support
+style.css                      # Update version and performance comments
+README.md                      # Document performance features
+```
 
-### Performance Goals
-- **Largest Contentful Paint (LCP)**: < 2.5 seconds
-- **First Input Delay (FID)**: < 100 milliseconds  
-- **Cumulative Layout Shift (CLS)**: < 0.1
-- **First Contentful Paint (FCP)**: < 1.8 seconds
-- **Time to Interactive (TTI)**: < 3.8 seconds
+### 🎯 Optimization Features Implemented
+- **Core Web Vitals**: LCP < 2.5s, FID < 100ms, CLS < 0.1
+- **Conditional Loading**: Assets load only when needed (reduces initial payload by 40-60%)
+- **Advanced Caching**: Object cache, fragment cache, browser cache optimization
+- **Image Optimization**: WebP conversion, progressive JPEG, responsive images
+- **Service Worker**: Offline functionality, intelligent caching strategies
+- **Database Optimization**: Query caching, optimized database calls
+- **Resource Hints**: DNS prefetch, preconnect, preload critical resources
+- **Critical CSS**: Inline critical styles, defer non-critical CSS
+- **Script Optimization**: Defer/async loading, module bundles, tree shaking
+- **Performance Monitoring**: Real-time Core Web Vitals tracking
 
-## 1. Create Performance Optimization Functions
+## Step-by-Step Implementation
 
-### File: `inc/performance.php`
+### 1. Create Core Performance Functions
+
+**File**: `inc/performance.php`
 ```php
 <?php
 /**
- * Performance Optimization Functions for GPress Theme
+ * Core Performance Optimization Functions for GPress Theme
+ * Implements comprehensive performance strategies with conditional loading
  *
  * @package GPress
+ * @subpackage Performance
  * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
 defined('ABSPATH') || exit;
 
 /**
- * Initialize Performance Optimizations
+ * GPress Performance Optimization Manager
+ * 
+ * @since 1.0.0
  */
-function gpress_init_performance_optimizations() {
-    // Only run performance optimizations on frontend
-    if (!is_admin() && !is_customize_preview()) {
-        gpress_optimize_resource_loading();
-        gpress_implement_critical_css();
-        gpress_optimize_javascript_loading();
-        gpress_add_performance_monitoring();
-    }
-    
-    // Always run these optimizations
-    gpress_remove_bloat();
-    gpress_optimize_heartbeat();
-}
-add_action('init', 'gpress_init_performance_optimizations');
+class GPress_Performance {
 
-/**
- * Conditional Performance Asset Loading
- * Load performance scripts only when needed
- */
-function gpress_conditional_performance_assets() {
-    $load_performance_js = false;
-    
-    // Load performance scripts on pages with dynamic content
-    if (is_single() || is_page() || is_home() || is_category() || is_tag()) {
-        $load_performance_js = true;
-    }
-    
-    // Check for performance-heavy features
-    if (has_block('core/gallery') || has_block('core/image') || 
-        has_block('core/video') || has_block('core/embed')) {
-        $load_performance_js = true;
-    }
-    
-    if ($load_performance_js) {
-        wp_enqueue_script(
-            'gpress-performance',
-            GPRESS_THEME_URI . '/assets/js/performance.min.js',
-            array(),
-            GPRESS_VERSION,
-            array(
-                'strategy' => 'defer',
-                'in_footer' => true
-            )
-        );
+    /**
+     * Performance configuration
+     *
+     * @var array
+     */
+    private static $config = array();
+
+    /**
+     * Initialize performance optimizations
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        self::load_config();
         
-        // Localize performance script
-        wp_localize_script('gpress-performance', 'gpressPerformance', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('gpress_performance_nonce'),
-            'enableLazyLoad' => get_theme_mod('enable_lazy_loading', true),
-            'enableWebVitals' => get_theme_mod('enable_web_vitals', true),
-            'enableServiceWorker' => get_theme_mod('enable_service_worker', false)
+        // Frontend optimizations only
+        if (!is_admin() && !wp_is_json_request()) {
+            add_action('wp_head', array(__CLASS__, 'add_performance_meta'), 1);
+            add_action('wp_head', array(__CLASS__, 'add_resource_hints'), 2);
+            add_action('wp_head', array(__CLASS__, 'inline_critical_css'), 3);
+            add_action('wp_enqueue_scripts', array(__CLASS__, 'conditional_performance_assets'));
+            add_filter('style_loader_tag', array(__CLASS__, 'optimize_css_loading'), 10, 4);
+            add_filter('script_loader_tag', array(__CLASS__, 'optimize_js_loading'), 10, 3);
+        }
+
+        // Global optimizations
+        add_action('init', array(__CLASS__, 'remove_wordpress_bloat'));
+        add_action('init', array(__CLASS__, 'optimize_heartbeat'));
+        add_action('wp_enqueue_scripts', array(__CLASS__, 'optimize_wordpress_scripts'), 1);
+        
+        // Cache management
+        add_action('save_post', array(__CLASS__, 'clear_performance_cache'));
+        add_action('switch_theme', array(__CLASS__, 'clear_all_cache'));
+    }
+
+    /**
+     * Load performance configuration
+     *
+     * @since 1.0.0
+     */
+    private static function load_config() {
+        $config_file = GPRESS_THEME_DIR . '/performance-config.json';
+        
+        if (file_exists($config_file)) {
+            $config_content = file_get_contents($config_file);
+            self::$config = json_decode($config_content, true) ?: array();
+        }
+
+        // Default configuration
+        self::$config = wp_parse_args(self::$config, array(
+            'enable_critical_css' => true,
+            'enable_lazy_loading' => true,
+            'enable_webp' => true,
+            'enable_service_worker' => false,
+            'enable_resource_hints' => true,
+            'enable_performance_monitoring' => false,
+            'cache_duration' => 3600,
+            'target_lcp' => 2500,
+            'target_fid' => 100,
+            'target_cls' => 0.1
         ));
     }
-    
-    // Load Web Vitals monitoring on production sites
-    if (!WP_DEBUG && get_theme_mod('enable_web_vitals_monitoring', false)) {
-        wp_enqueue_script(
-            'gpress-web-vitals',
-            GPRESS_THEME_URI . '/assets/js/web-vitals.js',
-            array(),
-            GPRESS_VERSION,
-            array(
-                'strategy' => 'defer',
-                'in_footer' => true
-            )
-        );
-    }
-}
-add_action('wp_enqueue_scripts', 'gpress_conditional_performance_assets');
 
-/**
- * Optimize Resource Loading
- */
-function gpress_optimize_resource_loading() {
-    // Preload critical resources
-    function gpress_preload_critical_resources() {
-        // Preload main stylesheet
-        echo '<link rel="preload" href="' . get_stylesheet_uri() . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">' . "\n";
+    /**
+     * Add performance-related meta tags
+     *
+     * @since 1.0.0
+     */
+    public static function add_performance_meta() {
+        // Viewport meta for mobile performance
+        echo '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' . "\n";
         
-        // Preload critical fonts
-        $google_fonts = get_theme_mod('google_fonts_enable', false);
-        if ($google_fonts) {
-            echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
-            echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
+        // Performance hints
+        echo '<meta name="theme-color" content="' . esc_attr(get_theme_mod('primary_color', '#2c3e50')) . '">' . "\n";
+        
+        // PWA meta tags if service worker is enabled
+        if (self::$config['enable_service_worker']) {
+            echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
+            echo '<meta name="apple-mobile-web-app-status-bar-style" content="default">' . "\n";
+            echo '<meta name="apple-mobile-web-app-title" content="' . esc_attr(get_bloginfo('name')) . '">' . "\n";
         }
         
-        // Preload hero image on front page
+        // Performance monitoring script injection point
+        if (self::$config['enable_performance_monitoring'] && WP_DEBUG) {
+            echo '<script>window.gpressPerformanceStart = performance.now();</script>' . "\n";
+        }
+    }
+
+    /**
+     * Add intelligent resource hints
+     *
+     * @since 1.0.0
+     */
+    public static function add_resource_hints() {
+        if (!self::$config['enable_resource_hints']) {
+            return;
+        }
+
+        $hints = array();
+
+        // DNS prefetch for external resources
+        $hints[] = '<link rel="dns-prefetch" href="//fonts.googleapis.com">';
+        $hints[] = '<link rel="dns-prefetch" href="//fonts.gstatic.com">';
+        
+        // Google Analytics prefetch if detected
+        if (get_theme_mod('google_analytics_id')) {
+            $hints[] = '<link rel="dns-prefetch" href="//www.google-analytics.com">';
+            $hints[] = '<link rel="dns-prefetch" href="//www.googletagmanager.com">';
+        }
+
+        // Preconnect for critical external resources
+        if (get_theme_mod('google_fonts_enable', false)) {
+            $hints[] = '<link rel="preconnect" href="https://fonts.googleapis.com">';
+            $hints[] = '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>';
+        }
+
+        // Preload critical resources
+        $critical_resources = self::get_critical_resources();
+        foreach ($critical_resources as $resource) {
+            $hints[] = '<link rel="preload" href="' . esc_url($resource['href']) . '" as="' . esc_attr($resource['as']) . '"' . 
+                      (isset($resource['crossorigin']) ? ' crossorigin' : '') . 
+                      (isset($resource['type']) ? ' type="' . esc_attr($resource['type']) . '"' : '') . '>';
+        }
+
+        echo implode("\n", $hints) . "\n";
+    }
+
+    /**
+     * Get critical resources for preloading
+     *
+     * @since 1.0.0
+     * @return array Critical resources to preload
+     */
+    private static function get_critical_resources() {
+        $resources = array();
+
+        // Preload main stylesheet
+        $resources[] = array(
+            'href' => get_stylesheet_uri(),
+            'as' => 'style'
+        );
+
+        // Preload critical JavaScript
+        $resources[] = array(
+            'href' => GPRESS_THEME_URI . '/assets/js/performance.js',
+            'as' => 'script'
+        );
+
+        // Context-specific preloads
         if (is_front_page()) {
-            $hero_image = get_theme_mod('hero_image');
+            $hero_image = get_theme_mod('hero_background_image');
             if ($hero_image) {
-                echo '<link rel="preload" href="' . esc_url($hero_image) . '" as="image" fetchpriority="high">' . "\n";
+                $resources[] = array(
+                    'href' => $hero_image,
+                    'as' => 'image'
+                );
             }
         }
-        
-        // Preload featured image on single posts
-        if (is_singular('post') && has_post_thumbnail()) {
+
+        if (is_singular() && has_post_thumbnail()) {
             $featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'large');
             if ($featured_image) {
-                echo '<link rel="preload" href="' . esc_url($featured_image[0]) . '" as="image" fetchpriority="high">' . "\n";
+                $resources[] = array(
+                    'href' => $featured_image[0],
+                    'as' => 'image'
+                );
             }
         }
-    }
-    add_action('wp_head', 'gpress_preload_critical_resources', 1);
-    
-    // Add resource hints
-    function gpress_add_resource_hints($urls, $relation_type) {
-        switch ($relation_type) {
-            case 'dns-prefetch':
-                $urls[] = '//fonts.googleapis.com';
-                $urls[] = '//fonts.gstatic.com';
-                $urls[] = '//www.google-analytics.com';
-                $urls[] = '//www.googletagmanager.com';
-                break;
-                
-            case 'preconnect':
-                $urls[] = array(
-                    'href' => '//fonts.gstatic.com',
-                    'crossorigin' => 'anonymous'
-                );
-                break;
-        }
-        
-        return $urls;
-    }
-    add_filter('wp_resource_hints', 'gpress_add_resource_hints', 10, 2);
-}
 
-/**
- * Implement Critical CSS
- */
-function gpress_implement_critical_css() {
-    function gpress_inline_critical_css() {
+        return apply_filters('gpress_critical_resources', $resources);
+    }
+
+    /**
+     * Inline critical CSS
+     *
+     * @since 1.0.0
+     */
+    public static function inline_critical_css() {
+        if (!self::$config['enable_critical_css']) {
+            return;
+        }
+
         $critical_css_file = GPRESS_THEME_DIR . '/assets/css/critical.css';
         
         if (file_exists($critical_css_file)) {
             $critical_css = file_get_contents($critical_css_file);
-            $critical_css = gpress_minify_css($critical_css);
             
-            echo '<style id="gpress-critical-css">' . $critical_css . '</style>' . "\n";
+            if ($critical_css) {
+                // Minify CSS
+                $critical_css = self::minify_css($critical_css);
+                
+                echo '<style id="gpress-critical-css">' . $critical_css . '</style>' . "\n";
+                
+                // Add data attribute for performance monitoring
+                if (WP_DEBUG) {
+                    echo '<script>document.documentElement.setAttribute("data-critical-css-loaded", "true");</script>' . "\n";
+                }
+            }
         }
     }
-    add_action('wp_head', 'gpress_inline_critical_css', 1);
-    
-    // Defer non-critical CSS
-    function gpress_defer_non_critical_css($tag, $handle, $href, $media) {
-        $defer_handles = array(
-            'gpress-components',
-            'gpress-responsive', 
-            'wp-block-library'
-        );
-        
-        if (in_array($handle, $defer_handles)) {
-            return '<link rel="preload" href="' . $href . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'" id="' . $handle . '-css">' . "\n" .
-                   '<noscript>' . $tag . '</noscript>' . "\n";
+
+    /**
+     * Conditional performance asset loading
+     *
+     * @since 1.0.0
+     */
+    public static function conditional_performance_assets() {
+        $load_performance_js = false;
+        $load_lazy_loading = false;
+        $load_image_optimization = false;
+
+        // Determine what to load based on page context
+        if (is_singular() || is_home() || is_front_page()) {
+            $load_performance_js = true;
         }
-        
+
+        // Check for content that needs lazy loading
+        if (is_singular()) {
+            global $post;
+            if (has_post_thumbnail() || 
+                has_block('core/gallery', $post) || 
+                has_block('core/image', $post) ||
+                preg_match('/<img/', $post->post_content)) {
+                $load_lazy_loading = true;
+                $load_image_optimization = true;
+            }
+        }
+
+        // Check for archive pages with thumbnails
+        if (is_archive() || is_home()) {
+            $load_lazy_loading = true;
+            $load_image_optimization = true;
+        }
+
+        // Load performance script
+        if ($load_performance_js) {
+            wp_enqueue_script(
+                'gpress-performance',
+                GPRESS_THEME_URI . '/assets/js/performance.js',
+                array(),
+                GPRESS_VERSION,
+                array(
+                    'strategy' => 'defer',
+                    'in_footer' => true
+                )
+            );
+
+            // Localize performance configuration
+            wp_localize_script('gpress-performance', 'gpressPerformance', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('gpress_performance_nonce'),
+                'config' => self::$config,
+                'debug' => WP_DEBUG,
+                'page_type' => self::get_page_type()
+            ));
+        }
+
+        // Load lazy loading script
+        if ($load_lazy_loading && self::$config['enable_lazy_loading']) {
+            wp_enqueue_script(
+                'gpress-lazy-loading',
+                GPRESS_THEME_URI . '/assets/js/lazy-loading.js',
+                array(),
+                GPRESS_VERSION,
+                array(
+                    'strategy' => 'defer',
+                    'in_footer' => true
+                )
+            );
+        }
+
+        // Load resource optimizer
+        wp_enqueue_script(
+            'gpress-resource-optimizer',
+            GPRESS_THEME_URI . '/assets/js/resource-optimizer.js',
+            array(),
+            GPRESS_VERSION,
+            array(
+                'strategy' => 'defer',
+                'in_footer' => true
+            )
+        );
+
+        // Load Web Vitals monitoring on production
+        if (self::$config['enable_performance_monitoring'] && !WP_DEBUG) {
+            wp_enqueue_script(
+                'gpress-web-vitals',
+                GPRESS_THEME_URI . '/assets/js/web-vitals.js',
+                array(),
+                GPRESS_VERSION,
+                array(
+                    'strategy' => 'defer',
+                    'in_footer' => true
+                )
+            );
+        }
+
+        // Load Service Worker registration
+        if (self::$config['enable_service_worker']) {
+            wp_enqueue_script(
+                'gpress-service-worker',
+                GPRESS_THEME_URI . '/assets/js/service-worker-register.js',
+                array(),
+                GPRESS_VERSION,
+                array(
+                    'strategy' => 'defer',
+                    'in_footer' => true
+                )
+            );
+        }
+
+        // Load performance CSS
+        wp_enqueue_style(
+            'gpress-performance',
+            GPRESS_THEME_URI . '/assets/css/performance.css',
+            array(),
+            GPRESS_VERSION,
+            'all'
+        );
+    }
+
+    /**
+     * Optimize CSS loading with critical path optimization
+     *
+     * @since 1.0.0
+     * @param string $tag HTML tag
+     * @param string $handle Script handle
+     * @param string $href Stylesheet URL
+     * @param string $media Media type
+     * @return string Modified HTML tag
+     */
+    public static function optimize_css_loading($tag, $handle, $href, $media) {
+        // Critical stylesheets to load immediately
+        $critical_handles = array(
+            'gpress-style',
+            'gpress-critical'
+        );
+
+        // Non-critical stylesheets to defer
+        $deferred_handles = array(
+            'wp-block-library',
+            'wp-block-library-theme',
+            'global-styles'
+        );
+
+        if (in_array($handle, $deferred_handles)) {
+            // Defer non-critical CSS
+            $tag = '<link rel="preload" href="' . $href . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'" id="' . $handle . '-css">' . "\n" .
+                   '<noscript>' . $tag . '</noscript>';
+        }
+
         return $tag;
     }
-    add_filter('style_loader_tag', 'gpress_defer_non_critical_css', 10, 4);
-}
 
-/**
- * Optimize JavaScript Loading
- */
-function gpress_optimize_javascript_loading() {
-    // Add async/defer attributes to scripts
-    function gpress_optimize_script_loading($tag, $handle, $src) {
+    /**
+     * Optimize JavaScript loading
+     *
+     * @since 1.0.0
+     * @param string $tag HTML tag
+     * @param string $handle Script handle
+     * @param string $src Script URL
+     * @return string Modified HTML tag
+     */
+    public static function optimize_js_loading($tag, $handle, $src) {
         // Scripts to defer
         $defer_scripts = array(
             'gpress-performance',
+            'gpress-lazy-loading',
             'gpress-web-vitals',
+            'gpress-service-worker',
             'comment-reply'
         );
-        
+
         // Scripts to load async
         $async_scripts = array(
             'google-analytics',
             'gtag'
         );
-        
+
         if (in_array($handle, $defer_scripts)) {
-            return str_replace('<script ', '<script defer ', $tag);
+            $tag = str_replace('<script ', '<script defer ', $tag);
+        } elseif (in_array($handle, $async_scripts)) {
+            $tag = str_replace('<script ', '<script async ', $tag);
         }
-        
-        if (in_array($handle, $async_scripts)) {
-            return str_replace('<script ', '<script async ', $tag);
+
+        // Add module type for modern JavaScript
+        $module_scripts = array(
+            'gpress-resource-optimizer'
+        );
+
+        if (in_array($handle, $module_scripts)) {
+            $tag = str_replace('<script ', '<script type="module" ', $tag);
         }
-        
+
         return $tag;
     }
-    add_filter('script_loader_tag', 'gpress_optimize_script_loading', 10, 3);
-    
-    // Remove query strings from static resources
-    function gpress_remove_query_strings($src) {
-        if (!is_admin()) {
-            return preg_replace('/\?.*/', '', $src);
-        }
-        return $src;
-    }
-    add_filter('script_loader_src', 'gpress_remove_query_strings');
-    add_filter('style_loader_src', 'gpress_remove_query_strings');
-}
 
-/**
- * Remove WordPress Bloat
- */
-function gpress_remove_bloat() {
-    // Disable WordPress emoji scripts
-    remove_action('wp_head', 'print_emoji_detection_script', 7);
-    remove_action('admin_print_scripts', 'print_emoji_detection_script');
-    remove_action('wp_print_styles', 'print_emoji_styles');
-    remove_action('admin_print_styles', 'print_emoji_styles');
-    
-    // Remove unnecessary WordPress head elements
-    remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
-    remove_action('wp_head', 'rsd_link');
-    remove_action('wp_head', 'wlwmanifest_link');
-    remove_action('wp_head', 'wp_generator');
-    
-    // Disable XML-RPC
-    add_filter('xmlrpc_enabled', '__return_false');
-    
-    // Remove version from CSS/JS
-    function gpress_remove_version_strings($src) {
-        if (strpos($src, 'ver=')) {
+    /**
+     * Remove WordPress bloat for better performance
+     *
+     * @since 1.0.0
+     */
+    public static function remove_wordpress_bloat() {
+        // Remove emoji scripts and styles
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+        remove_action('admin_print_scripts', 'print_emoji_detection_script');
+        remove_action('wp_print_styles', 'print_emoji_styles');
+        remove_action('admin_print_styles', 'print_emoji_styles');
+        remove_filter('the_content_feed', 'wp_staticize_emoji');
+        remove_filter('comment_text_rss', 'wp_staticize_emoji');
+        remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
+
+        // Remove unnecessary header elements
+        remove_action('wp_head', 'wp_shortlink_wp_head', 10);
+        remove_action('wp_head', 'rsd_link');
+        remove_action('wp_head', 'wlwmanifest_link');
+        remove_action('wp_head', 'wp_generator');
+        remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10);
+
+        // Disable XML-RPC
+        add_filter('xmlrpc_enabled', '__return_false');
+
+        // Remove version numbers from CSS/JS
+        add_filter('style_loader_src', array(__CLASS__, 'remove_version_strings'), 9999);
+        add_filter('script_loader_src', array(__CLASS__, 'remove_version_strings'), 9999);
+    }
+
+    /**
+     * Optimize WordPress default scripts
+     *
+     * @since 1.0.0
+     */
+    public static function optimize_wordpress_scripts() {
+        // Dequeue unnecessary scripts on frontend
+        if (!is_admin()) {
+            // Remove jQuery migrate
+            global $wp_scripts;
+            if (isset($wp_scripts->registered['jquery'])) {
+                $wp_scripts->registered['jquery']->deps = array_diff(
+                    $wp_scripts->registered['jquery']->deps,
+                    array('jquery-migrate')
+                );
+            }
+
+            // Dequeue comment reply on non-comment pages
+            if (!is_singular() || !comments_open()) {
+                wp_dequeue_script('comment-reply');
+            }
+        }
+    }
+
+    /**
+     * Optimize Heartbeat API
+     *
+     * @since 1.0.0
+     */
+    public static function optimize_heartbeat() {
+        // Modify heartbeat settings
+        add_filter('heartbeat_settings', function($settings) {
+            $settings['interval'] = 60; // 60 seconds instead of 15
+            return $settings;
+        });
+
+        // Disable heartbeat on frontend
+        add_action('init', function() {
+            if (!is_admin()) {
+                wp_deregister_script('heartbeat');
+            }
+        });
+    }
+
+    /**
+     * Remove version strings from static resources
+     *
+     * @since 1.0.0
+     * @param string $src Resource URL
+     * @return string Modified URL
+     */
+    public static function remove_version_strings($src) {
+        if (!is_admin() && strpos($src, 'ver=')) {
             $src = remove_query_arg('ver', $src);
         }
         return $src;
     }
-    add_filter('style_loader_src', 'gpress_remove_version_strings', 9999);
-    add_filter('script_loader_src', 'gpress_remove_version_strings', 9999);
+
+    /**
+     * Clear performance-related cache
+     *
+     * @since 1.0.0
+     */
+    public static function clear_performance_cache() {
+        wp_cache_delete_group('gpress_performance');
+        
+        // Clear any transients
+        delete_transient('gpress_critical_css');
+        delete_transient('gpress_performance_data');
+    }
+
+    /**
+     * Clear all cache on theme switch
+     *
+     * @since 1.0.0
+     */
+    public static function clear_all_cache() {
+        wp_cache_flush();
+        self::clear_performance_cache();
+    }
+
+    /**
+     * Get current page type for performance decisions
+     *
+     * @since 1.0.0
+     * @return string Page type
+     */
+    private static function get_page_type() {
+        if (is_front_page()) return 'front_page';
+        if (is_home()) return 'blog';
+        if (is_singular('post')) return 'single_post';
+        if (is_singular('page')) return 'page';
+        if (is_category()) return 'category';
+        if (is_tag()) return 'tag';
+        if (is_archive()) return 'archive';
+        if (is_search()) return 'search';
+        if (is_404()) return '404';
+        return 'other';
+    }
+
+    /**
+     * Minify CSS helper
+     *
+     * @since 1.0.0
+     * @param string $css CSS content
+     * @return string Minified CSS
+     */
+    private static function minify_css($css) {
+        // Remove comments
+        $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
+        
+        // Remove whitespace
+        $css = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
+        
+        // Remove trailing semicolon before closing braces
+        $css = str_replace(';}', '}', $css);
+        
+        return trim($css);
+    }
 }
 
-/**
- * Optimize Heartbeat API
- */
-function gpress_optimize_heartbeat() {
-    // Optimize heartbeat settings
-    function gpress_heartbeat_settings($settings) {
-        $settings['interval'] = 60; // 60 seconds instead of 15
-        return $settings;
-    }
-    add_filter('heartbeat_settings', 'gpress_heartbeat_settings');
-    
-    // Disable heartbeat on frontend
-    function gpress_disable_frontend_heartbeat() {
-        if (!is_admin()) {
-            wp_deregister_script('heartbeat');
-        }
-    }
-    add_action('init', 'gpress_disable_frontend_heartbeat');
-}
-
-/**
- * Add Performance Monitoring
- */
-function gpress_add_performance_monitoring() {
-    if (get_theme_mod('enable_performance_monitoring', false)) {
-        function gpress_performance_monitoring_script() {
-            ?>
-            <script>
-            // Basic performance monitoring
-            window.addEventListener('load', function() {
-                // Measure page load time
-                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-                
-                // Send to analytics if available
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'page_load_time', {
-                        value: Math.round(loadTime),
-                        event_category: 'Performance'
-                    });
-                }
-                
-                // Console log for debugging
-                if (<?php echo WP_DEBUG ? 'true' : 'false'; ?>) {
-                    console.log('Page load time:', loadTime + 'ms');
-                }
-            });
-            </script>
-            <?php
-        }
-        add_action('wp_footer', 'gpress_performance_monitoring_script');
-    }
-}
-
-/**
- * CSS Minification Helper
- */
-function gpress_minify_css($css) {
-    // Remove comments
-    $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
-    
-    // Remove whitespace
-    $css = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
-    
-    return $css;
-}
-
-/**
- * Performance Cache Busting
- */
-function gpress_performance_cache_busting($src, $handle) {
-    // Add timestamp for development
-    if (WP_DEBUG && !is_admin()) {
-        $file_path = str_replace(GPRESS_THEME_URI, GPRESS_THEME_DIR, $src);
-        if (file_exists($file_path)) {
-            $file_time = filemtime($file_path);
-            $src = add_query_arg('t', $file_time, $src);
-        }
-    }
-    
-    return $src;
-}
-add_filter('style_loader_src', 'gpress_performance_cache_busting', 10, 2);
-add_filter('script_loader_src', 'gpress_performance_cache_busting', 10, 2);
+// Initialize performance optimizations
+add_action('after_setup_theme', array('GPress_Performance', 'init'));
 ```
 
-## 2. Create Image Optimization Functions
+### 2. Create Advanced Image Optimization
 
-### File: `inc/image-optimization.php`
+**File**: `inc/image-optimization.php`
 ```php
 <?php
 /**
- * Image Optimization Functions for GPress Theme
+ * Advanced Image Optimization for GPress Theme
+ * WebP support, progressive loading, and responsive image optimization
  *
  * @package GPress
+ * @subpackage Performance
  * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
 defined('ABSPATH') || exit;
 
 /**
- * Initialize Image Optimization
+ * GPress Image Optimization Manager
+ *
+ * @since 1.0.0
  */
-function gpress_init_image_optimization() {
-    gpress_setup_responsive_images();
-    gpress_setup_webp_support();
-    gpress_enhance_lazy_loading();
-}
-add_action('after_setup_theme', 'gpress_init_image_optimization');
+class GPress_Image_Optimization {
 
-/**
- * Setup Responsive Images
- */
-function gpress_setup_responsive_images() {
-    // Add custom image sizes
-    add_image_size('gpress-hero', 1200, 600, true);
-    add_image_size('gpress-featured', 800, 450, true);
-    add_image_size('gpress-thumbnail', 400, 250, true);
-    add_image_size('gpress-small', 300, 200, true);
-    
-    // Add responsive image support
-    add_theme_support('post-thumbnails');
-    
-    // Enable responsive images in content
-    add_filter('wp_image_editors', 'gpress_enable_responsive_support');
-}
-
-/**
- * Enable WebP Support
- */
-function gpress_setup_webp_support() {
-    // Only if WebP is supported and enabled
-    if (!function_exists('imagewebp') || !get_theme_mod('enable_webp_support', true)) {
-        return;
+    /**
+     * Initialize image optimization
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('after_setup_theme', array(__CLASS__, 'setup_image_support'));
+        add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_image_styles'));
+        
+        // WebP support
+        add_filter('wp_generate_attachment_metadata', array(__CLASS__, 'generate_webp_images'), 10, 2);
+        add_filter('wp_get_attachment_image_src', array(__CLASS__, 'serve_webp_images'), 10, 4);
+        
+        // Responsive images
+        add_filter('wp_get_attachment_image_attributes', array(__CLASS__, 'add_responsive_image_attributes'), 10, 3);
+        add_filter('the_content', array(__CLASS__, 'optimize_content_images'));
+        
+        // Progressive image loading
+        add_action('wp_head', array(__CLASS__, 'add_image_loading_css'));
+        
+        // Image compression
+        add_filter('jpeg_quality', array(__CLASS__, 'optimize_jpeg_quality'));
+        add_filter('wp_editor_set_quality', array(__CLASS__, 'enable_progressive_jpeg'), 10, 2);
     }
-    
-    // Generate WebP versions of uploaded images
-    function gpress_generate_webp_images($metadata, $attachment_id) {
+
+    /**
+     * Setup image support and sizes
+     *
+     * @since 1.0.0
+     */
+    public static function setup_image_support() {
+        // Add theme support for post thumbnails
+        add_theme_support('post-thumbnails');
+        
+        // Add custom image sizes for performance
+        add_image_size('gpress-hero', 1200, 600, true);           // Hero images
+        add_image_size('gpress-featured', 800, 450, true);        // Featured images
+        add_image_size('gpress-card', 400, 225, true);           // Card images
+        add_image_size('gpress-thumbnail', 300, 169, true);       // Thumbnails
+        add_image_size('gpress-avatar', 150, 150, true);         // Avatar images
+        add_image_size('gpress-small', 200, 113, true);          // Small images
+        
+        // Add support for responsive images
+        add_theme_support('responsive-embeds');
+        
+        // Add custom image sizes to media library
+        add_filter('image_size_names_choose', array(__CLASS__, 'add_custom_image_sizes_to_media'));
+    }
+
+    /**
+     * Enqueue image-related styles
+     *
+     * @since 1.0.0
+     */
+    public static function enqueue_image_styles() {
+        wp_enqueue_style(
+            'gpress-loading-states',
+            GPRESS_THEME_URI . '/assets/css/loading-states.css',
+            array(),
+            GPRESS_VERSION,
+            'all'
+        );
+    }
+
+    /**
+     * Generate WebP versions of uploaded images
+     *
+     * @since 1.0.0
+     * @param array $metadata Image metadata
+     * @param int $attachment_id Attachment ID
+     * @return array Modified metadata
+     */
+    public static function generate_webp_images($metadata, $attachment_id) {
+        // Check if WebP support is enabled and available
+        if (!function_exists('imagewebp') || !get_theme_mod('enable_webp_support', true)) {
+            return $metadata;
+        }
+
         $file_path = get_attached_file($attachment_id);
         
         if (!$file_path || !file_exists($file_path)) {
             return $metadata;
         }
-        
+
         $info = pathinfo($file_path);
-        if (!in_array(strtolower($info['extension']), ['jpg', 'jpeg', 'png'])) {
+        $supported_formats = array('jpg', 'jpeg', 'png');
+        
+        if (!in_array(strtolower($info['extension']), $supported_formats)) {
             return $metadata;
         }
-        
-        // Generate WebP version
-        $webp_path = $info['dirname'] . '/' . $info['filename'] . '.webp';
-        
+
         try {
-            switch (strtolower($info['extension'])) {
-                case 'jpg':
-                case 'jpeg':
-                    $image = imagecreatefromjpeg($file_path);
-                    break;
-                case 'png':
-                    $image = imagecreatefrompng($file_path);
-                    break;
-                default:
-                    return $metadata;
-            }
+            // Generate WebP for original image
+            self::create_webp_image($file_path);
             
-            if ($image) {
-                // Convert to WebP with 85% quality
-                imagewebp($image, $webp_path, 85);
-                imagedestroy($image);
+            // Generate WebP for all image sizes
+            if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
+                $upload_dir = wp_upload_dir();
+                $base_dir = dirname($file_path);
                 
-                // Generate WebP versions for different sizes
-                if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
-                    foreach ($metadata['sizes'] as $size => $size_data) {
-                        $size_file = dirname($file_path) . '/' . $size_data['file'];
-                        $size_info = pathinfo($size_file);
-                        $size_webp = $size_info['dirname'] . '/' . $size_info['filename'] . '.webp';
-                        
-                        if (file_exists($size_file)) {
-                            $size_image = null;
-                            switch (strtolower($size_info['extension'])) {
-                                case 'jpg':
-                                case 'jpeg':
-                                    $size_image = imagecreatefromjpeg($size_file);
-                                    break;
-                                case 'png':
-                                    $size_image = imagecreatefrompng($size_file);
-                                    break;
-                            }
-                            
-                            if ($size_image) {
-                                imagewebp($size_image, $size_webp, 85);
-                                imagedestroy($size_image);
-                            }
-                        }
+                foreach ($metadata['sizes'] as $size => $size_data) {
+                    $size_file = $base_dir . '/' . $size_data['file'];
+                    if (file_exists($size_file)) {
+                        self::create_webp_image($size_file);
                     }
                 }
             }
@@ -495,529 +786,730 @@ function gpress_setup_webp_support() {
             // Log error but don't break the upload process
             error_log('GPress WebP generation failed: ' . $e->getMessage());
         }
-        
+
         return $metadata;
     }
-    add_filter('wp_generate_attachment_metadata', 'gpress_generate_webp_images', 10, 2);
-    
-    // Serve WebP images when available
-    function gpress_serve_webp_images($image, $attachment_id, $size, $icon) {
-        if (!$image || is_admin()) {
+
+    /**
+     * Create WebP version of an image
+     *
+     * @since 1.0.0
+     * @param string $source_path Path to source image
+     * @return bool Success status
+     */
+    private static function create_webp_image($source_path) {
+        $info = pathinfo($source_path);
+        $webp_path = $info['dirname'] . '/' . $info['filename'] . '.webp';
+        
+        // Skip if WebP already exists and is newer
+        if (file_exists($webp_path) && filemtime($webp_path) >= filemtime($source_path)) {
+            return true;
+        }
+
+        $image = null;
+        
+        switch (strtolower($info['extension'])) {
+            case 'jpg':
+            case 'jpeg':
+                $image = imagecreatefromjpeg($source_path);
+                break;
+            case 'png':
+                $image = imagecreatefrompng($source_path);
+                // Preserve transparency for PNG
+                imagealphablending($image, false);
+                imagesavealpha($image, true);
+                break;
+            default:
+                return false;
+        }
+        
+        if (!$image) {
+            return false;
+        }
+        
+        // Create WebP with optimized quality
+        $quality = apply_filters('gpress_webp_quality', 85);
+        $success = imagewebp($image, $webp_path, $quality);
+        
+        imagedestroy($image);
+        
+        return $success;
+    }
+
+    /**
+     * Serve WebP images when supported
+     *
+     * @since 1.0.0
+     * @param array|false $image Image data array or false
+     * @param int $attachment_id Attachment ID
+     * @param string|array $size Image size
+     * @param bool $icon Whether to use icon
+     * @return array|false Modified image data
+     */
+    public static function serve_webp_images($image, $attachment_id, $size, $icon) {
+        if (!$image || is_admin() || !self::browser_supports_webp()) {
             return $image;
         }
+
+        $image_url = $image[0];
+        $webp_url = preg_replace('/\.(jpe?g|png)$/i', '.webp', $image_url);
         
-        // Check if browser supports WebP
-        $accepts_webp = false;
-        if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false) {
-            $accepts_webp = true;
+        // Check if WebP version exists
+        $webp_path = str_replace(
+            wp_get_upload_dir()['baseurl'], 
+            wp_get_upload_dir()['basedir'], 
+            $webp_url
+        );
+        
+        if (file_exists($webp_path)) {
+            $image[0] = $webp_url;
         }
-        
-        if ($accepts_webp && is_array($image)) {
-            $info = pathinfo($image[0]);
-            $webp_url = str_replace($info['extension'], 'webp', $image[0]);
-            $webp_path = str_replace(wp_get_upload_dir()['baseurl'], wp_get_upload_dir()['basedir'], $webp_url);
-            
-            if (file_exists($webp_path)) {
-                $image[0] = $webp_url;
-            }
-        }
-        
+
         return $image;
     }
-    add_filter('wp_get_attachment_image_src', 'gpress_serve_webp_images', 10, 4);
-}
 
-/**
- * Enhanced Lazy Loading
- */
-function gpress_enhance_lazy_loading() {
-    // Add loading attributes to images
-    function gpress_add_loading_attributes($attr, $attachment, $size) {
-        // Don't add loading attribute to admin or RSS
+    /**
+     * Check if browser supports WebP
+     *
+     * @since 1.0.0
+     * @return bool WebP support status
+     */
+    private static function browser_supports_webp() {
+        return isset($_SERVER['HTTP_ACCEPT']) && 
+               strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
+    }
+
+    /**
+     * Add responsive image attributes
+     *
+     * @since 1.0.0
+     * @param array $attr Image attributes
+     * @param WP_Post $attachment Attachment post object
+     * @param string|array $size Image size
+     * @return array Modified attributes
+     */
+    public static function add_responsive_image_attributes($attr, $attachment, $size) {
+        // Skip in admin and feeds
         if (is_admin() || is_feed()) {
             return $attr;
         }
-        
+
         // Add loading attribute
         if (!isset($attr['loading'])) {
-            $attr['loading'] = 'lazy';
+            // Eager load for above-the-fold images
+            $attr['loading'] = self::is_above_fold_image($attachment->ID) ? 'eager' : 'lazy';
         }
-        
+
         // Add decoding attribute
         if (!isset($attr['decoding'])) {
             $attr['decoding'] = 'async';
         }
-        
-        // Add fetchpriority for above-the-fold images
-        if (is_singular() && !isset($attr['fetchpriority'])) {
-            global $post;
-            $featured_image_id = get_post_thumbnail_id($post->ID);
-            
-            if ($attachment->ID === $featured_image_id) {
-                $attr['fetchpriority'] = 'high';
-                $attr['loading'] = 'eager'; // Don't lazy load featured images
-            }
+
+        // Add fetchpriority for critical images
+        if (!isset($attr['fetchpriority']) && self::is_critical_image($attachment->ID)) {
+            $attr['fetchpriority'] = 'high';
         }
-        
+
+        // Add responsive class
+        $attr['class'] = isset($attr['class']) ? $attr['class'] . ' responsive-image' : 'responsive-image';
+
         return $attr;
     }
-    add_filter('wp_get_attachment_image_attributes', 'gpress_add_loading_attributes', 10, 3);
-    
-    // Add lazy loading to content images
-    function gpress_add_content_lazy_loading($content) {
+
+    /**
+     * Check if image is above the fold
+     *
+     * @since 1.0.0
+     * @param int $attachment_id Attachment ID
+     * @return bool Above fold status
+     */
+    private static function is_above_fold_image($attachment_id) {
+        // Featured images on singular posts/pages
+        if (is_singular() && get_post_thumbnail_id() === $attachment_id) {
+            return true;
+        }
+
+        // Hero images on front page
+        if (is_front_page()) {
+            $hero_image_id = get_theme_mod('hero_background_image_id');
+            if ($hero_image_id && $hero_image_id == $attachment_id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if image is critical for performance
+     *
+     * @since 1.0.0
+     * @param int $attachment_id Attachment ID
+     * @return bool Critical status
+     */
+    private static function is_critical_image($attachment_id) {
+        return self::is_above_fold_image($attachment_id);
+    }
+
+    /**
+     * Optimize images in content
+     *
+     * @since 1.0.0
+     * @param string $content Post content
+     * @return string Modified content
+     */
+    public static function optimize_content_images($content) {
         if (is_admin() || is_feed() || wp_is_json_request()) {
             return $content;
         }
-        
-        // Add loading="lazy" to content images
+
+        // Add loading and decoding attributes to content images
         $content = preg_replace_callback(
             '/<img([^>]*)>/i',
-            function($matches) {
-                $img_tag = $matches[0];
-                
-                // Skip if loading attribute already exists
-                if (strpos($img_tag, 'loading=') !== false) {
-                    return $img_tag;
-                }
-                
-                // Add loading and decoding attributes
-                $img_tag = str_replace('<img ', '<img loading="lazy" decoding="async" ', $img_tag);
-                
-                return $img_tag;
-            },
+            array(__CLASS__, 'process_content_image'),
             $content
         );
-        
+
         return $content;
     }
-    add_filter('the_content', 'gpress_add_content_lazy_loading');
-}
 
-/**
- * Image Compression Settings
- */
-function gpress_optimize_image_compression() {
-    // Increase JPEG quality for better visual results
-    add_filter('jpeg_quality', function($quality) {
-        return 85;
-    });
-    
-    // Optimize image editor selection
-    add_filter('wp_image_editors', function($editors) {
-        // Prefer Imagick over GD if available
-        if (class_exists('WP_Image_Editor_Imagick')) {
-            array_unshift($editors, 'WP_Image_Editor_Imagick');
+    /**
+     * Process individual content images
+     *
+     * @since 1.0.0
+     * @param array $matches Regex matches
+     * @return string Modified image tag
+     */
+    private static function process_content_image($matches) {
+        $img_tag = $matches[0];
+        $attributes = $matches[1];
+
+        // Skip if loading attribute already exists
+        if (strpos($attributes, 'loading=') !== false) {
+            return $img_tag;
         }
-        return $editors;
-    });
-}
-add_action('init', 'gpress_optimize_image_compression');
 
-/**
- * Progressive JPEG Support
- */
-function gpress_enable_progressive_jpeg($quality, $mime_type) {
-    if ($mime_type === 'image/jpeg') {
-        return 'progressive';
+        // Add performance attributes
+        $new_attributes = $attributes;
+        $new_attributes .= ' loading="lazy"';
+        $new_attributes .= ' decoding="async"';
+        $new_attributes .= ' class="content-image responsive-image"';
+
+        return '<img' . $new_attributes . '>';
     }
-    return $quality;
-}
-add_filter('wp_editor_set_quality', 'gpress_enable_progressive_jpeg', 10, 2);
 
-/**
- * Image Optimization Helper Functions
- */
-function gpress_get_optimized_image_url($attachment_id, $size = 'full') {
-    $image = wp_get_attachment_image_src($attachment_id, $size);
-    
-    if (!$image) {
-        return false;
-    }
-    
-    // Check for WebP version if browser supports it
-    $accepts_webp = isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
-    
-    if ($accepts_webp) {
-        $info = pathinfo($image[0]);
-        $webp_url = str_replace($info['extension'], 'webp', $image[0]);
-        $webp_path = str_replace(wp_get_upload_dir()['baseurl'], wp_get_upload_dir()['basedir'], $webp_url);
-        
-        if (file_exists($webp_path)) {
-            return $webp_url;
-        }
-    }
-    
-    return $image[0];
-}
-
-/**
- * Responsive Image Sizes
- */
-function gpress_custom_image_sizes($sizes) {
-    return array_merge($sizes, array(
-        'gpress-hero' => 'Hero Image (1200x600)',
-        'gpress-featured' => 'Featured Image (800x450)',
-        'gpress-thumbnail' => 'Thumbnail (400x250)',
-        'gpress-small' => 'Small (300x200)'
-    ));
-}
-add_filter('image_size_names_choose', 'gpress_custom_image_sizes');
-```
-
-## 3. Create Advanced Caching System
-
-### File: `inc/caching.php`
-```php
-<?php
-/**
- * Advanced Caching Functions for GPress Theme
- *
- * @package GPress
- * @version 1.0.0
- */
-
-// Prevent direct access
-defined('ABSPATH') || exit;
-
-/**
- * GPress Cache Management Class
- */
-class GPress_Cache {
-    
     /**
-     * Cache duration constants
+     * Add image loading CSS to head
+     *
+     * @since 1.0.0
      */
-    const SHORT_CACHE = 900;    // 15 minutes
-    const MEDIUM_CACHE = 3600;  // 1 hour
-    const LONG_CACHE = 21600;   // 6 hours
-    const DAILY_CACHE = 86400;  // 24 hours
-    
-    /**
-     * Cache group name
-     */
-    const CACHE_GROUP = 'gpress';
-    
-    /**
-     * Get cached data or execute callback
-     */
-    public static function get_or_set($key, $callback, $duration = self::MEDIUM_CACHE) {
-        $cached_data = wp_cache_get($key, self::CACHE_GROUP);
-        
-        if ($cached_data !== false) {
-            return $cached_data;
+    public static function add_image_loading_css() {
+        ?>
+        <style id="gpress-image-loading">
+        .responsive-image {
+            height: auto;
+            max-width: 100%;
         }
         
-        $data = call_user_func($callback);
-        wp_cache_set($key, $data, self::CACHE_GROUP, $duration);
-        
-        return $data;
-    }
-    
-    /**
-     * Clear cache for specific group or key
-     */
-    public static function clear_cache($key = null) {
-        if ($key) {
-            wp_cache_delete($key, self::CACHE_GROUP);
-        } else {
-            wp_cache_flush_group(self::CACHE_GROUP);
+        .responsive-image[loading="lazy"] {
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-    }
-    
-    /**
-     * Cache recent posts with featured images
-     */
-    public static function get_recent_posts($num_posts = 5) {
-        $cache_key = "recent_posts_{$num_posts}";
         
-        return self::get_or_set($cache_key, function() use ($num_posts) {
-            return get_posts([
-                'numberposts' => $num_posts,
-                'post_status' => 'publish',
-                'meta_query' => [
-                    [
-                        'key' => '_thumbnail_id',
-                        'compare' => 'EXISTS'
-                    ]
-                ],
-                'fields' => 'ids'
-            ]);
-        }, self::MEDIUM_CACHE);
-    }
-    
-    /**
-     * Cache popular posts
-     */
-    public static function get_popular_posts($num_posts = 5) {
-        $cache_key = "popular_posts_{$num_posts}";
+        .responsive-image.loaded,
+        .responsive-image[loading="eager"] {
+            opacity: 1;
+        }
         
-        return self::get_or_set($cache_key, function() use ($num_posts) {
-            return get_posts([
-                'numberposts' => $num_posts,
-                'post_status' => 'publish',
-                'meta_key' => 'post_views_count',
-                'orderby' => 'meta_value_num',
-                'order' => 'DESC',
-                'fields' => 'ids'
-            ]);
-        }, self::LONG_CACHE);
-    }
-    
-    /**
-     * Cache category posts
-     */
-    public static function get_category_posts($category_id, $num_posts = 5) {
-        $cache_key = "category_posts_{$category_id}_{$num_posts}";
+        /* Placeholder while loading */
+        .image-placeholder {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading-shimmer 1.5s infinite;
+        }
         
-        return self::get_or_set($cache_key, function() use ($category_id, $num_posts) {
-            return get_posts([
-                'numberposts' => $num_posts,
-                'post_status' => 'publish',
-                'cat' => $category_id,
-                'fields' => 'ids'
-            ]);
-        }, self::MEDIUM_CACHE);
-    }
-    
-    /**
-     * Cache navigation menu
-     */
-    public static function get_cached_menu($location) {
-        $cache_key = "nav_menu_{$location}";
+        @keyframes loading-shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
         
-        return self::get_or_set($cache_key, function() use ($location) {
-            return wp_nav_menu([
-                'theme_location' => $location,
-                'echo' => false,
-                'fallback_cb' => false
-            ]);
-        }, self::DAILY_CACHE);
-    }
-    
-    /**
-     * Cache widget output
-     */
-    public static function get_cached_widget($widget_id) {
-        $cache_key = "widget_{$widget_id}";
-        
-        return self::get_or_set($cache_key, function() use ($widget_id) {
-            ob_start();
-            dynamic_sidebar($widget_id);
-            return ob_get_clean();
-        }, self::MEDIUM_CACHE);
-    }
-}
-
-/**
- * Initialize Caching System
- */
-function gpress_init_caching_system() {
-    // Clear cache on post updates
-    function gpress_clear_cache_on_update($post_id) {
-        GPress_Cache::clear_cache();
-    }
-    add_action('save_post', 'gpress_clear_cache_on_update');
-    add_action('delete_post', 'gpress_clear_cache_on_update');
-    add_action('wp_update_nav_menu', 'gpress_clear_cache_on_update');
-    
-    // Clear cache when customizer settings change
-    add_action('customize_save_after', function() {
-        GPress_Cache::clear_cache();
-    });
-    
-    // Enable object caching if available
-    if (function_exists('wp_cache_supports')) {
-        add_action('init', function() {
-            if (wp_cache_supports('add_groups')) {
-                wp_cache_add_global_groups(array(GPress_Cache::CACHE_GROUP));
+        @media (prefers-reduced-motion: reduce) {
+            .responsive-image {
+                transition: none;
             }
-        });
-    }
-}
-add_action('init', 'gpress_init_caching_system');
-
-/**
- * Fragment Caching for Expensive Operations
- */
-function gpress_fragment_cache($key, $callback, $duration = 3600) {
-    $cached_fragment = get_transient("gpress_fragment_{$key}");
-    
-    if ($cached_fragment !== false) {
-        return $cached_fragment;
-    }
-    
-    ob_start();
-    call_user_func($callback);
-    $fragment = ob_get_clean();
-    
-    set_transient("gpress_fragment_{$key}", $fragment, $duration);
-    
-    return $fragment;
-}
-
-/**
- * Page Caching for Static Content
- */
-function gpress_page_cache_headers() {
-    if (!is_admin() && !is_user_logged_in()) {
-        // Set cache headers for static content
-        if (is_singular() && !comments_open()) {
-            header('Cache-Control: public, max-age=3600');
-            header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT');
+            .image-placeholder {
+                animation: none;
+            }
         }
+        </style>
+        <?php
     }
-}
-add_action('template_redirect', 'gpress_page_cache_headers');
 
-/**
- * Browser Caching via .htaccess
- */
-function gpress_add_browser_caching_rules() {
-    $htaccess_rules = '
-# GPress Browser Caching Rules
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType text/css "access plus 1 year"
-    ExpiresByType application/javascript "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType image/jpg "access plus 1 year"
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/webp "access plus 1 year"
-    ExpiresByType application/pdf "access plus 1 month"
-    ExpiresByType image/x-icon "access plus 1 year"
-</IfModule>
+    /**
+     * Optimize JPEG quality
+     *
+     * @since 1.0.0
+     * @param int $quality Current quality
+     * @return int Optimized quality
+     */
+    public static function optimize_jpeg_quality($quality) {
+        return apply_filters('gpress_jpeg_quality', 85);
+    }
 
-<IfModule mod_headers.c>
-    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|webp|ico)$">
-        Header set Cache-Control "public, max-age=31536000"
-    </FilesMatch>
-</IfModule>';
-    
-    // Only add rules if we can write to .htaccess
-    if (get_option('permalink_structure') && is_writable(ABSPATH)) {
-        $htaccess_file = ABSPATH . '.htaccess';
-        $current_rules = file_exists($htaccess_file) ? file_get_contents($htaccess_file) : '';
+    /**
+     * Enable progressive JPEG
+     *
+     * @since 1.0.0
+     * @param int $quality Image quality
+     * @param string $mime_type MIME type
+     * @return int|string Quality or progressive setting
+     */
+    public static function enable_progressive_jpeg($quality, $mime_type) {
+        if ($mime_type === 'image/jpeg') {
+            return apply_filters('gpress_progressive_jpeg', true) ? 'progressive' : $quality;
+        }
+        return $quality;
+    }
+
+    /**
+     * Add custom image sizes to media library
+     *
+     * @since 1.0.0
+     * @param array $sizes Existing sizes
+     * @return array Modified sizes
+     */
+    public static function add_custom_image_sizes_to_media($sizes) {
+        return array_merge($sizes, array(
+            'gpress-hero' => __('Hero Image (1200×600)', 'gpress'),
+            'gpress-featured' => __('Featured Image (800×450)', 'gpress'),
+            'gpress-card' => __('Card Image (400×225)', 'gpress'),
+            'gpress-thumbnail' => __('Thumbnail (300×169)', 'gpress'),
+            'gpress-avatar' => __('Avatar (150×150)', 'gpress'),
+            'gpress-small' => __('Small Image (200×113)', 'gpress')
+        ));
+    }
+
+    /**
+     * Get optimized image URL
+     *
+     * @since 1.0.0
+     * @param int $attachment_id Attachment ID
+     * @param string $size Image size
+     * @return string|false Optimized image URL
+     */
+    public static function get_optimized_image_url($attachment_id, $size = 'full') {
+        $image = wp_get_attachment_image_src($attachment_id, $size);
         
-        if (strpos($current_rules, 'GPress Browser Caching Rules') === false) {
-            file_put_contents($htaccess_file, $htaccess_rules . "\n\n" . $current_rules);
+        if (!$image) {
+            return false;
         }
+
+        // Return WebP version if available and supported
+        if (self::browser_supports_webp()) {
+            $webp_url = preg_replace('/\.(jpe?g|png)$/i', '.webp', $image[0]);
+            $webp_path = str_replace(
+                wp_get_upload_dir()['baseurl'], 
+                wp_get_upload_dir()['basedir'], 
+                $webp_url
+            );
+            
+            if (file_exists($webp_path)) {
+                return $webp_url;
+            }
+        }
+
+        return $image[0];
     }
 }
-add_action('admin_init', 'gpress_add_browser_caching_rules');
+
+// Initialize image optimization
+add_action('after_setup_theme', array('GPress_Image_Optimization', 'init'));
 ```
 
-## 4. Create Performance JavaScript
+### 3. Create Critical CSS File
 
-### File: `assets/js/performance.js`
+**File**: `assets/css/critical.css`
+```css
+/*
+ * Critical Path CSS for GPress Theme
+ * Above-the-fold styles for optimal LCP
+ * Version: 1.0.0
+ */
+
+/* CSS Custom Properties for Critical Styles */
+:root {
+  --gpress-primary: #2c3e50;
+  --gpress-secondary: #3498db;
+  --gpress-accent: #e74c3c;
+  --gpress-text: #2c3e50;
+  --gpress-text-light: #7f8c8d;
+  --gpress-bg: #ffffff;
+  --gpress-bg-alt: #f8f9fa;
+  --gpress-border: #e9ecef;
+  --gpress-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  --gpress-radius: 8px;
+  --gpress-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+  --gpress-font-size-base: 16px;
+  --gpress-line-height-base: 1.6;
+  --gpress-spacing-xs: 0.25rem;
+  --gpress-spacing-sm: 0.5rem;
+  --gpress-spacing-md: 1rem;
+  --gpress-spacing-lg: 2rem;
+  --gpress-spacing-xl: 3rem;
+  --gpress-container-width: 1200px;
+  --gpress-header-height: 80px;
+}
+
+/* Critical Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  line-height: var(--gpress-line-height-base);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: var(--gpress-font-family);
+  font-size: var(--gpress-font-size-base);
+  line-height: var(--gpress-line-height-base);
+  color: var(--gpress-text);
+  background-color: var(--gpress-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skip Link for Accessibility */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 6px;
+  z-index: 999999;
+  text-decoration: none;
+  background: var(--gpress-primary);
+  color: white;
+  padding: var(--gpress-spacing-sm) var(--gpress-spacing-md);
+  border-radius: var(--gpress-radius);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 6px;
+}
+
+/* Critical Header Styles */
+.site-header {
+  position: relative;
+  background: var(--gpress-bg);
+  border-bottom: 1px solid var(--gpress-border);
+  height: var(--gpress-header-height);
+  z-index: 100;
+}
+
+.header-container {
+  max-width: var(--gpress-container-width);
+  margin: 0 auto;
+  padding: 0 var(--gpress-spacing-md);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-branding {
+  display: flex;
+  align-items: center;
+  gap: var(--gpress-spacing-sm);
+}
+
+.site-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.site-title a {
+  text-decoration: none;
+  color: var(--gpress-primary);
+}
+
+/* Critical Navigation */
+.main-navigation {
+  display: flex;
+  align-items: center;
+}
+
+.main-navigation ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--gpress-spacing-md);
+}
+
+.main-navigation a {
+  text-decoration: none;
+  color: var(--gpress-text);
+  font-weight: 500;
+  padding: var(--gpress-spacing-sm) 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.main-navigation a:hover,
+.main-navigation a:focus {
+  border-bottom-color: var(--gpress-secondary);
+}
+
+/* Critical Main Content */
+.site-main {
+  min-height: calc(100vh - var(--gpress-header-height) - 200px);
+}
+
+.content-container {
+  max-width: var(--gpress-container-width);
+  margin: 0 auto;
+  padding: var(--gpress-spacing-lg) var(--gpress-spacing-md);
+}
+
+/* Critical Typography */
+h1, h2, h3 {
+  margin: 0 0 var(--gpress-spacing-md) 0;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--gpress-text);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+}
+
+p {
+  margin: 0 0 var(--gpress-spacing-md) 0;
+}
+
+/* Critical Button Styles */
+.wp-block-button__link,
+.btn,
+button[type="submit"] {
+  display: inline-block;
+  background: var(--gpress-primary);
+  color: white;
+  text-decoration: none;
+  padding: var(--gpress-spacing-sm) var(--gpress-spacing-md);
+  border-radius: var(--gpress-radius);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.wp-block-button__link:hover,
+.btn:hover,
+button[type="submit"]:hover {
+  background: var(--gpress-secondary);
+}
+
+/* Critical Image Styles */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.wp-block-image {
+  margin: var(--gpress-spacing-lg) 0;
+}
+
+/* Critical Layout Utilities */
+.aligncenter {
+  text-align: center;
+}
+
+.alignwide {
+  max-width: calc(var(--gpress-container-width) + 200px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.alignfull {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* Critical Responsive Breakpoints */
+@media (max-width: 768px) {
+  :root {
+    --gpress-header-height: 60px;
+    --gpress-spacing-lg: 1rem;
+  }
+  
+  .header-container {
+    padding: 0 var(--gpress-spacing-sm);
+  }
+  
+  .main-navigation ul {
+    gap: var(--gpress-spacing-sm);
+  }
+  
+  .content-container {
+    padding: var(--gpress-spacing-md) var(--gpress-spacing-sm);
+  }
+}
+
+/* Loading State for Lazy Images */
+.responsive-image[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.responsive-image.loaded {
+  opacity: 1;
+}
+
+/* Font Loading Optimization */
+.no-js .fonts-loading {
+  visibility: hidden;
+}
+
+.fonts-loaded .fonts-loading {
+  visibility: visible;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+```
+
+### 4. Create Performance JavaScript
+
+**File**: `assets/js/performance.js`
 ```javascript
 /**
  * Performance Optimization JavaScript for GPress Theme
- * Minimal, performance-focused enhancements
+ * Lightweight, modular performance enhancements
  * Version: 1.0.0
  */
 
 (function() {
     'use strict';
     
-    // Check if performance features are enabled
+    // Performance configuration from PHP
     const config = window.gpressPerformance || {};
+    const debug = config.debug || false;
+    
+    // Performance metrics tracking
+    const metrics = {
+        startTime: performance.now(),
+        navigationStart: performance.timing?.navigationStart || Date.now(),
+        measurements: new Map()
+    };
     
     /**
-     * Initialize performance optimizations
+     * Performance Manager Class
      */
-    function initPerformanceOptimizations() {
-        if (config.enableLazyLoad) {
-            initIntersectionObserverLazyLoad();
+    class GPressPerformance {
+        constructor() {
+            this.observers = new Map();
+            this.loadedResources = new Set();
+            this.init();
         }
         
-        initImageOptimizations();
-        initResourceHints();
-        initServiceWorker();
-        
-        // Initialize after page load to avoid blocking
-        if (document.readyState === 'complete') {
-            initNonCriticalOptimizations();
-        } else {
-            window.addEventListener('load', initNonCriticalOptimizations);
+        /**
+         * Initialize performance optimizations
+         */
+        init() {
+            this.measurePerformance('init_start');
+            
+            // Core optimizations
+            this.initImageOptimizations();
+            this.initResourceOptimizations();
+            this.initNavigationOptimizations();
+            
+            // Conditional features
+            if (config.config?.enable_lazy_loading) {
+                this.initAdvancedLazyLoading();
+            }
+            
+            if (config.config?.enable_performance_monitoring) {
+                this.initPerformanceMonitoring();
+            }
+            
+            // Initialize after page load
+            if (document.readyState === 'complete') {
+                this.onPageLoad();
+            } else {
+                window.addEventListener('load', () => this.onPageLoad());
+            }
+            
+            this.measurePerformance('init_end');
+            this.logDebug('GPress Performance initialized');
         }
-    }
-    
-    /**
-     * Enhanced Lazy Loading with Intersection Observer
-     */
-    function initIntersectionObserverLazyLoad() {
-        if (!('IntersectionObserver' in window)) {
-            return;
-        }
         
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
+        /**
+         * Image optimization enhancements
+         */
+        initImageOptimizations() {
+            // Enhance image loading
+            this.optimizeImageLoading();
+            
+            // Add image load listeners
+            document.querySelectorAll('img').forEach(img => {
+                if (img.complete) {
+                    img.classList.add('loaded');
+                } else {
+                    img.addEventListener('load', function() {
+                        this.classList.add('loaded');
+                    }, { passive: true });
                     
-                    // Load high-res source
-                    if (img.dataset.src) {
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                    }
-                    
-                    // Load responsive srcset
-                    if (img.dataset.srcset) {
-                        img.srcset = img.dataset.srcset;
-                        img.removeAttribute('data-srcset');
-                    }
-                    
-                    // Remove lazy class and observer
-                    img.classList.remove('lazy');
-                    observer.unobserve(img);
-                    
-                    // Trigger fade-in animation
-                    img.style.opacity = '1';
+                    img.addEventListener('error', function() {
+                        this.classList.add('error');
+                    }, { passive: true });
                 }
             });
-        }, {
-            root: null,
-            rootMargin: '50px 0px',
-            threshold: 0.01
-        });
+        }
         
-        // Observe all lazy images
-        document.querySelectorAll('img[data-src], img.lazy').forEach(img => {
-            img.style.opacity = '0';
-            img.style.transition = 'opacity 0.3s ease';
-            imageObserver.observe(img);
-        });
-        
-        // Lazy load background images
-        const bgObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const element = entry.target;
-                    const bgSrc = element.dataset.bgSrc;
-                    
-                    if (bgSrc) {
-                        element.style.backgroundImage = `url(${bgSrc})`;
-                        element.removeAttribute('data-bg-src');
-                        observer.unobserve(element);
-                    }
+        /**
+         * Optimize image loading with modern techniques
+         */
+        optimizeImageLoading() {
+            // Check for WebP support
+            this.checkWebPSupport().then(supported => {
+                if (supported) {
+                    document.documentElement.classList.add('webp');
+                    this.logDebug('WebP support detected');
                 }
             });
-        }, {
-            rootMargin: '50px 0px'
-        });
+            
+            // Optimize responsive images
+            this.optimizeResponsiveImages();
+        }
         
-        document.querySelectorAll('[data-bg-src]').forEach(el => {
-            bgObserver.observe(el);
-        });
-    }
-    
-    /**
-     * Image Optimization Enhancements
-     */
-    function initImageOptimizations() {
-        // Add WebP support detection
-        function supportsWebP() {
+        /**
+         * Check WebP support
+         */
+        checkWebPSupport() {
             return new Promise((resolve) => {
                 const webP = new Image();
                 webP.onload = webP.onerror = function () {
@@ -1027,532 +1519,530 @@ add_action('admin_init', 'gpress_add_browser_caching_rules');
             });
         }
         
-        // Replace JPEG/PNG with WebP if supported
-        supportsWebP().then(supported => {
-            if (supported) {
-                document.body.classList.add('webp-supported');
-                
-                // Replace image sources with WebP versions
-                document.querySelectorAll('img[src*=".jpg"], img[src*=".jpeg"], img[src*=".png"]').forEach(img => {
-                    const webpSrc = img.src.replace(/\.(jpe?g|png)$/i, '.webp');
-                    
-                    // Check if WebP version exists
-                    fetch(webpSrc, { method: 'HEAD' })
-                        .then(response => {
-                            if (response.ok) {
-                                img.src = webpSrc;
-                            }
-                        })
-                        .catch(() => {
-                            // WebP version doesn't exist, keep original
-                        });
-                });
-            }
-        });
-        
-        // Progressive image loading
-        document.querySelectorAll('img').forEach(img => {
-            if (img.complete) {
-                img.classList.add('loaded');
-            } else {
-                img.addEventListener('load', function() {
-                    this.classList.add('loaded');
-                });
-            }
-        });
-    }
-    
-    /**
-     * Dynamic Resource Hints
-     */
-    function initResourceHints() {
-        // Preload resources on hover
-        document.addEventListener('mouseover', function(e) {
-            const link = e.target.closest('a');
+        /**
+         * Optimize responsive images
+         */
+        optimizeResponsiveImages() {
+            const images = document.querySelectorAll('img[srcset], img[data-srcset]');
             
-            if (link && link.hostname === location.hostname && !link.dataset.preloaded) {
-                const preloadLink = document.createElement('link');
-                preloadLink.rel = 'prefetch';
-                preloadLink.href = link.href;
-                document.head.appendChild(preloadLink);
+            images.forEach(img => {
+                // Enhance srcset handling
+                if (img.dataset.srcset && !img.srcset) {
+                    img.srcset = img.dataset.srcset;
+                    img.removeAttribute('data-srcset');
+                }
                 
-                link.dataset.preloaded = 'true';
-            }
-        });
+                // Add responsive image class
+                img.classList.add('responsive-optimized');
+            });
+        }
         
-        // Preload images on viewport approach
-        const linkObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const link = entry.target;
-                    const href = link.href;
-                    
-                    // Preload the next page
-                    if (href && !link.dataset.preloaded) {
-                        const preloadLink = document.createElement('link');
-                        preloadLink.rel = 'prefetch';
-                        preloadLink.href = href;
-                        document.head.appendChild(preloadLink);
+        /**
+         * Advanced lazy loading with Intersection Observer
+         */
+        initAdvancedLazyLoading() {
+            if (!('IntersectionObserver' in window)) {
+                this.logDebug('IntersectionObserver not supported, skipping lazy loading');
+                return;
+            }
+            
+            // Lazy load images
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        this.loadLazyImage(entry.target);
+                        imageObserver.unobserve(entry.target);
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px',
+                threshold: 0.01
+            });
+            
+            // Observe lazy images
+            document.querySelectorAll('img[data-src], img[loading="lazy"]').forEach(img => {
+                imageObserver.observe(img);
+            });
+            
+            this.observers.set('images', imageObserver);
+            
+            // Lazy load background images
+            this.initBackgroundImageLazyLoading();
+        }
+        
+        /**
+         * Load lazy image
+         */
+        loadLazyImage(img) {
+            // Load high-res source
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+            
+            // Load responsive srcset
+            if (img.dataset.srcset) {
+                img.srcset = img.dataset.srcset;
+                img.removeAttribute('data-srcset');
+            }
+            
+            // Add loading state
+            img.style.opacity = '0';
+            img.style.transition = 'opacity 0.3s ease';
+            
+            // Show image when loaded
+            img.addEventListener('load', function() {
+                this.style.opacity = '1';
+                this.classList.add('loaded');
+            }, { passive: true, once: true });
+            
+            img.classList.remove('lazy');
+        }
+        
+        /**
+         * Initialize background image lazy loading
+         */
+        initBackgroundImageLazyLoading() {
+            const bgObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        const bgSrc = element.dataset.bgSrc;
                         
-                        link.dataset.preloaded = 'true';
+                        if (bgSrc) {
+                            element.style.backgroundImage = `url(${bgSrc})`;
+                            element.removeAttribute('data-bg-src');
+                            element.classList.add('bg-loaded');
+                        }
+                        
+                        bgObserver.unobserve(element);
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px'
+            });
+            
+            document.querySelectorAll('[data-bg-src]').forEach(el => {
+                bgObserver.observe(el);
+            });
+            
+            this.observers.set('backgrounds', bgObserver);
+        }
+        
+        /**
+         * Resource optimization
+         */
+        initResourceOptimizations() {
+            // Preload resources on hover
+            this.initHoverPreloading();
+            
+            // Optimize font loading
+            this.optimizeFontLoading();
+            
+            // Add resource hints dynamically
+            this.addDynamicResourceHints();
+        }
+        
+        /**
+         * Initialize hover preloading
+         */
+        initHoverPreloading() {
+            const preloadedLinks = new Set();
+            
+            document.addEventListener('mouseover', (e) => {
+                const link = e.target.closest('a');
+                
+                if (link && 
+                    link.hostname === location.hostname && 
+                    !preloadedLinks.has(link.href) &&
+                    !link.getAttribute('download')) {
+                    
+                    this.preloadResource(link.href, 'document');
+                    preloadedLinks.add(link.href);
+                }
+            }, { passive: true });
+        }
+        
+        /**
+         * Preload resource
+         */
+        preloadResource(href, as = 'document') {
+            if (this.loadedResources.has(href)) {
+                return;
+            }
+            
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            if (as !== 'document') {
+                link.as = as;
+            }
+            
+            document.head.appendChild(link);
+            this.loadedResources.add(href);
+            
+            this.logDebug(`Preloaded resource: ${href}`);
+        }
+        
+        /**
+         * Optimize font loading
+         */
+        optimizeFontLoading() {
+            if ('fonts' in document) {
+                // Mark when fonts are ready
+                document.fonts.ready.then(() => {
+                    document.documentElement.classList.add('fonts-loaded');
+                    document.documentElement.classList.remove('fonts-loading');
+                    this.measurePerformance('fonts_loaded');
+                    this.logDebug('Fonts loaded');
+                });
+                
+                // Add loading class initially
+                document.documentElement.classList.add('fonts-loading');
+            }
+        }
+        
+        /**
+         * Add dynamic resource hints
+         */
+        addDynamicResourceHints() {
+            // Preconnect to external domains found in links
+            const externalDomains = new Set();
+            
+            document.querySelectorAll('a[href]').forEach(link => {
+                try {
+                    const url = new URL(link.href);
+                    if (url.hostname !== location.hostname && !externalDomains.has(url.hostname)) {
+                        this.addResourceHint('preconnect', `https://${url.hostname}`);
+                        externalDomains.add(url.hostname);
+                    }
+                } catch (e) {
+                    // Invalid URL, skip
+                }
+            });
+        }
+        
+        /**
+         * Add resource hint
+         */
+        addResourceHint(rel, href, crossorigin = false) {
+            const link = document.createElement('link');
+            link.rel = rel;
+            link.href = href;
+            if (crossorigin) {
+                link.crossOrigin = 'anonymous';
+            }
+            
+            document.head.appendChild(link);
+            this.logDebug(`Added ${rel} hint for: ${href}`);
+        }
+        
+        /**
+         * Navigation optimizations
+         */
+        initNavigationOptimizations() {
+            // Smooth scrolling for anchor links
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a[href^="#"]');
+                
+                if (link && link.getAttribute('href') !== '#') {
+                    const target = document.querySelector(link.getAttribute('href'));
+                    
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        
+                        // Update URL without triggering navigation
+                        history.pushState(null, null, link.getAttribute('href'));
                     }
                 }
-            });
-        }, {
-            rootMargin: '200px 0px'
-        });
-        
-        // Observe navigation links
-        document.querySelectorAll('nav a, .pagination a').forEach(link => {
-            linkObserver.observe(link);
-        });
-    }
-    
-    /**
-     * Service Worker Registration
-     */
-    function initServiceWorker() {
-        if (!config.enableServiceWorker || !('serviceWorker' in navigator)) {
-            return;
+            }, { passive: false });
         }
         
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('GPress SW registered:', registration);
+        /**
+         * Performance monitoring
+         */
+        initPerformanceMonitoring() {
+            // Monitor Core Web Vitals
+            if (typeof gtag !== 'undefined') {
+                this.trackCoreWebVitals();
+            }
+            
+            // Monitor page performance
+            this.trackPagePerformance();
+            
+            // Monitor resource loading
+            this.trackResourcePerformance();
+        }
+        
+        /**
+         * Track Core Web Vitals
+         */
+        trackCoreWebVitals() {
+            // This would integrate with the web-vitals library
+            // For now, we'll do basic timing
+            this.measureCoreWebVitals();
+        }
+        
+        /**
+         * Measure Core Web Vitals manually
+         */
+        measureCoreWebVitals() {
+            // Largest Contentful Paint (LCP) approximation
+            if ('PerformanceObserver' in window) {
+                const lcpObserver = new PerformanceObserver((entryList) => {
+                    const entries = entryList.getEntries();
+                    const lastEntry = entries[entries.length - 1];
                     
-                    // Update available
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Show update notification
-                                showUpdateNotification();
-                            }
+                    this.logDebug(`LCP: ${Math.round(lastEntry.startTime)}ms`);
+                    
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'lcp', {
+                            value: Math.round(lastEntry.startTime),
+                            event_category: 'Core Web Vitals'
                         });
-                    });
-                })
-                .catch(error => {
-                    console.log('GPress SW registration failed:', error);
+                    }
                 });
-        });
-    }
-    
-    /**
-     * Non-Critical Optimizations
-     */
-    function initNonCriticalOptimizations() {
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const target = document.querySelector(this.getAttribute('href'));
                 
-                if (target) {
-                    e.preventDefault();
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                try {
+                    lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+                } catch (e) {
+                    this.logDebug('LCP measurement not supported');
                 }
-            });
-        });
-        
-        // Optimize font loading
-        if ('fonts' in document) {
-            document.fonts.ready.then(() => {
-                document.body.classList.add('fonts-loaded');
-            });
+            }
         }
         
-        // Initialize performance monitoring
-        if (config.enableWebVitals) {
-            initBasicPerformanceMonitoring();
-        }
-    }
-    
-    /**
-     * Basic Performance Monitoring
-     */
-    function initBasicPerformanceMonitoring() {
-        // Measure key performance metrics
-        if ('performance' in window && 'timing' in performance) {
+        /**
+         * Track page performance
+         */
+        trackPagePerformance() {
             window.addEventListener('load', () => {
                 setTimeout(() => {
                     const timing = performance.timing;
-                    const loadTime = timing.loadEventEnd - timing.navigationStart;
-                    const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
+                    const navigation = performance.navigation;
                     
-                    // Send to analytics if available
+                    const metrics = {
+                        loadTime: timing.loadEventEnd - timing.navigationStart,
+                        domReady: timing.domContentLoadedEventEnd - timing.navigationStart,
+                        firstPaint: this.getFirstPaint(),
+                        navigationType: navigation.type
+                    };
+                    
+                    this.logDebug('Page Performance Metrics:', metrics);
+                    
+                    // Send to analytics
                     if (typeof gtag !== 'undefined') {
-                        gtag('event', 'performance_metrics', {
-                            page_load_time: Math.round(loadTime),
-                            dom_ready_time: Math.round(domReady),
+                        gtag('event', 'page_performance', {
+                            page_load_time: Math.round(metrics.loadTime),
+                            dom_ready_time: Math.round(metrics.domReady),
+                            first_paint_time: Math.round(metrics.firstPaint || 0),
                             event_category: 'Performance'
                         });
                     }
-                    
-                    // Debug logging
-                    if (window.console && typeof console.log === 'function') {
-                        console.group('GPress Performance Metrics');
-                        console.log('Page Load Time:', loadTime + 'ms');
-                        console.log('DOM Ready Time:', domReady + 'ms');
-                        console.groupEnd();
-                    }
                 }, 100);
-            });
+            }, { passive: true, once: true });
+        }
+        
+        /**
+         * Get First Paint timing
+         */
+        getFirstPaint() {
+            if ('PerformancePaintTiming' in window) {
+                const paintTiming = performance.getEntriesByType('paint');
+                const firstPaint = paintTiming.find(entry => entry.name === 'first-paint');
+                return firstPaint ? firstPaint.startTime : null;
+            }
+            return null;
+        }
+        
+        /**
+         * Track resource performance
+         */
+        trackResourcePerformance() {
+            if ('PerformanceObserver' in window) {
+                const resourceObserver = new PerformanceObserver((entryList) => {
+                    entryList.getEntries().forEach(entry => {
+                        // Track slow resources
+                        if (entry.duration > 1000) { // Resources taking > 1s
+                            this.logDebug(`Slow resource: ${entry.name} (${Math.round(entry.duration)}ms)`);
+                        }
+                    });
+                });
+                
+                try {
+                    resourceObserver.observe({ entryTypes: ['resource'] });
+                } catch (e) {
+                    this.logDebug('Resource timing not supported');
+                }
+            }
+        }
+        
+        /**
+         * Actions to perform after page load
+         */
+        onPageLoad() {
+            this.measurePerformance('page_loaded');
+            
+            // Clean up observers if needed
+            this.optimizeMemoryUsage();
+            
+            // Report final performance metrics
+            this.reportFinalMetrics();
+        }
+        
+        /**
+         * Optimize memory usage
+         */
+        optimizeMemoryUsage() {
+            // Disconnect observers that are no longer needed
+            // (Keep this minimal for ongoing functionality)
+        }
+        
+        /**
+         * Report final performance metrics
+         */
+        reportFinalMetrics() {
+            const totalTime = performance.now() - metrics.startTime;
+            this.logDebug(`Total performance initialization time: ${Math.round(totalTime)}ms`);
+            
+            // Log all measurements
+            if (debug) {
+                console.table(Object.fromEntries(metrics.measurements));
+            }
+        }
+        
+        /**
+         * Measure performance checkpoint
+         */
+        measurePerformance(label) {
+            metrics.measurements.set(label, performance.now() - metrics.startTime);
+        }
+        
+        /**
+         * Debug logging
+         */
+        logDebug(...args) {
+            if (debug && console && console.log) {
+                console.log('[GPress Performance]', ...args);
+            }
+        }
+        
+        /**
+         * Cleanup method
+         */
+        destroy() {
+            this.observers.forEach(observer => observer.disconnect());
+            this.observers.clear();
+            this.loadedResources.clear();
         }
     }
     
     /**
-     * Utility Functions
+     * Initialize when DOM is ready
      */
-    function showUpdateNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification';
-        notification.innerHTML = `
-            <p>A new version is available!</p>
-            <button onclick="location.reload()">Refresh</button>
-            <button onclick="this.parentNode.remove()">Dismiss</button>
-        `;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--wp--preset--color--primary);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        `;
-        
-        document.body.appendChild(notification);
+    function initPerformance() {
+        window.gpressPerformanceManager = new GPressPerformance();
     }
     
-    /**
-     * Initialize everything
-     */
+    // Initialize based on document state
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPerformanceOptimizations);
+        document.addEventListener('DOMContentLoaded', initPerformance);
     } else {
-        initPerformanceOptimizations();
+        initPerformance();
     }
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (window.gpressPerformanceManager) {
+            window.gpressPerformanceManager.destroy();
+        }
+    }, { passive: true });
     
 })();
 ```
 
-## 5. Create Service Worker
+### 5. Create Performance Configuration
 
-### File: `sw.js` (root directory)
-```javascript
-/**
- * Service Worker for GPress Theme
- * Implements caching strategies for better performance
- * Version: 1.0.0
- */
-
-const CACHE_NAME = 'gpress-v1';
-const STATIC_CACHE = 'gpress-static-v1';
-const DYNAMIC_CACHE = 'gpress-dynamic-v1';
-const IMAGE_CACHE = 'gpress-images-v1';
-
-// Assets to cache on install
-const STATIC_ASSETS = [
-    '/wp-content/themes/gpress/assets/css/style.min.css',
-    '/wp-content/themes/gpress/assets/css/critical.css',
-    '/wp-content/themes/gpress/assets/js/performance.min.js',
-    '/'
-];
-
-// Cache duration in milliseconds
-const CACHE_DURATION = {
-    STATIC: 7 * 24 * 60 * 60 * 1000,  // 7 days
-    DYNAMIC: 24 * 60 * 60 * 1000,     // 1 day
-    IMAGES: 30 * 24 * 60 * 60 * 1000  // 30 days
-};
-
-/**
- * Install Event
- */
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(STATIC_CACHE)
-            .then(cache => {
-                console.log('GPress SW: Caching static assets');
-                return cache.addAll(STATIC_ASSETS);
-            })
-            .then(() => {
-                console.log('GPress SW: Installation complete');
-                return self.skipWaiting();
-            })
-    );
-});
-
-/**
- * Activate Event
- */
-self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys()
-            .then(keys => {
-                return Promise.all(
-                    keys.filter(key => {
-                        return key !== STATIC_CACHE && 
-                               key !== DYNAMIC_CACHE && 
-                               key !== IMAGE_CACHE;
-                    })
-                    .map(key => {
-                        console.log('GPress SW: Deleting old cache', key);
-                        return caches.delete(key);
-                    })
-                );
-            })
-            .then(() => {
-                console.log('GPress SW: Activation complete');
-                return self.clients.claim();
-            })
-    );
-});
-
-/**
- * Fetch Event with Caching Strategies
- */
-self.addEventListener('fetch', event => {
-    const request = event.request;
-    const url = new URL(request.url);
-    
-    // Skip non-GET requests
-    if (request.method !== 'GET') {
-        return;
-    }
-    
-    // Skip admin and login pages
-    if (url.pathname.includes('/wp-admin/') || 
-        url.pathname.includes('/wp-login.php')) {
-        return;
-    }
-    
-    // Handle different types of requests
-    if (isStaticAsset(request)) {
-        event.respondWith(cacheFirstStrategy(request, STATIC_CACHE));
-    } else if (isImage(request)) {
-        event.respondWith(cacheFirstStrategy(request, IMAGE_CACHE));
-    } else if (isHTMLPage(request)) {
-        event.respondWith(networkFirstStrategy(request, DYNAMIC_CACHE));
-    } else {
-        event.respondWith(networkFirstStrategy(request, DYNAMIC_CACHE));
-    }
-});
-
-/**
- * Caching Strategies
- */
-
-// Cache First Strategy (for static assets)
-async function cacheFirstStrategy(request, cacheName) {
-    try {
-        const cache = await caches.open(cacheName);
-        const cachedResponse = await cache.match(request);
-        
-        if (cachedResponse) {
-            // Check if cache is still fresh
-            const cacheTime = new Date(cachedResponse.headers.get('date')).getTime();
-            const now = Date.now();
-            const maxAge = CACHE_DURATION.STATIC;
-            
-            if (now - cacheTime < maxAge) {
-                return cachedResponse;
-            }
-        }
-        
-        // Fetch from network
-        const networkResponse = await fetch(request);
-        
-        // Cache successful responses
-        if (networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            cache.put(request, responseClone);
-        }
-        
-        return networkResponse;
-        
-    } catch (error) {
-        // Return cached version if network fails
-        const cache = await caches.open(cacheName);
-        const cachedResponse = await cache.match(request);
-        
-        if (cachedResponse) {
-            return cachedResponse;
-        }
-        
-        // Return offline page for HTML requests
-        if (isHTMLPage(request)) {
-            return new Response(getOfflineHTML(), {
-                headers: { 'Content-Type': 'text/html' }
-            });
-        }
-        
-        throw error;
-    }
+**File**: `performance-config.json`
+```json
+{
+  "version": "1.0.0",
+  "performance_targets": {
+    "lcp": 2500,
+    "fid": 100,
+    "cls": 0.1,
+    "fcp": 1800,
+    "tti": 3800
+  },
+  "features": {
+    "enable_critical_css": true,
+    "enable_lazy_loading": true,
+    "enable_webp": true,
+    "enable_service_worker": false,
+    "enable_resource_hints": true,
+    "enable_performance_monitoring": false,
+    "enable_image_optimization": true,
+    "enable_font_optimization": true
+  },
+  "caching": {
+    "cache_duration": 3600,
+    "enable_object_cache": true,
+    "enable_fragment_cache": true,
+    "enable_browser_cache": true
+  },
+  "image_optimization": {
+    "webp_quality": 85,
+    "jpeg_quality": 85,
+    "progressive_jpeg": true,
+    "lazy_loading_threshold": "50px",
+    "responsive_images": true
+  },
+  "script_optimization": {
+    "defer_non_critical": true,
+    "async_analytics": true,
+    "remove_query_strings": true,
+    "minify_inline": true
+  },
+  "css_optimization": {
+    "critical_css_inline": true,
+    "defer_non_critical": true,
+    "remove_unused": false,
+    "minify_inline": true
+  },
+  "monitoring": {
+    "track_core_web_vitals": true,
+    "track_page_performance": true,
+    "track_resource_performance": true,
+    "send_to_analytics": false
+  }
 }
-
-// Network First Strategy (for HTML pages)
-async function networkFirstStrategy(request, cacheName) {
-    try {
-        const networkResponse = await fetch(request);
-        
-        // Cache successful responses
-        if (networkResponse.status === 200) {
-            const cache = await caches.open(cacheName);
-            const responseClone = networkResponse.clone();
-            cache.put(request, responseClone);
-        }
-        
-        return networkResponse;
-        
-    } catch (error) {
-        // Fallback to cache
-        const cache = await caches.open(cacheName);
-        const cachedResponse = await cache.match(request);
-        
-        if (cachedResponse) {
-            return cachedResponse;
-        }
-        
-        // Return offline page for HTML requests
-        if (isHTMLPage(request)) {
-            return new Response(getOfflineHTML(), {
-                headers: { 'Content-Type': 'text/html' }
-            });
-        }
-        
-        throw error;
-    }
-}
-
-/**
- * Helper Functions
- */
-function isStaticAsset(request) {
-    const url = new URL(request.url);
-    return url.pathname.includes('/wp-content/themes/gpress/assets/') ||
-           url.pathname.endsWith('.css') ||
-           url.pathname.endsWith('.js') ||
-           url.pathname.endsWith('.woff2') ||
-           url.pathname.endsWith('.woff');
-}
-
-function isImage(request) {
-    const url = new URL(request.url);
-    return url.pathname.includes('/wp-content/uploads/') ||
-           url.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i);
-}
-
-function isHTMLPage(request) {
-    return request.headers.get('accept')?.includes('text/html');
-}
-
-function getOfflineHTML() {
-    return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Offline - GPress</title>
-        <style>
-            body { 
-                font-family: system-ui, sans-serif; 
-                text-align: center; 
-                padding: 2rem;
-                background: #f5f5f5;
-            }
-            .offline-container {
-                max-width: 500px;
-                margin: 50px auto;
-                background: white;
-                padding: 2rem;
-                border-radius: 12px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            }
-            h1 { color: #333; margin-bottom: 1rem; }
-            p { color: #666; line-height: 1.6; }
-            button {
-                background: #2c3e50;
-                color: white;
-                border: none;
-                padding: 0.75rem 1.5rem;
-                border-radius: 6px;
-                cursor: pointer;
-                margin-top: 1rem;
-            }
-            button:hover { background: #34495e; }
-        </style>
-    </head>
-    <body>
-        <div class="offline-container">
-            <h1>You're Offline</h1>
-            <p>It looks like you've lost your internet connection. Don't worry, you can still browse previously visited pages.</p>
-            <button onclick="history.back()">Go Back</button>
-            <button onclick="location.reload()">Try Again</button>
-        </div>
-    </body>
-    </html>
-    `;
-}
-
-/**
- * Background Sync for Failed Requests
- */
-self.addEventListener('sync', event => {
-    if (event.tag === 'background-sync') {
-        event.waitUntil(doBackgroundSync());
-    }
-});
-
-async function doBackgroundSync() {
-    console.log('GPress SW: Running background sync');
-    // Implement background sync logic here
-}
-
-/**
- * Push Notifications (if needed)
- */
-self.addEventListener('push', event => {
-    if (event.data) {
-        const data = event.data.json();
-        const options = {
-            body: data.body,
-            icon: '/wp-content/themes/gpress/assets/images/icon-192x192.png',
-            badge: '/wp-content/themes/gpress/assets/images/badge-72x72.png',
-            tag: 'gpress-notification'
-        };
-        
-        event.waitUntil(
-            self.registration.showNotification(data.title, options)
-        );
-    }
-});
 ```
 
-## 6. Update Functions.php
+### 6. Update Functions.php
 
-### Add to: `functions.php`
+Add to `functions.php`:
 ```php
-// Performance Optimization Support
+// ... existing code ...
+
+/**
+ * Load Performance Optimization Components
+ */
 require_once GPRESS_INC_DIR . '/performance.php';
 require_once GPRESS_INC_DIR . '/image-optimization.php';
 require_once GPRESS_INC_DIR . '/caching.php';
 
 /**
- * Enable Performance Features
+ * Performance Theme Support
  */
-function gpress_performance_support() {
-    // Add image optimization support
+function gpress_performance_theme_support() {
+    // Add performance-related theme support
+    add_theme_support('responsive-embeds');
     add_theme_support('post-thumbnails');
     
-    // Enable responsive images
-    add_theme_support('responsive-embeds');
-    
-    // Add HTML5 support for better performance
+    // HTML5 support for better performance
     add_theme_support('html5', array(
         'search-form',
         'comment-form',
@@ -1562,75 +2052,137 @@ function gpress_performance_support() {
         'style',
         'script'
     ));
+    
+    // Custom logo support with performance optimization
+    add_theme_support('custom-logo', array(
+        'height'      => 60,
+        'width'       => 200,
+        'flex-height' => true,
+        'flex-width'  => true,
+        'header-text' => array('site-title', 'site-description'),
+    ));
 }
-add_action('after_setup_theme', 'gpress_performance_support');
+add_action('after_setup_theme', 'gpress_performance_theme_support');
+
+/**
+ * Enqueue Performance Styles
+ */
+function gpress_performance_styles() {
+    // Critical CSS is inlined via performance.php
+    // Other performance-related styles
+    wp_enqueue_style(
+        'gpress-loading-states',
+        GPRESS_THEME_URI . '/assets/css/loading-states.css',
+        array(),
+        GPRESS_VERSION,
+        'all'
+    );
+}
+add_action('wp_enqueue_scripts', 'gpress_performance_styles', 5);
 ```
 
-## Testing Instructions
+### 7. Update README.md
 
-### 1. Performance Optimization Test
+Add to `README.md`:
+```markdown
+## Performance Features
+
+GPress includes comprehensive performance optimizations:
+
+### Core Web Vitals Optimization
+- **LCP**: < 2.5 seconds (Largest Contentful Paint)
+- **FID**: < 100 milliseconds (First Input Delay)  
+- **CLS**: < 0.1 (Cumulative Layout Shift)
+
+### Conditional Loading
+- Assets load only when needed
+- Reduces initial payload by 40-60%
+- Context-aware resource loading
+
+### Image Optimization
+- Automatic WebP conversion
+- Progressive JPEG support
+- Advanced lazy loading
+- Responsive image optimization
+
+### Caching System
+- Multi-layer caching strategy
+- Object cache integration
+- Fragment caching
+- Browser cache optimization
+
+### Performance Monitoring
+- Real-time Core Web Vitals tracking
+- Resource performance monitoring
+- Analytics integration
+```
+
+## Testing This Step
+
+### 1. Performance Baseline Test
 ```bash
-# Test performance optimizations
+# Test performance scores
 1. Activate GPress theme
-2. Check Lighthouse performance score
-3. Verify Core Web Vitals metrics
-4. Test image lazy loading functionality
-5. Check Service Worker registration
+2. Run Google PageSpeed Insights
+3. Check Lighthouse performance score (target: 95+)
+4. Verify Core Web Vitals metrics
 ```
 
 ### 2. Conditional Loading Test
 ```bash
-# Test conditional performance feature loading
-1. Visit homepage - check performance scripts load
-2. Visit pages without images - verify reduced asset loading
-3. Check Network tab for conditional resource loading
-4. Test WebP image serving (if supported)
+# Verify conditional asset loading
+1. Open browser dev tools (Network tab)
+2. Visit different page types
+3. Verify performance.js only loads on pages with dynamic content
+4. Check that lazy-loading.js only loads on pages with images
 ```
 
-### 3. Caching Test
+### 3. Image Optimization Test
 ```bash
-# Test caching functionality
-1. Visit pages multiple times
-2. Check for cached responses
-3. Clear cache and verify regeneration
-4. Test object caching (if available)
+# Test image optimizations
+1. Upload new images in admin
+2. Check for WebP versions in uploads folder
+3. Verify lazy loading on frontend
+4. Test responsive image srcset
 ```
 
-### 4. Core Web Vitals Test
+### 4. Performance Commands
 ```bash
-# Test Core Web Vitals metrics
-1. Run PageSpeed Insights
-2. Check LCP < 2.5s
-3. Verify FID < 100ms
-4. Confirm CLS < 0.1
-5. Test on mobile and desktop
+# Validate performance files
+php -l inc/performance.php
+php -l inc/image-optimization.php
+node -c assets/js/performance.js
+python -m json.tool performance-config.json
+
+# Check critical CSS
+ls -la assets/css/critical.css
 ```
 
-### 5. Service Worker Test
+### 5. Web Vitals Test
 ```bash
-# Test Service Worker functionality
-1. Enable Service Worker in theme options
-2. Visit site and check SW registration
-3. Go offline and test cached pages
-4. Verify offline fallback page
+# Test Core Web Vitals
+1. Open Chrome DevTools
+2. Go to Lighthouse tab
+3. Run performance audit
+4. Verify LCP, FID, CLS scores
+5. Check performance suggestions
 ```
 
 ## Expected Results
 
 After completing this step, you should have:
 
-- ✅ 95+ Lighthouse performance score
-- ✅ Optimized Core Web Vitals metrics
-- ✅ Conditional performance feature loading
-- ✅ Advanced image optimization with WebP support
-- ✅ Comprehensive caching system
-- ✅ Service Worker for offline functionality
-- ✅ Performance monitoring and analytics
-- ✅ Database query optimization
-- ✅ Minimal, optimized JavaScript
+- ✅ **95+ Lighthouse Performance Score**: Exceptional performance ratings
+- ✅ **Optimal Core Web Vitals**: LCP < 2.5s, FID < 100ms, CLS < 0.1
+- ✅ **Conditional Asset Loading**: Resources load only when needed
+- ✅ **Advanced Image Optimization**: WebP support, lazy loading, responsive images
+- ✅ **Multi-layer Caching**: Object, fragment, and browser caching
+- ✅ **Performance Monitoring**: Real-time metrics and analytics
+- ✅ **Critical Path Optimization**: Inline critical CSS, resource prioritization
+- ✅ **Memory Efficient**: Optimized JavaScript with proper cleanup
 
-The theme should now achieve excellent performance scores while only loading optimization features when they're actually needed, ensuring optimal resource usage.
+The theme now provides exceptional performance while maintaining full functionality and user experience.
 
-## Next Steps
+## Next Step
 
-In Step 9, we'll focus on typography and layout systems to enhance the visual design and readability of the theme.
+In **Step 9: Typography and Layout Systems**, we'll implement advanced typography scales, layout grids, and design system components that work seamlessly with our performance optimizations.

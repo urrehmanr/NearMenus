@@ -1,694 +1,1589 @@
-# Step 14: SEO Optimization
+# Step 14: Advanced SEO Optimization & Schema Implementation
 
 ## Overview
-This step implements comprehensive SEO optimization to improve search engine visibility, ranking, and performance. We'll focus on structured data, meta tags, OpenGraph integration, XML sitemaps, and technical SEO best practices with conditional asset loading.
+This step implements comprehensive SEO optimization strategies to maximize search engine visibility, improve rankings, and enhance social media presence. We'll establish structured data markup, meta tag optimization, OpenGraph integration, technical SEO enhancements, and performance-optimized conditional loading for all SEO features.
 
 ## Objectives
-- Implement structured data (Schema.org)
-- Add comprehensive meta tags and OpenGraph
-- Optimize for Core Web Vitals
-- Create SEO-friendly URL structures
-- Implement JSON-LD markup
-- Add social media optimization
-- Ensure mobile-first indexing compatibility
-- Implement conditional SEO asset loading
+- Implement comprehensive Schema.org structured data markup
+- Optimize meta tags, OpenGraph, and Twitter Cards for social sharing
+- Establish technical SEO foundations and Core Web Vitals optimization
+- Create SEO-friendly URL structures and breadcrumb markup
+- Implement JSON-LD structured data for rich snippets
+- Optimize for mobile-first indexing and local SEO
+- Establish conditional SEO asset loading for performance
+- Integrate SEO analytics and monitoring tools
 
-## Implementation
+## What You'll Learn
+- Advanced Schema.org markup implementation and validation
+- Meta tag optimization strategies for search engines and social media
+- Technical SEO best practices and Core Web Vitals optimization
+- Structured data implementation for rich snippets and knowledge panels
+- OpenGraph and Twitter Cards optimization for social media engagement
+- Local SEO implementation and business markup patterns
+- Performance optimization for SEO features and conditional loading
+- SEO analytics integration and monitoring setup
 
-### 1. SEO Foundation
+## Files Structure for This Step
+
+### 📁 Files to CREATE:
+```
+inc/
+├── seo.php                        # Core SEO system management
+├── seo-meta-tags.php             # Meta tags and OpenGraph optimization
+├── seo-structured-data.php       # Schema.org and JSON-LD implementation
+├── seo-analytics.php             # SEO analytics and tracking
+├── seo-optimization.php          # Technical SEO and performance
+├── seo-local.php                 # Local SEO and business markup
+└── seo-testing.php               # SEO testing and validation
+
+assets/css/
+├── seo.css                       # SEO-specific styles (minimal)
+├── seo-print.css                # Print optimization for SEO
+└── seo-social.css               # Social sharing button styles
+
+assets/js/
+├── seo.js                       # Main SEO JavaScript functionality
+├── seo-analytics.js             # Analytics and tracking implementation
+├── seo-social-sharing.js        # Social sharing functionality
+├── seo-breadcrumbs.js          # Breadcrumb interaction enhancement
+└── seo-performance.js          # SEO performance monitoring
+
+templates/
+├── sitemap.xml                  # XML sitemap template
+├── robots.txt                   # Robots.txt template
+└── opensearch.xml              # OpenSearch description
+
+parts/
+├── seo-meta.html               # Meta tags template part
+├── social-sharing.html         # Social sharing buttons
+└── breadcrumb-seo.html         # SEO-optimized breadcrumbs
+```
+
+### 📝 Files to UPDATE:
+```
+functions.php                    # Include SEO files and initialization
+inc/theme-setup.php             # Add SEO theme support and image sizes
+inc/enqueue-scripts.php         # Conditional SEO asset loading
+style.css                       # Base SEO integration styles
+README.md                       # Document SEO features and implementation
+theme.json                      # Add SEO-specific settings and styles
+header.html                     # Add meta tags and structured data
+footer.html                     # Add business/organization markup
+index.html                      # Add article/blog markup
+single.html                     # Add article and author markup
+page.html                       # Add webpage and breadcrumb markup
+```
+
+### 🎯 Optimization Features Implemented:
+- Conditional SEO asset loading based on page type and content analysis
+- Performance-optimized structured data with smart caching
+- Lazy loading for social sharing widgets and analytics scripts
+- Advanced meta tag optimization with dynamic content generation
+- Core Web Vitals optimization specifically for SEO performance
+- Smart image optimization for social media and search engines
+- Conditional analytics loading based on user preferences and GDPR compliance
+
+## Step-by-Step Implementation
+
+### 1. Create Core SEO System
 
 Create `inc/seo.php`:
 
 ```php
 <?php
 /**
- * GPress SEO Features
+ * Core SEO System for GPress Theme
+ * Comprehensive SEO optimization with performance focus
+ *
+ * @package GPress
+ * @subpackage SEO
+ * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
- * Initialize SEO system
+ * GPress SEO Manager
+ * 
+ * @since 1.0.0
  */
-function gpress_init_seo_system() {
-    // Core SEO setup
-    add_action('after_setup_theme', 'gpress_seo_setup');
-    
-    // Conditional SEO asset loading
-    add_action('wp_enqueue_scripts', 'gpress_conditional_seo_assets');
-    
-    // Meta tags and structured data
-    add_action('wp_head', 'gpress_add_meta_tags', 5);
-    add_action('wp_head', 'gpress_add_opengraph_tags', 10);
-    add_action('wp_head', 'gpress_add_twitter_cards', 15);
-    add_action('wp_head', 'gpress_add_json_ld', 20);
-    add_action('wp_head', 'gpress_add_canonical_url', 25);
-    add_action('wp_head', 'gpress_add_robots_meta', 30);
-    
-    // Content optimization
-    add_filter('get_the_excerpt', 'gpress_optimize_excerpt_for_seo');
-}
-add_action('after_setup_theme', 'gpress_init_seo_system');
+class GPress_SEO {
 
-/**
- * SEO setup
- */
-function gpress_seo_setup() {
-    // Add theme support for title-tag
-    add_theme_support('title-tag');
-    
-    // Add custom SEO meta tags
-    add_action('wp_head', 'modernblog2025_add_meta_tags', 5);
-    
-    // Add OpenGraph tags
-    add_action('wp_head', 'modernblog2025_add_opengraph_tags', 10);
-    
-    // Add Twitter Card tags
-    add_action('wp_head', 'modernblog2025_add_twitter_cards', 15);
-    
-    // Add JSON-LD structured data
-    add_action('wp_head', 'modernblog2025_add_json_ld', 20);
-    
-    // Optimize meta descriptions
-    add_filter('get_the_excerpt', 'modernblog2025_optimize_excerpt_for_seo');
-    
-    // Add canonical URLs
-    add_action('wp_head', 'modernblog2025_add_canonical_url', 25);
-    
-    // Add robots meta tag
-    add_action('wp_head', 'modernblog2025_add_robots_meta', 30);
-}
-add_action('after_setup_theme', 'modernblog2025_seo_setup');
-
-/**
- * Add comprehensive meta tags
- */
-function modernblog2025_add_meta_tags() {
-    global $post;
-    
-    // Get page data
-    $title = modernblog2025_get_seo_title();
-    $description = modernblog2025_get_seo_description();
-    $keywords = modernblog2025_get_seo_keywords();
-    $author = modernblog2025_get_seo_author();
-    
-    // Essential meta tags
-    echo '<meta charset="' . get_bloginfo('charset') . '">' . "\n";
-    echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">' . "\n";
-    echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
-    
-    if ($keywords) {
-        echo '<meta name="keywords" content="' . esc_attr($keywords) . '">' . "\n";
-    }
-    
-    if ($author) {
-        echo '<meta name="author" content="' . esc_attr($author) . '">' . "\n";
-    }
-    
-    // Generator tag (WordPress version)
-    echo '<meta name="generator" content="WordPress ' . get_bloginfo('version') . '; ModernBlog2025 Theme">' . "\n";
-    
-    // Language meta
-    echo '<meta name="language" content="' . get_locale() . '">' . "\n";
-    
-    // Additional meta tags for posts
-    if (is_single() && $post) {
-        $published = get_the_date('c', $post);
-        $modified = get_the_modified_date('c', $post);
+    /**
+     * Initialize SEO system
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('after_setup_theme', array(__CLASS__, 'seo_setup'));
+        add_action('wp_enqueue_scripts', array(__CLASS__, 'conditional_seo_assets'));
+        add_action('wp_head', array(__CLASS__, 'add_essential_meta_tags'), 1);
+        add_action('wp_head', array(__CLASS__, 'add_seo_meta_tags'), 5);
+        add_action('wp_head', array(__CLASS__, 'add_opengraph_tags'), 10);
+        add_action('wp_head', array(__CLASS__, 'add_twitter_cards'), 15);
+        add_action('wp_head', array(__CLASS__, 'add_canonical_url'), 20);
+        add_action('wp_head', array(__CLASS__, 'add_robots_meta'), 25);
         
-        echo '<meta name="article:published_time" content="' . esc_attr($published) . '">' . "\n";
-        echo '<meta name="article:modified_time" content="' . esc_attr($modified) . '">' . "\n";
+        // Content optimization
+        add_filter('document_title_parts', array(__CLASS__, 'optimize_document_title'));
+        add_filter('get_the_excerpt', array(__CLASS__, 'optimize_excerpt_for_seo'));
+        add_filter('wp_get_attachment_image_attributes', array(__CLASS__, 'optimize_image_seo'), 10, 3);
         
-        // Article tags
-        $tags = get_the_tags($post->ID);
-        if ($tags) {
-            foreach ($tags as $tag) {
-                echo '<meta name="article:tag" content="' . esc_attr($tag->name) . '">' . "\n";
+        // Admin enhancements
+        add_action('admin_init', array(__CLASS__, 'setup_seo_admin'));
+        add_action('add_meta_boxes', array(__CLASS__, 'add_seo_meta_boxes'));
+        add_action('save_post', array(__CLASS__, 'save_seo_meta_data'));
+        
+        // Performance optimizations
+        add_action('wp_footer', array(__CLASS__, 'add_structured_data'), 25);
+        add_action('wp_footer', array(__CLASS__, 'add_seo_analytics'), 30);
+    }
+
+    /**
+     * SEO setup and theme support
+     *
+     * @since 1.0.0
+     */
+    public static function seo_setup() {
+        // Essential WordPress SEO support
+        add_theme_support('title-tag');
+        add_theme_support('post-thumbnails');
+        add_theme_support('html5', array('search-form', 'comment-form', 'comment-list', 'gallery', 'caption'));
+        
+        // Custom SEO features
+        add_theme_support('seo-optimization');
+        add_theme_support('structured-data');
+        add_theme_support('opengraph');
+        add_theme_support('twitter-cards');
+        add_theme_support('social-sharing');
+        
+        // SEO-specific image sizes
+        add_image_size('og-image', 1200, 630, true);           // OpenGraph
+        add_image_size('twitter-card', 1200, 600, true);       // Twitter Card
+        add_image_size('schema-image', 1200, 800, false);      // Schema.org
+        add_image_size('seo-thumbnail', 500, 300, true);       // General SEO
+        
+        // Initialize default SEO settings
+        if (get_option('gpress_seo_initialized') !== 'yes') {
+            self::set_default_seo_options();
+            update_option('gpress_seo_initialized', 'yes');
+        }
+    }
+
+    /**
+     * Set default SEO options
+     *
+     * @since 1.0.0
+     */
+    private static function set_default_seo_options() {
+        $defaults = array(
+            'gpress_enable_opengraph' => true,
+            'gpress_enable_twitter_cards' => true,
+            'gpress_enable_structured_data' => true,
+            'gpress_enable_breadcrumbs' => true,
+            'gpress_enable_social_sharing' => true,
+            'gpress_seo_home_title' => get_bloginfo('name') . ' - ' . get_bloginfo('description'),
+            'gpress_seo_home_description' => get_bloginfo('description'),
+            'gpress_seo_separator' => ' | ',
+            'gpress_og_site_name' => get_bloginfo('name'),
+            'gpress_twitter_site' => '',
+            'gpress_facebook_app_id' => '',
+            'gpress_google_analytics' => '',
+            'gpress_google_site_verification' => '',
+        );
+        
+        foreach ($defaults as $option => $value) {
+            update_option($option, $value);
+        }
+    }
+
+    /**
+     * Conditional SEO asset loading
+     *
+     * @since 1.0.0
+     */
+    public static function conditional_seo_assets() {
+        $load_seo_assets = false;
+        $load_social_sharing = false;
+        $load_analytics = false;
+        
+        // Determine SEO asset requirements
+        if (self::needs_seo_enhancements()) {
+            $load_seo_assets = true;
+        }
+        
+        if (self::needs_social_sharing()) {
+            $load_social_sharing = true;
+        }
+        
+        if (self::needs_analytics()) {
+            $load_analytics = true;
+        }
+        
+        if ($load_seo_assets) {
+            wp_enqueue_style(
+                'gpress-seo',
+                get_theme_file_uri('/assets/css/seo.css'),
+                array('gpress-style'),
+                GPRESS_VERSION,
+                'all'
+            );
+            
+            wp_enqueue_script(
+                'gpress-seo',
+                get_theme_file_uri('/assets/js/seo.js'),
+                array('jquery'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+            
+            // Localize SEO script
+            wp_localize_script('gpress-seo', 'gpressSEO', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('gpress_seo_nonce'),
+                'settings' => array(
+                    'enableAnalytics' => get_option('gpress_enable_analytics', true),
+                    'enableSocialSharing' => get_option('gpress_enable_social_sharing', true),
+                    'trackingId' => get_option('gpress_google_analytics', ''),
+                ),
+                'strings' => array(
+                    'sharing' => __('Share this content', 'gpress'),
+                    'shareVia' => __('Share via', 'gpress'),
+                    'copyLink' => __('Copy link', 'gpress'),
+                    'linkCopied' => __('Link copied to clipboard', 'gpress'),
+                )
+            ));
+        }
+        
+        if ($load_social_sharing) {
+            wp_enqueue_style(
+                'gpress-seo-social',
+                get_theme_file_uri('/assets/css/seo-social.css'),
+                array('gpress-seo'),
+                GPRESS_VERSION,
+                'all'
+            );
+            
+            wp_enqueue_script(
+                'gpress-social-sharing',
+                get_theme_file_uri('/assets/js/seo-social-sharing.js'),
+                array('gpress-seo'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+        
+        if ($load_analytics) {
+            wp_enqueue_script(
+                'gpress-seo-analytics',
+                get_theme_file_uri('/assets/js/seo-analytics.js'),
+                array('gpress-seo'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+        
+        // Print-specific SEO styles
+        wp_enqueue_style(
+            'gpress-seo-print',
+            get_theme_file_uri('/assets/css/seo-print.css'),
+            array('gpress-seo'),
+            GPRESS_VERSION,
+            'print'
+        );
+    }
+
+    /**
+     * Check if SEO enhancements are needed
+     *
+     * @since 1.0.0
+     */
+    private static function needs_seo_enhancements() {
+        return !is_admin() && !is_feed() && !is_robots() && !is_trackback();
+    }
+
+    /**
+     * Check if social sharing is needed
+     *
+     * @since 1.0.0
+     */
+    private static function needs_social_sharing() {
+        return (is_single() || is_page()) && get_option('gpress_enable_social_sharing', true);
+    }
+
+    /**
+     * Check if analytics is needed
+     *
+     * @since 1.0.0
+     */
+    private static function needs_analytics() {
+        $tracking_id = get_option('gpress_google_analytics', '');
+        return !empty($tracking_id) && !is_admin() && !current_user_can('manage_options');
+    }
+
+    /**
+     * Add essential meta tags
+     *
+     * @since 1.0.0
+     */
+    public static function add_essential_meta_tags() {
+        ?>
+        <!-- Essential Meta Tags -->
+        <meta charset="<?php bloginfo('charset'); ?>">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <?php
+        
+        // Google Site Verification
+        $google_verification = get_option('gpress_google_site_verification', '');
+        if (!empty($google_verification)) {
+            echo '<meta name="google-site-verification" content="' . esc_attr($google_verification) . '">' . "\n";
+        }
+        
+        // Theme color for mobile browsers
+        $primary_color = self::get_theme_color();
+        if ($primary_color) {
+            echo '<meta name="theme-color" content="' . esc_attr($primary_color) . '">' . "\n";
+        }
+        
+        // Security headers
+        echo '<meta name="referrer" content="strict-origin-when-cross-origin">' . "\n";
+    }
+
+    /**
+     * Add comprehensive SEO meta tags
+     *
+     * @since 1.0.0
+     */
+    public static function add_seo_meta_tags() {
+        $title = self::get_seo_title();
+        $description = self::get_seo_description();
+        $keywords = self::get_seo_keywords();
+        $author = self::get_seo_author();
+        
+        ?>
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="<?php echo esc_attr($description); ?>">
+        <?php if (!empty($keywords)) : ?>
+        <meta name="keywords" content="<?php echo esc_attr($keywords); ?>">
+        <?php endif; ?>
+        <?php if (!empty($author)) : ?>
+        <meta name="author" content="<?php echo esc_attr($author); ?>">
+        <?php endif; ?>
+        
+        <!-- Additional SEO Meta -->
+        <meta name="generator" content="WordPress <?php bloginfo('version'); ?>">
+        <meta name="language" content="<?php echo esc_attr(get_locale()); ?>">
+        <?php
+        
+        // Article-specific meta tags
+        if (is_single()) {
+            $post_date = get_the_date('c');
+            $modified_date = get_the_modified_date('c');
+            ?>
+            <meta name="article:published_time" content="<?php echo esc_attr($post_date); ?>">
+            <meta name="article:modified_time" content="<?php echo esc_attr($modified_date); ?>">
+            <?php
+            
+            $categories = get_the_category();
+            if (!empty($categories)) {
+                foreach ($categories as $category) {
+                    echo '<meta name="article:section" content="' . esc_attr($category->name) . '">' . "\n";
+                }
+            }
+            
+            $tags = get_the_tags();
+            if (!empty($tags)) {
+                foreach ($tags as $tag) {
+                    echo '<meta name="article:tag" content="' . esc_attr($tag->name) . '">' . "\n";
+                }
+            }
+        }
+    }
+
+    /**
+     * Add OpenGraph tags
+     *
+     * @since 1.0.0
+     */
+    public static function add_opengraph_tags() {
+        if (!get_option('gpress_enable_opengraph', true)) {
+            return;
+        }
+        
+        $title = self::get_seo_title();
+        $description = self::get_seo_description();
+        $image = self::get_og_image();
+        $url = self::get_canonical_url();
+        $site_name = get_option('gpress_og_site_name', get_bloginfo('name'));
+        $type = self::get_og_type();
+        
+        ?>
+        <!-- OpenGraph Meta Tags -->
+        <meta property="og:title" content="<?php echo esc_attr($title); ?>">
+        <meta property="og:description" content="<?php echo esc_attr($description); ?>">
+        <meta property="og:type" content="<?php echo esc_attr($type); ?>">
+        <meta property="og:url" content="<?php echo esc_url($url); ?>">
+        <meta property="og:site_name" content="<?php echo esc_attr($site_name); ?>">
+        <meta property="og:locale" content="<?php echo esc_attr(get_locale()); ?>">
+        <?php
+        
+        if (!empty($image)) {
+            $image_data = self::get_image_data($image);
+            ?>
+            <meta property="og:image" content="<?php echo esc_url($image); ?>">
+            <meta property="og:image:alt" content="<?php echo esc_attr($image_data['alt']); ?>">
+            <meta property="og:image:width" content="<?php echo esc_attr($image_data['width']); ?>">
+            <meta property="og:image:height" content="<?php echo esc_attr($image_data['height']); ?>">
+            <?php
+        }
+        
+        // Facebook App ID
+        $fb_app_id = get_option('gpress_facebook_app_id', '');
+        if (!empty($fb_app_id)) {
+            echo '<meta property="fb:app_id" content="' . esc_attr($fb_app_id) . '">' . "\n";
+        }
+        
+        // Article-specific OG tags
+        if (is_single()) {
+            $author_id = get_the_author_meta('ID');
+            $author_url = get_author_posts_url($author_id);
+            $publish_date = get_the_date('c');
+            $modified_date = get_the_modified_date('c');
+            
+            ?>
+            <meta property="article:author" content="<?php echo esc_url($author_url); ?>">
+            <meta property="article:published_time" content="<?php echo esc_attr($publish_date); ?>">
+            <meta property="article:modified_time" content="<?php echo esc_attr($modified_date); ?>">
+            <?php
+        }
+    }
+
+    /**
+     * Add Twitter Card tags
+     *
+     * @since 1.0.0
+     */
+    public static function add_twitter_cards() {
+        if (!get_option('gpress_enable_twitter_cards', true)) {
+            return;
+        }
+        
+        $title = self::get_seo_title();
+        $description = self::get_seo_description();
+        $image = self::get_twitter_image();
+        $card_type = self::get_twitter_card_type();
+        $site = get_option('gpress_twitter_site', '');
+        
+        ?>
+        <!-- Twitter Card Meta Tags -->
+        <meta name="twitter:card" content="<?php echo esc_attr($card_type); ?>">
+        <meta name="twitter:title" content="<?php echo esc_attr($title); ?>">
+        <meta name="twitter:description" content="<?php echo esc_attr($description); ?>">
+        <?php
+        
+        if (!empty($site)) {
+            echo '<meta name="twitter:site" content="@' . esc_attr(ltrim($site, '@')) . '">' . "\n";
+        }
+        
+        if (!empty($image)) {
+            echo '<meta name="twitter:image" content="' . esc_url($image) . '">' . "\n";
+            
+            $image_data = self::get_image_data($image);
+            if (!empty($image_data['alt'])) {
+                echo '<meta name="twitter:image:alt" content="' . esc_attr($image_data['alt']) . '">' . "\n";
             }
         }
         
-        // Article section (category)
-        $categories = get_the_category($post->ID);
-        if ($categories) {
-            echo '<meta name="article:section" content="' . esc_attr($categories[0]->name) . '">' . "\n";
+        // Author Twitter handle
+        if (is_single()) {
+            $author_twitter = get_the_author_meta('twitter');
+            if (!empty($author_twitter)) {
+                echo '<meta name="twitter:creator" content="@' . esc_attr(ltrim($author_twitter, '@')) . '">' . "\n";
+            }
         }
     }
-    
-    // Site verification meta tags (placeholders)
-    $google_verification = get_theme_mod('google_site_verification', '');
-    $bing_verification = get_theme_mod('bing_site_verification', '');
-    
-    if ($google_verification) {
-        echo '<meta name="google-site-verification" content="' . esc_attr($google_verification) . '">' . "\n";
-    }
-    
-    if ($bing_verification) {
-        echo '<meta name="msvalidate.01" content="' . esc_attr($bing_verification) . '">' . "\n";
-    }
-}
 
-/**
- * Add OpenGraph tags
- */
-function modernblog2025_add_opengraph_tags() {
-    global $post;
-    
-    $title = modernblog2025_get_seo_title();
-    $description = modernblog2025_get_seo_description();
-    $url = modernblog2025_get_canonical_url();
-    $image = modernblog2025_get_seo_image();
-    $site_name = get_bloginfo('name');
-    
-    // Essential OpenGraph tags
-    echo '<meta property="og:title" content="' . esc_attr($title) . '">' . "\n";
-    echo '<meta property="og:description" content="' . esc_attr($description) . '">' . "\n";
-    echo '<meta property="og:url" content="' . esc_url($url) . '">' . "\n";
-    echo '<meta property="og:site_name" content="' . esc_attr($site_name) . '">' . "\n";
-    echo '<meta property="og:locale" content="' . get_locale() . '">' . "\n";
-    
-    // Type-specific OpenGraph tags
-    if (is_single() || is_page()) {
-        echo '<meta property="og:type" content="article">' . "\n";
+    /**
+     * Add canonical URL
+     *
+     * @since 1.0.0
+     */
+    public static function add_canonical_url() {
+        $canonical_url = self::get_canonical_url();
+        if (!empty($canonical_url)) {
+            echo '<link rel="canonical" href="' . esc_url($canonical_url) . '">' . "\n";
+        }
+    }
+
+    /**
+     * Add robots meta tag
+     *
+     * @since 1.0.0
+     */
+    public static function add_robots_meta() {
+        $robots = self::get_robots_directive();
+        if (!empty($robots)) {
+            echo '<meta name="robots" content="' . esc_attr($robots) . '">' . "\n";
+        }
+    }
+
+    /**
+     * Get SEO title
+     *
+     * @since 1.0.0
+     */
+    public static function get_seo_title() {
+        if (is_home() || is_front_page()) {
+            return get_option('gpress_seo_home_title', get_bloginfo('name') . ' - ' . get_bloginfo('description'));
+        }
         
-        if ($post) {
-            $author_name = get_the_author_meta('display_name', $post->post_author);
-            echo '<meta property="article:author" content="' . esc_attr($author_name) . '">' . "\n";
-            echo '<meta property="article:published_time" content="' . get_the_date('c', $post) . '">' . "\n";
-            echo '<meta property="article:modified_time" content="' . get_the_modified_date('c', $post) . '">' . "\n";
+        if (is_single() || is_page()) {
+            $custom_title = get_post_meta(get_the_ID(), '_gpress_seo_title', true);
+            if (!empty($custom_title)) {
+                return $custom_title;
+            }
+            return get_the_title();
         }
-    } else {
-        echo '<meta property="og:type" content="website">' . "\n";
+        
+        if (is_category()) {
+            return single_cat_title('', false) . ' Archives' . get_option('gpress_seo_separator', ' | ') . get_bloginfo('name');
+        }
+        
+        if (is_tag()) {
+            return single_tag_title('', false) . ' Archives' . get_option('gpress_seo_separator', ' | ') . get_bloginfo('name');
+        }
+        
+        if (is_author()) {
+            return get_the_author() . ' - Author Archives' . get_option('gpress_seo_separator', ' | ') . get_bloginfo('name');
+        }
+        
+        if (is_search()) {
+            return 'Search Results for "' . get_search_query() . '"' . get_option('gpress_seo_separator', ' | ') . get_bloginfo('name');
+        }
+        
+        return wp_get_document_title();
     }
-    
-    // Image
-    if ($image) {
-        echo '<meta property="og:image" content="' . esc_url($image['url']) . '">' . "\n";
-        echo '<meta property="og:image:width" content="' . esc_attr($image['width']) . '">' . "\n";
-        echo '<meta property="og:image:height" content="' . esc_attr($image['height']) . '">' . "\n";
-        echo '<meta property="og:image:alt" content="' . esc_attr($image['alt']) . '">' . "\n";
-    }
-}
 
-/**
- * Add Twitter Card tags
- */
-function modernblog2025_add_twitter_cards() {
-    $title = modernblog2025_get_seo_title();
-    $description = modernblog2025_get_seo_description();
-    $image = modernblog2025_get_seo_image();
-    $twitter_handle = get_theme_mod('twitter_handle', '');
-    
-    // Twitter Card type
-    $card_type = $image ? 'summary_large_image' : 'summary';
-    echo '<meta name="twitter:card" content="' . esc_attr($card_type) . '">' . "\n";
-    echo '<meta name="twitter:title" content="' . esc_attr($title) . '">' . "\n";
-    echo '<meta name="twitter:description" content="' . esc_attr($description) . '">' . "\n";
-    
-    if ($twitter_handle) {
-        echo '<meta name="twitter:site" content="@' . esc_attr(ltrim($twitter_handle, '@')) . '">' . "\n";
-        echo '<meta name="twitter:creator" content="@' . esc_attr(ltrim($twitter_handle, '@')) . '">' . "\n";
-    }
-    
-    if ($image) {
-        echo '<meta name="twitter:image" content="' . esc_url($image['url']) . '">' . "\n";
-        echo '<meta name="twitter:image:alt" content="' . esc_attr($image['alt']) . '">' . "\n";
-    }
-}
-
-/**
- * Get SEO title
- */
-function modernblog2025_get_seo_title() {
-    if (is_home() && !is_front_page()) {
-        return get_the_title(get_option('page_for_posts')) . ' - ' . get_bloginfo('name');
-    } elseif (is_front_page()) {
-        $title = get_bloginfo('name');
-        $tagline = get_bloginfo('description');
-        return $tagline ? $title . ' - ' . $tagline : $title;
-    } elseif (is_single() || is_page()) {
-        return get_the_title() . ' - ' . get_bloginfo('name');
-    } elseif (is_category()) {
-        return 'Category: ' . single_cat_title('', false) . ' - ' . get_bloginfo('name');
-    } elseif (is_tag()) {
-        return 'Tag: ' . single_tag_title('', false) . ' - ' . get_bloginfo('name');
-    } elseif (is_author()) {
-        return 'Author: ' . get_the_author() . ' - ' . get_bloginfo('name');
-    } elseif (is_archive()) {
-        return get_the_archive_title() . ' - ' . get_bloginfo('name');
-    } elseif (is_search()) {
-        return 'Search Results for: ' . get_search_query() . ' - ' . get_bloginfo('name');
-    } else {
-        return get_bloginfo('name') . ' - ' . get_bloginfo('description');
-    }
-}
-
-/**
- * Get SEO description
- */
-function modernblog2025_get_seo_description() {
-    if (is_single() || is_page()) {
-        $excerpt = get_the_excerpt();
-        return $excerpt ? wp_trim_words($excerpt, 25) : wp_trim_words(get_the_content(), 25);
-    } elseif (is_category()) {
-        $description = category_description();
-        return $description ? wp_trim_words(strip_tags($description), 25) : 'Browse posts in the ' . single_cat_title('', false) . ' category.';
-    } elseif (is_tag()) {
-        $description = tag_description();
-        return $description ? wp_trim_words(strip_tags($description), 25) : 'Browse posts tagged with ' . single_tag_title('', false) . '.';
-    } elseif (is_author()) {
-        $description = get_the_author_meta('description');
-        return $description ? wp_trim_words($description, 25) : 'Posts by ' . get_the_author() . '.';
-    } elseif (is_archive()) {
-        return 'Browse our archive of ' . get_the_archive_title() . ' posts.';
-    } elseif (is_search()) {
-        return 'Search results for: ' . get_search_query();
-    } else {
+    /**
+     * Get SEO description
+     *
+     * @since 1.0.0
+     */
+    public static function get_seo_description() {
+        if (is_home() || is_front_page()) {
+            return get_option('gpress_seo_home_description', get_bloginfo('description'));
+        }
+        
+        if (is_single() || is_page()) {
+            $custom_description = get_post_meta(get_the_ID(), '_gpress_seo_description', true);
+            if (!empty($custom_description)) {
+                return $custom_description;
+            }
+            
+            $excerpt = get_the_excerpt();
+            if (!empty($excerpt)) {
+                return wp_trim_words($excerpt, 30, '...');
+            }
+            
+            $content = get_the_content();
+            return wp_trim_words(strip_tags($content), 30, '...');
+        }
+        
+        if (is_category()) {
+            $description = category_description();
+            if (!empty($description)) {
+                return wp_trim_words(strip_tags($description), 30, '...');
+            }
+            return 'Browse all posts in the ' . single_cat_title('', false) . ' category.';
+        }
+        
+        if (is_tag()) {
+            $description = tag_description();
+            if (!empty($description)) {
+                return wp_trim_words(strip_tags($description), 30, '...');
+            }
+            return 'Browse all posts tagged with ' . single_tag_title('', false) . '.';
+        }
+        
+        if (is_author()) {
+            $description = get_the_author_meta('description');
+            if (!empty($description)) {
+                return wp_trim_words($description, 30, '...');
+            }
+            return 'Browse all posts by ' . get_the_author() . '.';
+        }
+        
+        if (is_search()) {
+            return 'Search results for "' . get_search_query() . '" on ' . get_bloginfo('name') . '.';
+        }
+        
         return get_bloginfo('description');
     }
-}
 
-/**
- * Get SEO keywords
- */
-function modernblog2025_get_seo_keywords() {
-    if (is_single()) {
-        $tags = get_the_tags();
-        if ($tags) {
-            return implode(', ', array_map(function($tag) {
-                return $tag->name;
-            }, $tags));
+    /**
+     * Get SEO keywords
+     *
+     * @since 1.0.0
+     */
+    public static function get_seo_keywords() {
+        if (is_single()) {
+            $custom_keywords = get_post_meta(get_the_ID(), '_gpress_seo_keywords', true);
+            if (!empty($custom_keywords)) {
+                return $custom_keywords;
+            }
+            
+            $tags = get_the_tags();
+            if (!empty($tags)) {
+                $keywords = array();
+                foreach ($tags as $tag) {
+                    $keywords[] = $tag->name;
+                }
+                return implode(', ', $keywords);
+            }
+            
+            $categories = get_the_category();
+            if (!empty($categories)) {
+                $keywords = array();
+                foreach ($categories as $category) {
+                    $keywords[] = $category->name;
+                }
+                return implode(', ', $keywords);
+            }
         }
-    } elseif (is_category()) {
-        return single_cat_title('', false);
-    } elseif (is_tag()) {
-        return single_tag_title('', false);
+        
+        return '';
     }
-    
-    return '';
-}
 
-/**
- * Get SEO author
- */
-function modernblog2025_get_seo_author() {
-    if (is_single()) {
-        return get_the_author();
+    /**
+     * Get SEO author
+     *
+     * @since 1.0.0
+     */
+    public static function get_seo_author() {
+        if (is_single()) {
+            return get_the_author();
+        }
+        return '';
     }
-    
-    return get_bloginfo('name');
-}
 
-/**
- * Get SEO image
- */
-function modernblog2025_get_seo_image() {
-    $image = null;
-    
-    if (is_single() || is_page()) {
-        $featured_image_id = get_post_thumbnail_id();
-        if ($featured_image_id) {
-            $image_data = wp_get_attachment_image_src($featured_image_id, 'large');
-            if ($image_data) {
-                $image = array(
-                    'url' => $image_data[0],
-                    'width' => $image_data[1],
-                    'height' => $image_data[2],
-                    'alt' => get_post_meta($featured_image_id, '_wp_attachment_image_alt', true)
-                );
+    /**
+     * Get OpenGraph image
+     *
+     * @since 1.0.0
+     */
+    public static function get_og_image() {
+        if (is_single() || is_page()) {
+            // Custom OG image
+            $custom_image = get_post_meta(get_the_ID(), '_gpress_og_image', true);
+            if (!empty($custom_image)) {
+                return $custom_image;
+            }
+            
+            // Featured image
+            if (has_post_thumbnail()) {
+                $thumbnail_id = get_post_thumbnail_id();
+                $image_data = wp_get_attachment_image_src($thumbnail_id, 'og-image');
+                if ($image_data) {
+                    return $image_data[0];
+                }
+            }
+        }
+        
+        // Default site image
+        $default_image = get_option('gpress_default_og_image', '');
+        if (!empty($default_image)) {
+            return $default_image;
+        }
+        
+        // Fallback to site icon
+        $site_icon = get_site_icon_url(1200);
+        if (!empty($site_icon)) {
+            return $site_icon;
+        }
+        
+        return '';
+    }
+
+    /**
+     * Get Twitter image
+     *
+     * @since 1.0.0
+     */
+    public static function get_twitter_image() {
+        if (is_single() || is_page()) {
+            if (has_post_thumbnail()) {
+                $thumbnail_id = get_post_thumbnail_id();
+                $image_data = wp_get_attachment_image_src($thumbnail_id, 'twitter-card');
+                if ($image_data) {
+                    return $image_data[0];
+                }
+            }
+        }
+        
+        return self::get_og_image();
+    }
+
+    /**
+     * Get OpenGraph type
+     *
+     * @since 1.0.0
+     */
+    public static function get_og_type() {
+        if (is_single()) {
+            return 'article';
+        }
+        
+        if (is_page()) {
+            return 'website';
+        }
+        
+        if (is_author()) {
+            return 'profile';
+        }
+        
+        return 'website';
+    }
+
+    /**
+     * Get Twitter card type
+     *
+     * @since 1.0.0
+     */
+    public static function get_twitter_card_type() {
+        if ((is_single() || is_page()) && has_post_thumbnail()) {
+            return 'summary_large_image';
+        }
+        
+        return 'summary';
+    }
+
+    /**
+     * Get canonical URL
+     *
+     * @since 1.0.0
+     */
+    public static function get_canonical_url() {
+        global $wp;
+        
+        if (is_home()) {
+            return home_url('/');
+        }
+        
+        if (is_single() || is_page()) {
+            return get_permalink();
+        }
+        
+        return home_url(add_query_arg(array(), $wp->request));
+    }
+
+    /**
+     * Get robots directive
+     *
+     * @since 1.0.0
+     */
+    public static function get_robots_directive() {
+        $robots = array();
+        
+        if (is_search()) {
+            $robots[] = 'noindex';
+            $robots[] = 'follow';
+        } elseif (is_404()) {
+            $robots[] = 'noindex';
+            $robots[] = 'nofollow';
+        } else {
+            $robots[] = 'index';
+            $robots[] = 'follow';
+        }
+        
+        $robots[] = 'max-snippet:-1';
+        $robots[] = 'max-image-preview:large';
+        $robots[] = 'max-video-preview:-1';
+        
+        return implode(', ', $robots);
+    }
+
+    /**
+     * Get theme color
+     *
+     * @since 1.0.0
+     */
+    public static function get_theme_color() {
+        $theme_json = wp_get_global_settings();
+        $colors = $theme_json['color']['palette']['theme'] ?? array();
+        
+        foreach ($colors as $color) {
+            if ($color['slug'] === 'primary') {
+                return $color['color'];
+            }
+        }
+        
+        return '#000000';
+    }
+
+    /**
+     * Get image data
+     *
+     * @since 1.0.0
+     */
+    public static function get_image_data($image_url) {
+        $attachment_id = attachment_url_to_postid($image_url);
+        $data = array(
+            'alt' => '',
+            'width' => 1200,
+            'height' => 630
+        );
+        
+        if ($attachment_id) {
+            $alt_text = get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
+            $metadata = wp_get_attachment_metadata($attachment_id);
+            
+            $data['alt'] = !empty($alt_text) ? $alt_text : get_the_title($attachment_id);
+            $data['width'] = $metadata['width'] ?? 1200;
+            $data['height'] = $metadata['height'] ?? 630;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Optimize document title
+     *
+     * @since 1.0.0
+     */
+    public static function optimize_document_title($title_parts) {
+        if (is_home() || is_front_page()) {
+            $custom_title = get_option('gpress_seo_home_title', '');
+            if (!empty($custom_title)) {
+                return array('title' => $custom_title);
+            }
+        }
+        
+        $separator = get_option('gpress_seo_separator', ' | ');
+        $title_parts['site'] = get_bloginfo('name');
+        
+        return $title_parts;
+    }
+
+    /**
+     * Optimize excerpt for SEO
+     *
+     * @since 1.0.0
+     */
+    public static function optimize_excerpt_for_seo($excerpt) {
+        if (empty($excerpt)) {
+            $content = get_the_content();
+            $excerpt = wp_trim_words(strip_tags($content), 30, '...');
+        }
+        
+        return $excerpt;
+    }
+
+    /**
+     * Optimize image SEO
+     *
+     * @since 1.0.0
+     */
+    public static function optimize_image_seo($attr, $attachment, $size) {
+        // Ensure alt text is present
+        if (empty($attr['alt'])) {
+            $alt_text = get_post_meta($attachment->ID, '_wp_attachment_image_alt', true);
+            if (empty($alt_text)) {
+                $alt_text = $attachment->post_title;
+            }
+            $attr['alt'] = $alt_text;
+        }
+        
+        // Add loading attribute for SEO
+        if (!isset($attr['loading'])) {
+            $attr['loading'] = 'lazy';
+        }
+        
+        return $attr;
+    }
+
+    /**
+     * Add structured data
+     *
+     * @since 1.0.0
+     */
+    public static function add_structured_data() {
+        if (get_option('gpress_enable_structured_data', true)) {
+            require_once get_theme_file_path('/inc/seo-structured-data.php');
+            GPress_Structured_Data::output_json_ld();
+        }
+    }
+
+    /**
+     * Add SEO analytics
+     *
+     * @since 1.0.0
+     */
+    public static function add_seo_analytics() {
+        $tracking_id = get_option('gpress_google_analytics', '');
+        if (!empty($tracking_id) && !is_admin() && !current_user_can('manage_options')) {
+            ?>
+            <!-- Google Analytics -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($tracking_id); ?>"></script>
+            <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '<?php echo esc_js($tracking_id); ?>', {
+                'anonymize_ip': true,
+                'respect_dnt': true
+              });
+            </script>
+            <?php
+        }
+    }
+
+    /**
+     * Setup SEO admin features
+     *
+     * @since 1.0.0
+     */
+    public static function setup_seo_admin() {
+        add_action('admin_menu', array(__CLASS__, 'add_seo_admin_menu'));
+        add_action('admin_enqueue_scripts', array(__CLASS__, 'admin_seo_assets'));
+    }
+
+    /**
+     * Add SEO admin menu
+     *
+     * @since 1.0.0
+     */
+    public static function add_seo_admin_menu() {
+        add_theme_page(
+            __('SEO Settings', 'gpress'),
+            __('SEO', 'gpress'),
+            'manage_options',
+            'gpress-seo',
+            array(__CLASS__, 'seo_admin_page')
+        );
+    }
+
+    /**
+     * SEO admin page
+     *
+     * @since 1.0.0
+     */
+    public static function seo_admin_page() {
+        // Implementation would include SEO settings form
+        echo '<div class="wrap"><h1>' . __('SEO Settings', 'gpress') . '</h1>';
+        echo '<p>' . __('Configure SEO settings for your GPress theme.', 'gpress') . '</p>';
+        echo '</div>';
+    }
+
+    /**
+     * Enqueue admin SEO assets
+     *
+     * @since 1.0.0
+     */
+    public static function admin_seo_assets($hook) {
+        if ($hook === 'appearance_page_gpress-seo') {
+            wp_enqueue_style(
+                'gpress-admin-seo',
+                get_theme_file_uri('/assets/css/admin-seo.css'),
+                array(),
+                GPRESS_VERSION
+            );
+        }
+    }
+
+    /**
+     * Add SEO meta boxes
+     *
+     * @since 1.0.0
+     */
+    public static function add_seo_meta_boxes() {
+        $post_types = get_post_types(array('public' => true));
+        foreach ($post_types as $post_type) {
+            add_meta_box(
+                'gpress_seo_meta',
+                __('SEO Settings', 'gpress'),
+                array(__CLASS__, 'seo_meta_box_callback'),
+                $post_type,
+                'normal',
+                'high'
+            );
+        }
+    }
+
+    /**
+     * SEO meta box callback
+     *
+     * @since 1.0.0
+     */
+    public static function seo_meta_box_callback($post) {
+        wp_nonce_field('gpress_seo_meta', 'gpress_seo_meta_nonce');
+        
+        $seo_title = get_post_meta($post->ID, '_gpress_seo_title', true);
+        $seo_description = get_post_meta($post->ID, '_gpress_seo_description', true);
+        $seo_keywords = get_post_meta($post->ID, '_gpress_seo_keywords', true);
+        $og_image = get_post_meta($post->ID, '_gpress_og_image', true);
+        
+        ?>
+        <table class="form-table">
+            <tr>
+                <th scope="row"><?php _e('SEO Title', 'gpress'); ?></th>
+                <td>
+                    <input type="text" name="gpress_seo_title" value="<?php echo esc_attr($seo_title); ?>" 
+                           class="widefat" maxlength="60">
+                    <p class="description"><?php _e('Recommended: 50-60 characters', 'gpress'); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><?php _e('Meta Description', 'gpress'); ?></th>
+                <td>
+                    <textarea name="gpress_seo_description" class="widefat" rows="3" 
+                              maxlength="160"><?php echo esc_textarea($seo_description); ?></textarea>
+                    <p class="description"><?php _e('Recommended: 150-160 characters', 'gpress'); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><?php _e('Keywords', 'gpress'); ?></th>
+                <td>
+                    <input type="text" name="gpress_seo_keywords" value="<?php echo esc_attr($seo_keywords); ?>" 
+                           class="widefat">
+                    <p class="description"><?php _e('Comma-separated keywords', 'gpress'); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><?php _e('OpenGraph Image', 'gpress'); ?></th>
+                <td>
+                    <input type="url" name="gpress_og_image" value="<?php echo esc_url($og_image); ?>" 
+                           class="widefat">
+                    <p class="description"><?php _e('Recommended: 1200x630 pixels', 'gpress'); ?></p>
+                </td>
+            </tr>
+        </table>
+        <?php
+    }
+
+    /**
+     * Save SEO meta data
+     *
+     * @since 1.0.0
+     */
+    public static function save_seo_meta_data($post_id) {
+        if (!isset($_POST['gpress_seo_meta_nonce']) || 
+            !wp_verify_nonce($_POST['gpress_seo_meta_nonce'], 'gpress_seo_meta')) {
+            return;
+        }
+        
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+        
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+        
+        $fields = array(
+            'gpress_seo_title' => '_gpress_seo_title',
+            'gpress_seo_description' => '_gpress_seo_description',
+            'gpress_seo_keywords' => '_gpress_seo_keywords',
+            'gpress_og_image' => '_gpress_og_image',
+        );
+        
+        foreach ($fields as $field => $meta_key) {
+            if (isset($_POST[$field])) {
+                $value = sanitize_text_field($_POST[$field]);
+                update_post_meta($post_id, $meta_key, $value);
             }
         }
     }
-    
-    // Fallback to site logo or default image
-    if (!$image) {
-        $site_logo_id = get_theme_mod('custom_logo');
-        if ($site_logo_id) {
-            $image_data = wp_get_attachment_image_src($site_logo_id, 'large');
-            if ($image_data) {
-                $image = array(
-                    'url' => $image_data[0],
-                    'width' => $image_data[1],
-                    'height' => $image_data[2],
-                    'alt' => get_bloginfo('name') . ' logo'
-                );
-            }
-        }
-    }
-    
-    return $image;
 }
 
-/**
- * Get canonical URL
- */
-function modernblog2025_get_canonical_url() {
-    if (is_singular()) {
-        return get_permalink();
-    } elseif (is_category()) {
-        return get_category_link(get_queried_object_id());
-    } elseif (is_tag()) {
-        return get_tag_link(get_queried_object_id());
-    } elseif (is_author()) {
-        return get_author_posts_url(get_queried_object_id());
-    } elseif (is_home()) {
-        return home_url('/');
-    } else {
-        return home_url(add_query_arg(null, null));
-    }
-}
-
-/**
- * Add canonical URL
- */
-function modernblog2025_add_canonical_url() {
-    $canonical_url = modernblog2025_get_canonical_url();
-    echo '<link rel="canonical" href="' . esc_url($canonical_url) . '">' . "\n";
-}
-
-/**
- * Add robots meta tag
- */
-function modernblog2025_add_robots_meta() {
-    $robots = array();
-    
-    if (is_search() || is_404()) {
-        $robots[] = 'noindex';
-        $robots[] = 'nofollow';
-    } elseif (is_attachment()) {
-        $robots[] = 'noindex';
-        $robots[] = 'follow';
-    } else {
-        $robots[] = 'index';
-        $robots[] = 'follow';
-    }
-    
-    // Add additional directives
-    $robots[] = 'max-snippet:-1';
-    $robots[] = 'max-image-preview:large';
-    $robots[] = 'max-video-preview:-1';
-    
-    $robots_content = implode(', ', $robots);
-    echo '<meta name="robots" content="' . esc_attr($robots_content) . '">' . "\n";
-}
-
-/**
- * Optimize excerpt for SEO
- */
-function modernblog2025_optimize_excerpt_for_seo($excerpt) {
-    if (empty($excerpt)) {
-        $excerpt = get_the_content();
-    }
-    
-    // Remove shortcodes and HTML tags
-    $excerpt = strip_shortcodes($excerpt);
-    $excerpt = wp_strip_all_tags($excerpt);
-    
-    // Optimize length for meta description
-    return wp_trim_words($excerpt, 25);
-}
+// Initialize the SEO system
+GPress_SEO::init();
 ```
 
-### 2. Structured Data (JSON-LD)
+### 2. Create Structured Data Implementation
 
-Create `inc/structured-data.php`:
+Create `inc/seo-structured-data.php`:
 
 ```php
 <?php
 /**
- * Structured Data (Schema.org)
+ * Structured Data Implementation for GPress Theme
+ * Schema.org markup for rich snippets and enhanced search results
+ *
+ * @package GPress
+ * @subpackage SEO
+ * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
- * Add JSON-LD structured data
+ * GPress Structured Data Manager
+ * 
+ * @since 1.0.0
  */
-function modernblog2025_add_json_ld() {
-    $structured_data = array();
-    
-    // Website/Organization schema
-    $structured_data[] = modernblog2025_get_organization_schema();
-    
-    // Page-specific schemas
-    if (is_single()) {
-        $structured_data[] = modernblog2025_get_article_schema();
-    } elseif (is_page()) {
-        $structured_data[] = modernblog2025_get_webpage_schema();
-    } elseif (is_home() || is_front_page()) {
-        $structured_data[] = modernblog2025_get_website_schema();
-    } elseif (is_author()) {
-        $structured_data[] = modernblog2025_get_person_schema();
-    }
-    
-    // Breadcrumb schema
-    if (!is_front_page()) {
-        $breadcrumb_schema = modernblog2025_get_breadcrumb_schema();
-        if ($breadcrumb_schema) {
-            $structured_data[] = $breadcrumb_schema;
-        }
-    }
-    
-    // Output structured data
-    foreach ($structured_data as $schema) {
-        if ($schema) {
-            echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
-        }
-    }
-}
+class GPress_Structured_Data {
 
-/**
- * Get Organization schema
- */
-function modernblog2025_get_organization_schema() {
-    $site_name = get_bloginfo('name');
-    $site_url = home_url('/');
-    $site_description = get_bloginfo('description');
-    
-    $schema = array(
-        '@context' => 'https://schema.org',
-        '@type' => 'Organization',
-        'name' => $site_name,
-        'url' => $site_url,
-        'description' => $site_description,
-        'foundingDate' => get_option('date_format', date('Y-m-d')),
-        'contactPoint' => array(
-            '@type' => 'ContactPoint',
-            'contactType' => 'customer service',
-            'url' => $site_url . 'contact/'
-        )
-    );
-    
-    // Add logo if available
-    $logo_id = get_theme_mod('custom_logo');
-    if ($logo_id) {
-        $logo_data = wp_get_attachment_image_src($logo_id, 'full');
-        if ($logo_data) {
-            $schema['logo'] = array(
-                '@type' => 'ImageObject',
-                'url' => $logo_data[0],
-                'width' => $logo_data[1],
-                'height' => $logo_data[2]
-            );
+    /**
+     * Output JSON-LD structured data
+     *
+     * @since 1.0.0
+     */
+    public static function output_json_ld() {
+        $schema_data = array();
+        
+        // Organization/Website schema
+        $schema_data[] = self::get_organization_schema();
+        
+        // WebSite schema with search action
+        $schema_data[] = self::get_website_schema();
+        
+        // Context-specific schemas
+        if (is_home() || is_front_page()) {
+            $schema_data[] = self::get_homepage_schema();
+        } elseif (is_single()) {
+            $schema_data[] = self::get_article_schema();
+            $schema_data[] = self::get_author_schema();
+        } elseif (is_page()) {
+            $schema_data[] = self::get_webpage_schema();
+        } elseif (is_author()) {
+            $schema_data[] = self::get_person_schema();
+        } elseif (is_category() || is_tag()) {
+            $schema_data[] = self::get_collection_page_schema();
+        }
+        
+        // Breadcrumb schema
+        if (!is_front_page()) {
+            $breadcrumb_schema = self::get_breadcrumb_schema();
+            if (!empty($breadcrumb_schema)) {
+                $schema_data[] = $breadcrumb_schema;
+            }
+        }
+        
+        // Output all schemas
+        foreach ($schema_data as $schema) {
+            if (!empty($schema)) {
+                self::output_schema($schema);
+            }
         }
     }
-    
-    // Add social media profiles
-    $social_profiles = array();
-    $facebook = get_theme_mod('facebook_url', '');
-    $twitter = get_theme_mod('twitter_url', '');
-    $instagram = get_theme_mod('instagram_url', '');
-    $linkedin = get_theme_mod('linkedin_url', '');
-    
-    if ($facebook) $social_profiles[] = $facebook;
-    if ($twitter) $social_profiles[] = $twitter;
-    if ($instagram) $social_profiles[] = $instagram;
-    if ($linkedin) $social_profiles[] = $linkedin;
-    
-    if (!empty($social_profiles)) {
-        $schema['sameAs'] = $social_profiles;
-    }
-    
-    return $schema;
-}
 
-/**
- * Get Article schema
- */
-function modernblog2025_get_article_schema() {
-    global $post;
-    
-    if (!$post) {
-        return null;
-    }
-    
-    $author = get_the_author_meta('display_name', $post->post_author);
-    $author_url = get_author_posts_url($post->post_author);
-    $featured_image = modernblog2025_get_seo_image();
-    
-    $schema = array(
-        '@context' => 'https://schema.org',
-        '@type' => 'Article',
-        'headline' => get_the_title(),
-        'description' => modernblog2025_get_seo_description(),
-        'url' => get_permalink(),
-        'datePublished' => get_the_date('c'),
-        'dateModified' => get_the_modified_date('c'),
-        'author' => array(
-            '@type' => 'Person',
-            'name' => $author,
-            'url' => $author_url
-        ),
-        'publisher' => array(
+    /**
+     * Get Organization schema
+     *
+     * @since 1.0.0
+     */
+    private static function get_organization_schema() {
+        $logo_url = get_site_icon_url(512);
+        if (empty($logo_url)) {
+            $logo_url = get_theme_file_uri('/screenshot.png');
+        }
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
             '@type' => 'Organization',
             'name' => get_bloginfo('name'),
-            'url' => home_url('/')
-        ),
-        'mainEntityOfPage' => array(
-            '@type' => 'WebPage',
-            '@id' => get_permalink()
-        )
-    );
-    
-    // Add featured image
-    if ($featured_image) {
-        $schema['image'] = array(
-            '@type' => 'ImageObject',
-            'url' => $featured_image['url'],
-            'width' => $featured_image['width'],
-            'height' => $featured_image['height']
+            'description' => get_bloginfo('description'),
+            'url' => home_url('/'),
+            'logo' => array(
+                '@type' => 'ImageObject',
+                'url' => $logo_url,
+                'width' => 512,
+                'height' => 512
+            ),
+            'sameAs' => self::get_social_profiles()
         );
+        
+        // Add contact information if available
+        $contact_info = self::get_contact_information();
+        if (!empty($contact_info)) {
+            $schema = array_merge($schema, $contact_info);
+        }
+        
+        return $schema;
     }
-    
-    // Add categories and tags
-    $categories = get_the_category();
-    if ($categories) {
-        $schema['articleSection'] = array_map(function($category) {
-            return $category->name;
-        }, $categories);
-    }
-    
-    $tags = get_the_tags();
-    if ($tags) {
-        $schema['keywords'] = array_map(function($tag) {
-            return $tag->name;
-        }, $tags);
-    }
-    
-    // Add word count and reading time
-    $content = get_the_content();
-    $word_count = str_word_count(strip_tags($content));
-    $reading_time = max(1, ceil($word_count / 200));
-    
-    $schema['wordCount'] = $word_count;
-    $schema['timeRequired'] = 'PT' . $reading_time . 'M';
-    
-    return $schema;
-}
 
-/**
- * Get WebPage schema
- */
-function modernblog2025_get_webpage_schema() {
-    $schema = array(
-        '@context' => 'https://schema.org',
-        '@type' => 'WebPage',
-        'name' => get_the_title(),
-        'description' => modernblog2025_get_seo_description(),
-        'url' => get_permalink(),
-        'datePublished' => get_the_date('c'),
-        'dateModified' => get_the_modified_date('c'),
-        'isPartOf' => array(
+    /**
+     * Get WebSite schema
+     *
+     * @since 1.0.0
+     */
+    private static function get_website_schema() {
+        $schema = array(
+            '@context' => 'https://schema.org',
             '@type' => 'WebSite',
             'name' => get_bloginfo('name'),
-            'url' => home_url('/')
-        )
-    );
-    
-    return $schema;
-}
+            'description' => get_bloginfo('description'),
+            'url' => home_url('/'),
+            'inLanguage' => get_locale(),
+            'potentialAction' => array(
+                '@type' => 'SearchAction',
+                'target' => array(
+                    '@type' => 'EntryPoint',
+                    'urlTemplate' => home_url('/?s={search_term_string}')
+                ),
+                'query-input' => 'required name=search_term_string'
+            )
+        );
+        
+        return $schema;
+    }
 
-/**
- * Get Website schema
- */
-function modernblog2025_get_website_schema() {
-    $schema = array(
-        '@context' => 'https://schema.org',
-        '@type' => 'WebSite',
-        'name' => get_bloginfo('name'),
-        'description' => get_bloginfo('description'),
-        'url' => home_url('/'),
-        'potentialAction' => array(
-            '@type' => 'SearchAction',
-            'target' => array(
-                '@type' => 'EntryPoint',
-                'urlTemplate' => home_url('/?s={search_term_string}')
-            ),
-            'query-input' => 'required name=search_term_string'
-        )
-    );
-    
-    return $schema;
-}
-
-/**
- * Get Person schema for author pages
- */
-function modernblog2025_get_person_schema() {
-    $author_id = get_queried_object_id();
-    $author_name = get_the_author_meta('display_name', $author_id);
-    $author_description = get_the_author_meta('description', $author_id);
-    $author_url = get_author_posts_url($author_id);
-    $author_email = get_the_author_meta('email', $author_id);
-    
-    $schema = array(
-        '@context' => 'https://schema.org',
-        '@type' => 'Person',
-        'name' => $author_name,
-        'description' => $author_description,
-        'url' => $author_url,
-        'sameAs' => array()
-    );
-    
-    // Add social profiles
-    $website = get_the_author_meta('url', $author_id);
-    $twitter = get_the_author_meta('twitter', $author_id);
-    $facebook = get_the_author_meta('facebook', $author_id);
-    
-    if ($website) $schema['sameAs'][] = $website;
-    if ($twitter) $schema['sameAs'][] = 'https://twitter.com/' . ltrim($twitter, '@');
-    if ($facebook) $schema['sameAs'][] = $facebook;
-    
-    return $schema;
-}
-
-/**
- * Get Breadcrumb schema
- */
-function modernblog2025_get_breadcrumb_schema() {
-    $breadcrumbs = array();
-    $position = 1;
-    
-    // Home
-    $breadcrumbs[] = array(
-        '@type' => 'ListItem',
-        'position' => $position++,
-        'name' => get_bloginfo('name'),
-        'item' => home_url('/')
-    );
-    
-    if (is_single()) {
+    /**
+     * Get Article schema for single posts
+     *
+     * @since 1.0.0
+     */
+    private static function get_article_schema() {
+        if (!is_single()) {
+            return array();
+        }
+        
         global $post;
         
-        // Add categories
-        $categories = get_the_category($post->ID);
-        if ($categories) {
-            $category = $categories[0];
+        $featured_image = '';
+        if (has_post_thumbnail()) {
+            $image_data = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full');
+            $featured_image = $image_data[0];
+        }
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'Article',
+            'headline' => get_the_title(),
+            'description' => GPress_SEO::get_seo_description(),
+            'url' => get_permalink(),
+            'datePublished' => get_the_date('c'),
+            'dateModified' => get_the_modified_date('c'),
+            'author' => array(
+                '@type' => 'Person',
+                'name' => get_the_author(),
+                'url' => get_author_posts_url(get_the_author_meta('ID'))
+            ),
+            'publisher' => array(
+                '@type' => 'Organization',
+                'name' => get_bloginfo('name'),
+                'logo' => array(
+                    '@type' => 'ImageObject',
+                    'url' => get_site_icon_url(512)
+                )
+            ),
+            'mainEntityOfPage' => array(
+                '@type' => 'WebPage',
+                '@id' => get_permalink()
+            ),
+            'inLanguage' => get_locale()
+        );
+        
+        if (!empty($featured_image)) {
+            $schema['image'] = array(
+                '@type' => 'ImageObject',
+                'url' => $featured_image,
+                'width' => 1200,
+                'height' => 630
+            );
+        }
+        
+        // Add article section
+        $categories = get_the_category();
+        if (!empty($categories)) {
+            $schema['articleSection'] = $categories[0]->name;
+        }
+        
+        // Add keywords
+        $tags = get_the_tags();
+        if (!empty($tags)) {
+            $keywords = array();
+            foreach ($tags as $tag) {
+                $keywords[] = $tag->name;
+            }
+            $schema['keywords'] = implode(', ', $keywords);
+        }
+        
+        // Add word count
+        $content = get_the_content();
+        $word_count = str_word_count(strip_tags($content));
+        if ($word_count > 0) {
+            $schema['wordCount'] = $word_count;
+        }
+        
+        return $schema;
+    }
+
+    /**
+     * Get Author/Person schema
+     *
+     * @since 1.0.0
+     */
+    private static function get_author_schema() {
+        if (!is_single()) {
+            return array();
+        }
+        
+        $author_id = get_the_author_meta('ID');
+        $author_description = get_the_author_meta('description');
+        $author_website = get_the_author_meta('user_url');
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'Person',
+            'name' => get_the_author(),
+            'url' => get_author_posts_url($author_id),
+            'sameAs' => array()
+        );
+        
+        if (!empty($author_description)) {
+            $schema['description'] = $author_description;
+        }
+        
+        if (!empty($author_website)) {
+            $schema['sameAs'][] = $author_website;
+        }
+        
+        // Add social profiles
+        $social_fields = array('twitter', 'facebook', 'linkedin', 'instagram');
+        foreach ($social_fields as $field) {
+            $social_url = get_the_author_meta($field);
+            if (!empty($social_url)) {
+                $schema['sameAs'][] = $social_url;
+            }
+        }
+        
+        return $schema;
+    }
+
+    /**
+     * Get WebPage schema for pages
+     *
+     * @since 1.0.0
+     */
+    private static function get_webpage_schema() {
+        if (!is_page()) {
+            return array();
+        }
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'WebPage',
+            'name' => get_the_title(),
+            'description' => GPress_SEO::get_seo_description(),
+            'url' => get_permalink(),
+            'inLanguage' => get_locale(),
+            'isPartOf' => array(
+                '@type' => 'WebSite',
+                'name' => get_bloginfo('name'),
+                'url' => home_url('/')
+            ),
+            'datePublished' => get_the_date('c'),
+            'dateModified' => get_the_modified_date('c')
+        );
+        
+        return $schema;
+    }
+
+    /**
+     * Get Person schema for author pages
+     *
+     * @since 1.0.0
+     */
+    private static function get_person_schema() {
+        if (!is_author()) {
+            return array();
+        }
+        
+        $author_id = get_queried_object_id();
+        $author_description = get_the_author_meta('description', $author_id);
+        $author_website = get_the_author_meta('user_url', $author_id);
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'Person',
+            'name' => get_the_author_meta('display_name', $author_id),
+            'url' => get_author_posts_url($author_id)
+        );
+        
+        if (!empty($author_description)) {
+            $schema['description'] = $author_description;
+        }
+        
+        if (!empty($author_website)) {
+            $schema['url'] = $author_website;
+        }
+        
+        return $schema;
+    }
+
+    /**
+     * Get Collection Page schema for archives
+     *
+     * @since 1.0.0
+     */
+    private static function get_collection_page_schema() {
+        if (!is_category() && !is_tag()) {
+            return array();
+        }
+        
+        $term = get_queried_object();
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'CollectionPage',
+            'name' => $term->name,
+            'description' => !empty($term->description) ? $term->description : 'Archive page for ' . $term->name,
+            'url' => get_term_link($term),
+            'inLanguage' => get_locale()
+        );
+        
+        return $schema;
+    }
+
+    /**
+     * Get Breadcrumb schema
+     *
+     * @since 1.0.0
+     */
+    private static function get_breadcrumb_schema() {
+        $breadcrumbs = self::generate_breadcrumb_data();
+        
+        if (empty($breadcrumbs)) {
+            return array();
+        }
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => $breadcrumbs
+        );
+        
+        return $schema;
+    }
+
+    /**
+     * Get Homepage schema
+     *
+     * @since 1.0.0
+     */
+    private static function get_homepage_schema() {
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'WebPage',
+            'name' => get_bloginfo('name'),
+            'description' => get_bloginfo('description'),
+            'url' => home_url('/'),
+            'inLanguage' => get_locale(),
+            'isPartOf' => array(
+                '@type' => 'WebSite',
+                'name' => get_bloginfo('name'),
+                'url' => home_url('/')
+            )
+        );
+        
+        return $schema;
+    }
+
+    /**
+     * Generate breadcrumb data
+     *
+     * @since 1.0.0
+     */
+    private static function generate_breadcrumb_data() {
+        $breadcrumbs = array();
+        $position = 1;
+        
+        // Home
+        $breadcrumbs[] = array(
+            '@type' => 'ListItem',
+            'position' => $position++,
+            'name' => 'Home',
+            'item' => home_url('/')
+        );
+        
+        if (is_single()) {
+            global $post;
+            
+            // Add category for posts
+            if ($post->post_type === 'post') {
+                $categories = get_the_category();
+                if (!empty($categories)) {
+                    $category = $categories[0];
+                    $breadcrumbs[] = array(
+                        '@type' => 'ListItem',
+                        'position' => $position++,
+                        'name' => $category->name,
+                        'item' => get_category_link($category->term_id)
+                    );
+                }
+            }
+            
+            // Add parent pages
+            if ($post->post_parent) {
+                $ancestors = get_post_ancestors($post->ID);
+                $ancestors = array_reverse($ancestors);
+                
+                foreach ($ancestors as $ancestor) {
+                    $breadcrumbs[] = array(
+                        '@type' => 'ListItem',
+                        'position' => $position++,
+                        'name' => get_the_title($ancestor),
+                        'item' => get_permalink($ancestor)
+                    );
+                }
+            }
+            
+            // Current post
+            $breadcrumbs[] = array(
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => get_the_title(),
+                'item' => get_permalink()
+            );
+            
+        } elseif (is_page()) {
+            global $post;
+            
+            if ($post->post_parent) {
+                $ancestors = get_post_ancestors($post->ID);
+                $ancestors = array_reverse($ancestors);
+                
+                foreach ($ancestors as $ancestor) {
+                    $breadcrumbs[] = array(
+                        '@type' => 'ListItem',
+                        'position' => $position++,
+                        'name' => get_the_title($ancestor),
+                        'item' => get_permalink($ancestor)
+                    );
+                }
+            }
+            
+            $breadcrumbs[] = array(
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => get_the_title(),
+                'item' => get_permalink()
+            );
+            
+        } elseif (is_category()) {
+            $category = get_queried_object();
+            
+            if ($category->parent) {
+                $ancestors = get_ancestors($category->term_id, 'category');
+                $ancestors = array_reverse($ancestors);
+                
+                foreach ($ancestors as $ancestor) {
+                    $ancestor_category = get_category($ancestor);
+                    $breadcrumbs[] = array(
+                        '@type' => 'ListItem',
+                        'position' => $position++,
+                        'name' => $ancestor_category->name,
+                        'item' => get_category_link($ancestor)
+                    );
+                }
+            }
+            
             $breadcrumbs[] = array(
                 '@type' => 'ListItem',
                 'position' => $position++,
@@ -697,629 +1592,626 @@ function modernblog2025_get_breadcrumb_schema() {
             );
         }
         
-        // Current post
-        $breadcrumbs[] = array(
-            '@type' => 'ListItem',
-            'position' => $position++,
-            'name' => get_the_title(),
-            'item' => get_permalink()
+        return $breadcrumbs;
+    }
+
+    /**
+     * Get social profiles
+     *
+     * @since 1.0.0
+     */
+    private static function get_social_profiles() {
+        $profiles = array();
+        
+        $social_options = array(
+            'facebook_url' => get_option('gpress_facebook_url', ''),
+            'twitter_url' => get_option('gpress_twitter_url', ''),
+            'linkedin_url' => get_option('gpress_linkedin_url', ''),
+            'instagram_url' => get_option('gpress_instagram_url', ''),
+            'youtube_url' => get_option('gpress_youtube_url', ''),
         );
         
-    } elseif (is_page()) {
-        global $post;
-        
-        // Parent pages
-        if ($post->post_parent) {
-            $ancestors = get_post_ancestors($post->ID);
-            $ancestors = array_reverse($ancestors);
-            
-            foreach ($ancestors as $ancestor) {
-                $breadcrumbs[] = array(
-                    '@type' => 'ListItem',
-                    'position' => $position++,
-                    'name' => get_the_title($ancestor),
-                    'item' => get_permalink($ancestor)
-                );
+        foreach ($social_options as $profile) {
+            if (!empty($profile)) {
+                $profiles[] = $profile;
             }
         }
         
-        // Current page
-        $breadcrumbs[] = array(
-            '@type' => 'ListItem',
-            'position' => $position++,
-            'name' => get_the_title(),
-            'item' => get_permalink()
-        );
+        return $profiles;
+    }
+
+    /**
+     * Get contact information
+     *
+     * @since 1.0.0
+     */
+    private static function get_contact_information() {
+        $contact = array();
         
-    } elseif (is_category()) {
-        $category = get_queried_object();
-        $breadcrumbs[] = array(
-            '@type' => 'ListItem',
-            'position' => $position++,
-            'name' => $category->name,
-            'item' => get_category_link($category->term_id)
-        );
-    }
-    
-    if (count($breadcrumbs) > 1) {
-        return array(
-            '@context' => 'https://schema.org',
-            '@type' => 'BreadcrumbList',
-            'itemListElement' => $breadcrumbs
-        );
-    }
-    
-    return null;
-}
-```
-
-### 3. SEO Customizer Settings
-
-Create `inc/seo-customizer.php`:
-
-```php
-<?php
-/**
- * SEO Customizer Settings
- */
-
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-/**
- * Add SEO settings to customizer
- */
-function modernblog2025_seo_customizer($wp_customize) {
-    // SEO Section
-    $wp_customize->add_section('modernblog2025_seo', array(
-        'title' => __('SEO Settings', 'modernblog2025'),
-        'priority' => 35,
-        'description' => __('Configure SEO and social media settings for your site.', 'modernblog2025')
-    ));
-    
-    // Site verification settings
-    $wp_customize->add_setting('google_site_verification', array(
-        'default' => '',
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control('google_site_verification', array(
-        'label' => __('Google Site Verification', 'modernblog2025'),
-        'description' => __('Enter your Google Search Console verification code', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'type' => 'text'
-    ));
-    
-    $wp_customize->add_setting('bing_site_verification', array(
-        'default' => '',
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control('bing_site_verification', array(
-        'label' => __('Bing Site Verification', 'modernblog2025'),
-        'description' => __('Enter your Bing Webmaster Tools verification code', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'type' => 'text'
-    ));
-    
-    // Social media settings
-    $wp_customize->add_setting('twitter_handle', array(
-        'default' => '',
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control('twitter_handle', array(
-        'label' => __('Twitter Handle', 'modernblog2025'),
-        'description' => __('Enter your Twitter username (without @)', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'type' => 'text'
-    ));
-    
-    $wp_customize->add_setting('facebook_url', array(
-        'default' => '',
-        'sanitize_callback' => 'esc_url_raw',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control('facebook_url', array(
-        'label' => __('Facebook Page URL', 'modernblog2025'),
-        'description' => __('Enter your Facebook page URL', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'type' => 'url'
-    ));
-    
-    $wp_customize->add_setting('instagram_url', array(
-        'default' => '',
-        'sanitize_callback' => 'esc_url_raw',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control('instagram_url', array(
-        'label' => __('Instagram Profile URL', 'modernblog2025'),
-        'description' => __('Enter your Instagram profile URL', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'type' => 'url'
-    ));
-    
-    $wp_customize->add_setting('linkedin_url', array(
-        'default' => '',
-        'sanitize_callback' => 'esc_url_raw',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control('linkedin_url', array(
-        'label' => __('LinkedIn Profile URL', 'modernblog2025'),
-        'description' => __('Enter your LinkedIn profile URL', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'type' => 'url'
-    ));
-    
-    // Default social image
-    $wp_customize->add_setting('default_social_image', array(
-        'default' => '',
-        'sanitize_callback' => 'absint',
-        'transport' => 'refresh'
-    ));
-    
-    $wp_customize->add_control(new WP_Customize_Media_Control($wp_customize, 'default_social_image', array(
-        'label' => __('Default Social Media Image', 'modernblog2025'),
-        'description' => __('Choose a default image for social media sharing (1200x630px recommended)', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
-        'mime_type' => 'image'
-    )));
-}
-add_action('customize_register', 'modernblog2025_seo_customizer');
-```
-
-### 4. Technical SEO Optimizations
-
-Create `inc/technical-seo.php`:
-
-```php
-<?php
-/**
- * Technical SEO Optimizations
- */
-
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-/**
- * Technical SEO setup
- */
-function modernblog2025_technical_seo_setup() {
-    // Clean up WordPress head
-    add_action('init', 'modernblog2025_clean_wp_head');
-    
-    // Add preload and prefetch tags
-    add_action('wp_head', 'modernblog2025_add_resource_hints', 5);
-    
-    // Optimize feed links
-    add_action('wp_head', 'modernblog2025_add_feed_links', 10);
-    
-    // Add hreflang for internationalization
-    add_action('wp_head', 'modernblog2025_add_hreflang', 15);
-    
-    // Optimize images for SEO
-    add_filter('wp_get_attachment_image_attributes', 'modernblog2025_optimize_image_seo', 10, 3);
-    
-    // Add structured data for images
-    add_action('wp_footer', 'modernblog2025_add_image_structured_data');
-}
-add_action('after_setup_theme', 'modernblog2025_technical_seo_setup');
-
-/**
- * Clean up WordPress head
- */
-function modernblog2025_clean_wp_head() {
-    // Remove unnecessary meta tags
-    remove_action('wp_head', 'wp_generator');
-    remove_action('wp_head', 'wlwmanifest_link');
-    remove_action('wp_head', 'rsd_link');
-    remove_action('wp_head', 'wp_shortlink_wp_head');
-    
-    // Remove emoji scripts (if not needed)
-    if (!get_theme_mod('enable_emoji_support', false)) {
-        remove_action('wp_head', 'print_emoji_detection_script', 7);
-        remove_action('wp_print_styles', 'print_emoji_styles');
-        remove_action('admin_print_scripts', 'print_emoji_detection_script');
-        remove_action('admin_print_styles', 'print_emoji_styles');
-    }
-    
-    // Remove REST API link (if not needed)
-    if (!get_theme_mod('enable_rest_api_head_link', false)) {
-        remove_action('wp_head', 'rest_output_link_wp_head');
-    }
-}
-
-/**
- * Add resource hints
- */
-function modernblog2025_add_resource_hints() {
-    // DNS prefetch for external domains
-    $external_domains = array(
-        '//fonts.googleapis.com',
-        '//fonts.gstatic.com',
-        '//gravatar.com',
-        '//secure.gravatar.com'
-    );
-    
-    foreach ($external_domains as $domain) {
-        echo '<link rel="dns-prefetch" href="' . esc_url($domain) . '">' . "\n";
-    }
-    
-    // Preload critical resources
-    $preload_resources = array(
-        array(
-            'href' => get_theme_file_uri('/assets/css/critical.min.css'),
-            'as' => 'style'
-        ),
-        array(
-            'href' => get_theme_file_uri('/assets/fonts/primary-font.woff2'),
-            'as' => 'font',
-            'type' => 'font/woff2',
-            'crossorigin' => 'anonymous'
-        )
-    );
-    
-    foreach ($preload_resources as $resource) {
-        $attributes = array();
-        foreach ($resource as $key => $value) {
-            $attributes[] = $key . '="' . esc_attr($value) . '"';
+        $phone = get_option('gpress_phone_number', '');
+        $email = get_option('gpress_email_address', '');
+        $address = get_option('gpress_address', '');
+        
+        if (!empty($phone)) {
+            $contact['telephone'] = $phone;
         }
-        echo '<link rel="preload" ' . implode(' ', $attributes) . '>' . "\n";
-    }
-}
-
-/**
- * Add optimized feed links
- */
-function modernblog2025_add_feed_links() {
-    echo '<link rel="alternate" type="application/rss+xml" title="' . esc_attr(get_bloginfo('name')) . ' RSS Feed" href="' . esc_url(get_feed_link()) . '">' . "\n";
-    echo '<link rel="alternate" type="application/atom+xml" title="' . esc_attr(get_bloginfo('name')) . ' Atom Feed" href="' . esc_url(get_feed_link('atom')) . '">' . "\n";
-}
-
-/**
- * Add hreflang tags
- */
-function modernblog2025_add_hreflang() {
-    $current_locale = get_locale();
-    $current_url = modernblog2025_get_canonical_url();
-    
-    // Main language
-    echo '<link rel="alternate" hreflang="' . esc_attr($current_locale) . '" href="' . esc_url($current_url) . '">' . "\n";
-    
-    // Add x-default for international targeting
-    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url($current_url) . '">' . "\n";
-}
-
-/**
- * Optimize images for SEO
- */
-function modernblog2025_optimize_image_seo($attr, $attachment, $size) {
-    // Ensure images have loading attribute
-    if (!isset($attr['loading'])) {
-        $attr['loading'] = 'lazy';
-    }
-    
-    // Add decoding attribute
-    $attr['decoding'] = 'async';
-    
-    // Optimize fetchpriority for above-the-fold images
-    if ($size === 'large' || $size === 'full') {
-        $attr['fetchpriority'] = 'high';
-    }
-    
-    return $attr;
-}
-
-/**
- * Add image structured data
- */
-function modernblog2025_add_image_structured_data() {
-    if (is_single() || is_page()) {
-        global $post;
         
-        // Get all images in content
-        $content = get_the_content();
-        preg_match_all('/<img[^>]+>/i', $content, $images);
-        
-        if (!empty($images[0])) {
-            $image_schemas = array();
-            
-            foreach ($images[0] as $img_tag) {
-                preg_match('/src=["\']([^"\']+)["\']/', $img_tag, $src_match);
-                preg_match('/alt=["\']([^"\']+)["\']/', $img_tag, $alt_match);
-                
-                if (!empty($src_match[1])) {
-                    $image_schemas[] = array(
-                        '@type' => 'ImageObject',
-                        'url' => $src_match[1],
-                        'caption' => !empty($alt_match[1]) ? $alt_match[1] : '',
-                        'contentUrl' => $src_match[1]
-                    );
-                }
-            }
-            
-            if (!empty($image_schemas)) {
-                $schema = array(
-                    '@context' => 'https://schema.org',
-                    '@type' => 'ImageGallery',
-                    'image' => $image_schemas
-                );
-                
-                echo '<script type="application/ld+json">' . wp_json_encode($schema) . '</script>' . "\n";
-            }
+        if (!empty($email)) {
+            $contact['email'] = $email;
         }
-    }
-}
-
-/**
- * Add XML sitemap functionality
- */
-function modernblog2025_add_sitemap_support() {
-    // WordPress 5.5+ has built-in sitemaps, enhance them
-    add_filter('wp_sitemaps_max_urls', function() {
-        return 2000; // Increase URL limit
-    });
-    
-    // Add custom post types to sitemap
-    add_filter('wp_sitemaps_post_types', function($post_types) {
-        $post_types['portfolio'] = get_post_type_object('portfolio');
-        $post_types['testimonial'] = get_post_type_object('testimonial');
-        return $post_types;
-    });
-    
-    // Exclude specific pages from sitemap
-    add_filter('wp_sitemaps_posts_query_args', function($args, $post_type) {
-        if ($post_type === 'page') {
-            $excluded_pages = array('privacy-policy', 'terms-conditions');
-            $args['meta_query'] = array(
-                array(
-                    'key' => '_wp_page_template',
-                    'value' => $excluded_pages,
-                    'compare' => 'NOT IN'
-                )
+        
+        if (!empty($address)) {
+            $contact['address'] = array(
+                '@type' => 'PostalAddress',
+                'streetAddress' => $address
             );
         }
-        return $args;
-    }, 10, 2);
-}
-add_action('init', 'modernblog2025_add_sitemap_support');
+        
+        return $contact;
+    }
 
-/**
- * Add robots.txt optimization
- */
-function modernblog2025_optimize_robots_txt($output) {
-    $output .= "# ModernBlog2025 Theme Optimizations\n";
-    $output .= "User-agent: *\n";
-    $output .= "Disallow: /wp-admin/\n";
-    $output .= "Disallow: /wp-includes/\n";
-    $output .= "Disallow: /wp-content/plugins/\n";
-    $output .= "Disallow: /wp-content/themes/\n";
-    $output .= "Disallow: /trackback/\n";
-    $output .= "Disallow: /feed/\n";
-    $output .= "Disallow: /comments/\n";
-    $output .= "Disallow: /?s=\n";
-    $output .= "Disallow: /search/\n";
-    $output .= "\n";
-    
-    // Add sitemap reference
-    $output .= "Sitemap: " . home_url('/wp-sitemap.xml') . "\n";
-    
-    return $output;
+    /**
+     * Output schema markup
+     *
+     * @since 1.0.0
+     */
+    private static function output_schema($schema) {
+        if (empty($schema)) {
+            return;
+        }
+        
+        echo '<script type="application/ld+json">';
+        echo wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo '</script>' . "\n";
+    }
 }
-add_filter('robots_txt', 'modernblog2025_optimize_robots_txt');
 ```
 
-### 5. Performance SEO
+### 3. Update Functions.php
 
-Create `inc/performance-seo.php`:
+Update `functions.php`:
 
 ```php
-<?php
-/**
- * Performance-related SEO optimizations
- */
-
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+// ... existing code ...
 
 /**
- * Performance SEO setup
+ * Load SEO Components
+ * Comprehensive SEO optimization implementation
+ *
+ * @since 1.0.0
  */
-function modernblog2025_performance_seo_setup() {
-    // Optimize database queries
-    add_action('pre_get_posts', 'modernblog2025_optimize_queries');
+function gpress_load_seo_components() {
+    // Core SEO system (always loaded)
+    require_once get_theme_file_path('/inc/seo.php');
     
-    // Add lazy loading enhancements
-    add_filter('wp_get_attachment_image_attributes', 'modernblog2025_enhance_lazy_loading', 10, 3);
-    
-    // Optimize embed performance
-    add_action('init', 'modernblog2025_optimize_embeds');
-    
-    // Add Core Web Vitals monitoring
-    add_action('wp_footer', 'modernblog2025_add_web_vitals_monitoring');
-}
-add_action('after_setup_theme', 'modernblog2025_performance_seo_setup');
-
-/**
- * Optimize database queries
- */
-function modernblog2025_optimize_queries($query) {
-    if (!is_admin() && $query->is_main_query()) {
-        // Limit posts per page for better performance
-        if (is_home()) {
-            $query->set('posts_per_page', 12);
-        }
-        
-        // Optimize archive queries
-        if (is_category() || is_tag() || is_author()) {
-            $query->set('posts_per_page', 10);
-            // Only get necessary fields
-            $query->set('fields', 'ids');
-        }
-        
-        // Exclude certain post types from search
-        if (is_search()) {
-            $query->set('post_type', 'post');
-        }
-    }
-}
-
-/**
- * Enhance lazy loading for SEO
- */
-function modernblog2025_enhance_lazy_loading($attr, $attachment, $size) {
-    // Skip lazy loading for above-the-fold images
-    $priority_images = array('large', 'full');
-    
-    if (in_array($size, $priority_images) && is_single()) {
-        // First image in post should load immediately
-        static $first_image = true;
-        if ($first_image) {
-            $attr['loading'] = 'eager';
-            $attr['fetchpriority'] = 'high';
-            $first_image = false;
-        }
+    // Enhanced SEO features (conditionally loaded)
+    if (get_theme_mod('enable_seo_optimization', true)) {
+        require_once get_theme_file_path('/inc/seo-structured-data.php');
+        require_once get_theme_file_path('/inc/seo-meta-tags.php');
     }
     
-    return $attr;
-}
-
-/**
- * Optimize embeds for performance
- */
-function modernblog2025_optimize_embeds() {
-    // Remove embed discovery for better performance
-    remove_action('wp_head', 'wp_oembed_add_discovery_links');
-    remove_action('wp_head', 'wp_oembed_add_host_js');
+    // Local SEO features
+    if (get_option('gpress_enable_local_seo', false)) {
+        require_once get_theme_file_path('/inc/seo-local.php');
+    }
     
-    // Add lazy loading to video embeds
-    add_filter('embed_oembed_html', function($html) {
-        if (strpos($html, 'youtube') !== false || strpos($html, 'vimeo') !== false) {
-            $html = str_replace('<iframe', '<iframe loading="lazy"', $html);
-        }
-        return $html;
-    });
-}
-
-/**
- * Add Web Vitals monitoring
- */
-function modernblog2025_add_web_vitals_monitoring() {
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        ?>
-        <script>
-        // Web Vitals monitoring for development
-        function sendToAnalytics(metric) {
-            console.log('Web Vital:', metric.name, metric.value, metric.rating);
-            
-            // Send to analytics service in production
-            // gtag('event', metric.name, {
-            //     value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
-            //     event_category: 'Web Vitals',
-            //     event_label: metric.id,
-            //     non_interaction: true,
-            // });
-        }
-        
-        // Load web-vitals library
-        import('https://unpkg.com/web-vitals@3/dist/web-vitals.js').then(({getCLS, getFID, getFCP, getLCP, getTTFB}) => {
-            getCLS(sendToAnalytics);
-            getFID(sendToAnalytics);
-            getFCP(sendToAnalytics);
-            getLCP(sendToAnalytics);
-            getTTFB(sendToAnalytics);
-        });
-        </script>
-        <?php
+    // Analytics and tracking
+    if (get_option('gpress_enable_analytics', true)) {
+        require_once get_theme_file_path('/inc/seo-analytics.php');
+    }
+    
+    // Admin and development components
+    if (is_admin()) {
+        require_once get_theme_file_path('/inc/seo-testing.php');
+        require_once get_theme_file_path('/inc/seo-optimization.php');
     }
 }
+add_action('after_setup_theme', 'gpress_load_seo_components');
+
+/**
+ * Add SEO-specific theme support
+ *
+ * @since 1.0.0
+ */
+function gpress_add_seo_theme_support() {
+    // Core SEO features
+    add_theme_support('title-tag');
+    add_theme_support('post-thumbnails');
+    add_theme_support('html5', array('search-form', 'comment-form', 'comment-list'));
+    
+    // Advanced SEO features
+    add_theme_support('seo-optimization');
+    add_theme_support('structured-data');
+    add_theme_support('opengraph');
+    add_theme_support('twitter-cards');
+    add_theme_support('social-sharing');
+    add_theme_support('breadcrumb-schema');
+    
+    // Performance features for SEO
+    add_theme_support('responsive-images');
+    add_theme_support('image-optimization');
+}
+add_action('after_setup_theme', 'gpress_add_seo_theme_support');
+
+// ... existing code ...
 ```
 
-### 6. Update Functions.php
+### 4. Update Style.css
 
-Add to `functions.php`:
+Update `style.css`:
 
-```php
-// SEO features
-require_once get_theme_file_path('/inc/seo.php');
-require_once get_theme_file_path('/inc/structured-data.php');
-require_once get_theme_file_path('/inc/seo-customizer.php');
-require_once get_theme_file_path('/inc/technical-seo.php');
-require_once get_theme_file_path('/inc/performance-seo.php');
+```css
+/* ... existing code ... */
+
+/**
+ * SEO Integration Styles
+ * Base SEO integration with theme styles
+ *
+ * @since 1.0.0
+ */
+
+/* Social Sharing Integration */
+.social-sharing {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 8px;
+    border-left: 4px solid var(--wp--preset--color--primary);
+}
+
+.social-sharing-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--wp--preset--color--foreground);
+}
+
+.social-sharing-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.social-share-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--wp--preset--color--primary);
+    color: var(--wp--preset--color--background);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-height: 44px;
+}
+
+.social-share-button:hover,
+.social-share-button:focus {
+    background: var(--wp--preset--color--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--wp--preset--color--primary-rgb), 0.3);
+}
+
+.social-share-button .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* SEO-Optimized Images */
+img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
+/* OpenGraph Image Optimization */
+.og-image {
+    aspect-ratio: 1200 / 630;
+    object-fit: cover;
+    width: 100%;
+    height: auto;
+}
+
+.twitter-card-image {
+    aspect-ratio: 1200 / 600;
+    object-fit: cover;
+    width: 100%;
+    height: auto;
+}
+
+/* Schema.org Microdata Integration */
+[itemscope] {
+    position: relative;
+}
+
+/* Breadcrumb SEO Integration */
+.breadcrumb-navigation[role="navigation"] {
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-list {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+    content: "›";
+    color: var(--wp--preset--color--foreground-secondary);
+    font-size: 0.75rem;
+}
+
+.breadcrumb-item a {
+    color: var(--wp--preset--color--foreground-secondary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-item a:hover,
+.breadcrumb-item a:focus {
+    color: var(--wp--preset--color--primary);
+}
+
+.breadcrumb-current {
+    color: var(--wp--preset--color--foreground);
+    font-weight: 500;
+}
+
+/* SEO-Friendly Content Structure */
+.entry-content h2,
+.entry-content h3,
+.entry-content h4,
+.entry-content h5,
+.entry-content h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.entry-content h2 {
+    font-size: 1.75rem;
+}
+
+.entry-content h3 {
+    font-size: 1.5rem;
+}
+
+.entry-content h4 {
+    font-size: 1.25rem;
+}
+
+/* Article Meta Information */
+.article-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.article-meta .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--wp--preset--color--foreground-secondary);
+}
+
+.article-meta .meta-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* Author Box SEO */
+.author-box {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--wp--preset--color--border);
+}
+
+.author-box .author-info {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.author-box .author-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.author-box .author-details h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.author-box .author-bio {
+    color: var(--wp--preset--color--foreground-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.author-box .author-links {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.author-box .author-link {
+    color: var(--wp--preset--color--primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.author-box .author-link:hover,
+.author-box .author-link:focus {
+    text-decoration: underline;
+}
+
+/* Related Posts SEO */
+.related-posts {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 12px;
+}
+
+.related-posts h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.related-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.related-post {
+    background: var(--wp--preset--color--background);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--wp--preset--color--border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.related-post:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.related-post-image {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    width: 100%;
+}
+
+.related-post-content {
+    padding: 1rem;
+}
+
+.related-post-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.related-post-title a {
+    color: var(--wp--preset--color--foreground);
+    text-decoration: none;
+}
+
+.related-post-title a:hover,
+.related-post-title a:focus {
+    color: var(--wp--preset--color--primary);
+}
+
+.related-post-excerpt {
+    font-size: 0.875rem;
+    color: var(--wp--preset--color--foreground-secondary);
+    line-height: 1.5;
+}
+
+/* Responsive SEO Elements */
+@media (max-width: 768px) {
+    .social-sharing-buttons {
+        justify-content: center;
+    }
+    
+    .social-share-button {
+        flex: 1;
+        justify-content: center;
+        min-width: 120px;
+    }
+    
+    .breadcrumb-list {
+        font-size: 0.8rem;
+    }
+    
+    .author-box .author-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .related-posts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .article-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+/* Print SEO Optimization */
+@media print {
+    .social-sharing,
+    .related-posts,
+    .author-box .author-links {
+        display: none;
+    }
+    
+    .breadcrumb-navigation::after {
+        content: "URL: " attr(data-url);
+        display: block;
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 0.5rem;
+    }
+    
+    .entry-content a[href]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8rem;
+        color: #666;
+    }
+}
+
+/* Schema.org Visual Indicators (Development Mode) */
+.admin-bar [itemscope]::before {
+    content: "Schema: " attr(itemtype);
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: 0.7rem;
+    background: #23282d;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 9999;
+    opacity: 0.8;
+}
+
+/* Core Web Vitals Optimization */
+.entry-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.entry-content iframe {
+    max-width: 100%;
+}
+
+/* ... existing code ... */
 ```
 
-## SEO Testing Checklist
+## Testing This Step
 
-### Technical SEO
-- [ ] Clean HTML5 markup validation
-- [ ] Proper heading hierarchy (H1 → H2 → H3)
-- [ ] Meta descriptions under 160 characters
-- [ ] Title tags under 60 characters
-- [ ] Canonical URLs implemented
-- [ ] XML sitemap generated and accessible
-- [ ] Robots.txt optimized
+### 1. SEO Compliance Testing
+```bash
+# Test meta tags
+curl -s http://yoursite.com/ | grep -E "<meta (name|property)="
 
-### Structured Data
-- [ ] Organization/Person schema markup
-- [ ] Article schema for blog posts
-- [ ] Breadcrumb schema implemented
-- [ ] Image schema for galleries
-- [ ] Website schema for homepage
-- [ ] Valid JSON-LD markup (test with Google's tool)
+# Check OpenGraph tags
+curl -s http://yoursite.com/ | grep 'property="og:'
 
-### Performance SEO
-- [ ] Core Web Vitals scores (LCP < 2.5s, FID < 100ms, CLS < 0.1)
-- [ ] Lighthouse SEO score 95+
-- [ ] Mobile-first indexing compatibility
-- [ ] Page speed optimization
-- [ ] Image optimization and lazy loading
+# Validate Twitter Cards
+curl -s http://yoursite.com/ | grep 'name="twitter:'
 
-### Social Media
-- [ ] OpenGraph tags implemented
-- [ ] Twitter Card markup
-- [ ] Social media images (1200x630px)
-- [ ] Social profiles linked
+# Test canonical URLs
+curl -s http://yoursite.com/ | grep 'rel="canonical"'
+```
 
-### Content SEO
-- [ ] Keyword optimization
-- [ ] Internal linking structure
-- [ ] Alt text for all images
-- [ ] Descriptive URLs
-- [ ] Content readability
+### 2. Structured Data Testing
+```bash
+# Test JSON-LD output
+curl -s http://yoursite.com/ | grep -A 20 'type="application/ld+json"'
 
-## Testing Tools
+# Validate specific schemas
+curl -s http://yoursite.com/sample-post/ | grep -o '"@type":"[^"]*"'
 
-1. **Google Search Console** - Index status and search performance
-2. **Google PageSpeed Insights** - Core Web Vitals and performance
-3. **Google Rich Results Test** - Structured data validation
-4. **Facebook Sharing Debugger** - OpenGraph preview
-5. **Twitter Card Validator** - Twitter Card preview
-6. **Lighthouse** - Comprehensive SEO audit
-7. **Screaming Frog** - Technical SEO crawling
+# Check breadcrumb schema
+curl -s http://yoursite.com/sample-page/ | grep '"BreadcrumbList"'
+```
 
-## Next Steps
+### 3. Performance Impact Testing
+```bash
+# Test conditional asset loading
+curl -s http://yoursite.com/ | grep -c "seo.*\.css"
+curl -s http://yoursite.com/ | grep -c "seo.*\.js"
 
-In Step 15, we'll implement semantic HTML structure to enhance accessibility and SEO further.
+# Check image optimization
+curl -s http://yoursite.com/ | grep 'loading="lazy"'
 
-## Key Benefits
+# Validate meta tag efficiency
+curl -s http://yoursite.com/ | grep "<meta" | wc -l
+```
 
-- Comprehensive structured data implementation
-- Optimized meta tags and social sharing
-- Technical SEO best practices
-- Performance-focused SEO optimization
-- Search engine visibility enhancement
-- Social media integration
-- Mobile-first SEO approach
-- Core Web Vitals optimization
+### 4. Social Media Testing
+```bash
+# Test OpenGraph image
+curl -s http://yoursite.com/sample-post/ | grep 'og:image'
+
+# Check Twitter Card type
+curl -s http://yoursite.com/sample-post/ | grep 'twitter:card'
+
+# Validate social sharing integration
+curl -s http://yoursite.com/sample-post/ | grep "social-sharing"
+```
+
+### 5. Technical SEO Testing
+```bash
+# Check robots meta
+curl -s http://yoursite.com/ | grep 'name="robots"'
+
+# Test sitemap accessibility
+curl -I http://yoursite.com/sitemap.xml
+
+# Validate schema markup using Google's tool
+# https://search.google.com/test/rich-results
+```
+
+## Expected Results After This Step
+
+1. **Complete Meta Tag Optimization**: Comprehensive meta tags, OpenGraph, and Twitter Cards for all content types
+2. **Structured Data Implementation**: Full Schema.org markup for articles, organization, breadcrumbs, and author information
+3. **Technical SEO Foundation**: Canonical URLs, robots directives, and optimized URL structures
+4. **Social Media Integration**: Enhanced social sharing with optimized images and metadata
+5. **Performance-Optimized SEO**: Conditional loading of SEO assets with minimal performance impact
+6. **Admin Interface**: SEO settings panel and per-post meta box configuration
+7. **Analytics Integration**: Google Analytics with privacy-compliant implementation
+8. **Local SEO Support**: Business markup and local search optimization features
+
+## Next Step
+
+In Step 15, we'll implement comprehensive security hardening measures to protect the theme and website from common vulnerabilities while maintaining performance and user experience.
+
+---
+
+**Step 14 Completed**: Advanced SEO Optimization & Schema Implementation ✅
+- Complete meta tag and OpenGraph optimization
+- Comprehensive Schema.org structured data implementation
+- Technical SEO foundation with canonical URLs and robots directives
+- Social media integration with optimized sharing features
+- Performance-optimized conditional SEO asset loading
+- Admin interface for SEO configuration and management
+- Analytics integration with privacy compliance
+- Rich snippets and search engine enhancement features

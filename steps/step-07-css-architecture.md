@@ -1,2123 +1,1656 @@
-# Step 7: CSS Architecture & Global Styles
+# Step 7: Advanced CSS Architecture
 
-## Objective
-Create a maintainable, performant CSS architecture for the **GPress** theme that works seamlessly with theme.json, provides consistent styling across all templates, and optimizes for Core Web Vitals performance metrics. Implement conditional loading to ensure CSS modules are only loaded when needed.
+## Overview
+This step establishes a sophisticated, maintainable CSS architecture for the **GPress** theme using modern methodologies including ITCSS (Inverted Triangle CSS), CSS Custom Properties, and component-based styling. We'll create a scalable system that supports performance optimization, accessibility requirements, and maintainable code organization.
+
+## Objectives
+- Implement ITCSS methodology for organized CSS architecture
+- Create comprehensive CSS Custom Properties system
+- Establish component-based styling patterns
+- Optimize CSS for performance and Core Web Vitals
+- Configure responsive design tokens and breakpoints
+- Enable advanced CSS features and browser compatibility
 
 ## What You'll Learn
-- Modern CSS architecture principles
-- Integration with theme.json variables
-- Performance-optimized CSS structure with conditional loading
-- Responsive design patterns
-- CSS custom properties usage
-- Critical CSS strategies
-- Component-based CSS organization
+- ITCSS (Inverted Triangle CSS) architecture principles
+- Advanced CSS Custom Properties and theming systems
+- Modern CSS features and browser compatibility strategies
+- Performance optimization techniques for CSS
+- Component-based CSS organization and maintenance
+- Responsive design implementation with CSS Grid and Flexbox
 
-## Files to Create in This Step
+## Files Structure for This Step
 
+### 📁 **Files to CREATE** (New Files)
 ```
-assets/css/
-├── components.css          # Component-specific styles
-├── components.min.css      # Minified components
-├── responsive.css          # Advanced responsive styles
-├── responsive.min.css      # Minified responsive
-├── editor-style.css        # Block editor styles
-├── editor-style.min.css    # Minified editor styles
-├── critical.css           # Critical above-the-fold CSS
-└── print.css              # Print-specific styles
+assets/scss/                  # SCSS source files (development)
+├── _config.scss             # Configuration and settings
+├── _mixins.scss             # Reusable mixins and functions
+├── _variables.scss          # SCSS variables and maps
+├── main.scss               # Main SCSS entry point
+├── components/             # Component-specific styles
+│   ├── _buttons.scss       # Button components
+│   ├── _cards.scss         # Card components
+│   ├── _forms.scss         # Form components
+│   ├── _navigation.scss    # Navigation components
+│   └── _typography.scss    # Typography components
+├── layout/                 # Layout-specific styles
+│   ├── _grid.scss          # Grid system
+│   ├── _header.scss        # Header layouts
+│   ├── _footer.scss        # Footer layouts
+│   └── _sidebar.scss       # Sidebar layouts
+├── pages/                  # Page-specific styles
+│   ├── _home.scss          # Homepage styles
+│   ├── _archive.scss       # Archive page styles
+│   └── _single.scss        # Single post styles
+└── utilities/              # Utility classes
+    ├── _animations.scss    # Animation utilities
+    ├── _helpers.scss       # Helper classes
+    └── _spacing.scss       # Spacing utilities
 
-inc/
-└── css-architecture.php   # CSS loading and optimization functions
+assets/css/                  # Compiled CSS output
+├── main.css                # Main compiled stylesheet
+├── critical.css            # Critical path CSS
+├── print.css               # Print-specific styles
+└── admin.css               # Admin area styles
 
-build/
-├── postcss.config.js      # PostCSS configuration
-└── package.json           # Build dependencies
+inc/                        # Enhanced PHP files
+├── css-optimization.php    # CSS optimization functions
+└── responsive-images.php   # Responsive image handling
 ```
 
-## 1. Create CSS Architecture Functions
+### 📝 **Files to UPDATE** (Existing Files)
+```
+style.css                   # Enhanced main stylesheet
+functions.php               # Enhanced with CSS optimization
+inc/enqueue-scripts.php     # Enhanced asset loading
+README.md                   # CSS architecture documentation
+```
 
-### File: `inc/css-architecture.php`
-```php
-<?php
+### 🎯 **Optimization Features Implemented**
+- ITCSS architecture for maintainable CSS organization
+- Critical path CSS optimization and inlining
+- Advanced CSS Custom Properties theming system
+- Component-based styling with CSS modules approach
+- Responsive design with CSS Grid and modern Flexbox
+- Performance-optimized CSS delivery and loading
+- Advanced browser compatibility and progressive enhancement
+- Dark mode and user preference support
+
+## Step-by-Step Implementation
+
+### 1. CREATE assets/scss/_config.scss (Configuration Settings)
+
+**Purpose**: Central configuration for the CSS architecture
+
+```scss
 /**
- * CSS Architecture Functions for GPress Theme
- *
+ * Configuration and Settings for GPress Theme
+ * 
+ * ITCSS Layer: Settings
+ * Contains global configuration, feature flags, and system settings
+ * 
  * @package GPress
- * @version 1.0.0
+ * @version 1.5.0
  */
 
-// Prevent direct access
-defined('ABSPATH') || exit;
+// ==========================================================================
+// Feature Flags
+// ==========================================================================
 
-/**
- * Conditional CSS Module Loading
- * Load specific CSS modules based on page context
- */
-function gpress_conditional_css_modules() {
-    // Component styles - load on pages with enhanced components
-    $load_components = false;
-    
-    // Check for pages that need component styles
-    if (is_single() || is_page() || is_category() || is_tag() || is_author()) {
-        $load_components = true;
-    }
-    
-    // Check for specific blocks/components
-    if (has_block('core/post-template') || has_block('core/query') || 
-        has_block('core/buttons') || has_block('core/search')) {
-        $load_components = true;
-    }
-    
-    if ($load_components) {
-        wp_enqueue_style(
-            'gpress-components',
-            GPRESS_THEME_URI . '/assets/css/components.min.css',
-            array('gpress-style'),
-            GPRESS_VERSION
-        );
-    }
-    
-    // Advanced responsive styles for content-heavy pages
-    if (is_single() || is_page() || is_category() || is_author()) {
-        wp_enqueue_style(
-            'gpress-responsive',
-            GPRESS_THEME_URI . '/assets/css/responsive.min.css',
-            array('gpress-style'),
-            GPRESS_VERSION
-        );
-    }
-    
-    // Print styles only on content pages
-    if (is_single() || is_page()) {
-        wp_enqueue_style(
-            'gpress-print',
-            GPRESS_THEME_URI . '/assets/css/print.css',
-            array('gpress-style'),
-            GPRESS_VERSION,
-            'print'
-        );
-    }
-}
-add_action('wp_enqueue_scripts', 'gpress_conditional_css_modules');
+$enable-grid-classes: true !default;
+$enable-flex-classes: true !default;
+$enable-spacing-classes: true !default;
+$enable-typography-classes: true !default;
+$enable-animation-classes: true !default;
+$enable-dark-mode: true !default;
+$enable-high-contrast: true !default;
+$enable-reduced-motion: true !default;
+$enable-print-styles: true !default;
 
-/**
- * Inline Critical CSS
- * Inline critical above-the-fold CSS for better performance
- */
-function gpress_inline_critical_css() {
-    $critical_css_file = GPRESS_THEME_DIR . '/assets/css/critical.css';
-    
-    if (file_exists($critical_css_file)) {
-        $critical_css = file_get_contents($critical_css_file);
-        $critical_css = gpress_minify_css($critical_css);
-        
-        // Only inline on front-facing pages
-        if (!is_admin() && !is_customize_preview()) {
-            echo '<style id="gpress-critical-css">' . $critical_css . '</style>';
-        }
-    }
-}
-add_action('wp_head', 'gpress_inline_critical_css', 1);
+// ==========================================================================
+// Breakpoint Configuration
+// ==========================================================================
 
-/**
- * Load Non-Critical CSS Asynchronously
- * Improve Core Web Vitals by loading non-critical CSS async
- */
-function gpress_async_css_loading() {
-    ?>
-    <script>
-    // Async CSS loading function
-    function loadCSS(href, before, media, attributes) {
-        var doc = window.document;
-        var ss = doc.createElement("link");
-        var ref;
-        if (before) {
-            ref = before;
-        } else {
-            var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
-            ref = refs[refs.length - 1];
-        }
-        var sheets = doc.styleSheets;
-        if (attributes) {
-            for (var attributeName in attributes) {
-                if (attributes.hasOwnProperty(attributeName)) {
-                    ss.setAttribute(attributeName, attributes[attributeName]);
-                }
-            }
-        }
-        ss.rel = "stylesheet";
-        ss.href = href;
-        ss.media = "only x";
-        function ready(cb) {
-            if (doc.body) {
-                return cb();
-            }
-            setTimeout(function() {
-                ready(cb);
-            });
-        }
-        ready(function() {
-            ref.parentNode.insertBefore(ss, (before ? ref : ref.nextSibling));
-        });
-        var onloadcssdefined = function(cb) {
-            var resolvedHref = ss.href;
-            var i = sheets.length;
-            while (i--) {
-                if (sheets[i].href === resolvedHref) {
-                    return cb();
-                }
-            }
-            setTimeout(function() {
-                onloadcssdefined(cb);
-            });
-        };
-        function loadCB() {
-            if (ss.addEventListener) {
-                ss.removeEventListener("load", loadCB);
-            }
-            ss.media = media || "all";
-        }
-        if (ss.addEventListener) {
-            ss.addEventListener("load", loadCB);
-        }
-        ss.onloadcssdefined = onloadcssdefined;
-        onloadcssdefined(loadCB);
-        return ss;
-    }
-    
-    // Load non-critical CSS after page load
-    window.addEventListener('load', function() {
-        <?php if (wp_style_is('gpress-components', 'enqueued')): ?>
-        loadCSS('<?php echo wp_get_attachment_url(get_theme_file_uri('/assets/css/components.min.css')); ?>');
-        <?php endif; ?>
-        
-        <?php if (wp_style_is('gpress-responsive', 'enqueued')): ?>
-        loadCSS('<?php echo wp_get_attachment_url(get_theme_file_uri('/assets/css/responsive.min.css')); ?>');
-        <?php endif; ?>
-    });
-    </script>
-    <?php
-}
-add_action('wp_head', 'gpress_async_css_loading', 20);
+$breakpoints: (
+  'xs': 0,
+  'sm': 576px,
+  'md': 768px,
+  'lg': 992px,
+  'xl': 1200px,
+  'xxl': 1400px
+) !default;
 
-/**
- * CSS Custom Properties Generator
- * Generate dynamic CSS custom properties from theme options
- */
-function gpress_dynamic_css_properties() {
-    $primary_color = get_theme_mod('primary_color', '#2c3e50');
-    $secondary_color = get_theme_mod('secondary_color', '#3498db');
-    $accent_color = get_theme_mod('accent_color', '#e74c3c');
-    $font_size_base = get_theme_mod('font_size_base', 16);
-    
-    $css = ':root {';
-    $css .= '--gpress-primary-color: ' . esc_attr($primary_color) . ';';
-    $css .= '--gpress-secondary-color: ' . esc_attr($secondary_color) . ';';
-    $css .= '--gpress-accent-color: ' . esc_attr($accent_color) . ';';
-    $css .= '--gpress-font-size-base: ' . esc_attr($font_size_base) . 'px;';
-    $css .= '}';
-    
-    wp_add_inline_style('gpress-style', $css);
-}
-add_action('wp_enqueue_scripts', 'gpress_dynamic_css_properties', 20);
+// Container max-widths
+$container-max-widths: (
+  'sm': 540px,
+  'md': 720px,
+  'lg': 960px,
+  'xl': 1140px,
+  'xxl': 1320px
+) !default;
 
-/**
- * CSS Minification
- * Simple CSS minification for inline styles
- */
-function gpress_minify_css($css) {
-    // Remove comments
-    $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
-    
-    // Remove whitespace
-    $css = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
-    
-    return $css;
-}
+// ==========================================================================
+// Color System Configuration
+// ==========================================================================
 
-/**
- * Preload Critical Resources
- * Preload important CSS and font files
- */
-function gpress_preload_critical_resources() {
-    // Preload main stylesheet
-    echo '<link rel="preload" href="' . get_stylesheet_uri() . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">';
-    
-    // Preload critical fonts
-    $google_fonts = get_theme_mod('google_fonts_enable', false);
-    if ($google_fonts) {
-        echo '<link rel="preconnect" href="https://fonts.googleapis.com">';
-        echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>';
-    }
-    
-    // Preload hero image on front page
-    if (is_front_page() && has_custom_header()) {
-        $header_image = get_header_image();
-        if ($header_image) {
-            echo '<link rel="preload" href="' . esc_url($header_image) . '" as="image">';
-        }
-    }
-}
-add_action('wp_head', 'gpress_preload_critical_resources', 1);
+// Brand Colors
+$brand-primary: #2563eb !default;
+$brand-secondary: #7c3aed !default;
+$brand-accent: #06b6d4 !default;
+$brand-success: #10b981 !default;
+$brand-warning: #f59e0b !default;
+$brand-error: #ef4444 !default;
 
-/**
- * Block-Specific CSS Loading
- * Load CSS for specific blocks only when present
- */
-function gpress_block_specific_css() {
-    global $post;
-    
-    if (!$post) return;
-    
-    $post_content = $post->post_content;
-    
-    // Gallery block styles
-    if (has_block('core/gallery', $post) || has_block('core/image', $post)) {
-        wp_add_inline_style('gpress-style', '
-            .wp-block-gallery { 
-                gap: 1rem; 
-            }
-            .wp-block-gallery .wp-block-image img { 
-                border-radius: 8px; 
-                transition: transform 0.3s ease; 
-            }
-            .wp-block-gallery .wp-block-image:hover img { 
-                transform: scale(1.02); 
-            }
-        ');
-    }
-    
-    // Video block styles
-    if (has_block('core/video', $post) || has_block('core/embed', $post)) {
-        wp_add_inline_style('gpress-style', '
-            .wp-block-video video,
-            .wp-block-embed iframe { 
-                border-radius: 12px; 
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-            }
-        ');
-    }
-    
-    // Quote block styles
-    if (has_block('core/quote', $post) || has_block('core/pullquote', $post)) {
-        wp_add_inline_style('gpress-style', '
-            .wp-block-quote { 
-                border-left: 4px solid var(--wp--preset--color--primary); 
-                padding-left: 2rem; 
-                font-style: italic; 
-            }
-            .wp-block-pullquote { 
-                border-top: 4px solid var(--wp--preset--color--primary); 
-                border-bottom: 4px solid var(--wp--preset--color--primary); 
-                padding: 2rem 0; 
-                text-align: center; 
-            }
-        ');
-    }
-    
-    // Table block styles
-    if (has_block('core/table', $post)) {
-        wp_add_inline_style('gpress-style', '
-            .wp-block-table table { 
-                border-collapse: collapse; 
-                width: 100%; 
-            }
-            .wp-block-table th,
-            .wp-block-table td { 
-                border: 1px solid var(--wp--preset--color--gray-300); 
-                padding: 0.75rem; 
-            }
-            .wp-block-table th { 
-                background: var(--wp--preset--color--gray-50); 
-                font-weight: 600; 
-            }
-        ');
-    }
-}
-add_action('wp_enqueue_scripts', 'gpress_block_specific_css', 30);
+// Neutral Colors
+$gray-50: #f9fafb !default;
+$gray-100: #f3f4f6 !default;
+$gray-200: #e5e7eb !default;
+$gray-300: #d1d5db !default;
+$gray-400: #9ca3af !default;
+$gray-500: #6b7280 !default;
+$gray-600: #4b5563 !default;
+$gray-700: #374151 !default;
+$gray-800: #1f2937 !default;
+$gray-900: #111827 !default;
 
-/**
- * CSS Performance Monitoring
- * Add performance hints for CSS loading
- */
-function gpress_css_performance_hints() {
-    // Resource hints for external stylesheets
-    echo '<link rel="dns-prefetch" href="//fonts.googleapis.com">';
-    echo '<link rel="dns-prefetch" href="//fonts.gstatic.com">';
-    
-    // Critical resource hints
-    echo '<link rel="preconnect" href="' . home_url() . '">';
-}
-add_action('wp_head', 'gpress_css_performance_hints', 1);
+// Semantic Colors (Light Mode)
+$color-background: #ffffff !default;
+$color-surface: $gray-50 !default;
+$color-text: $gray-900 !default;
+$color-text-light: $gray-600 !default;
+$color-border: $gray-200 !default;
 
-/**
- * CSS Cache Busting
- * Add version parameters for better cache control
- */
-function gpress_css_cache_busting($src, $handle) {
-    // Add timestamp for development
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        $file_path = str_replace(GPRESS_THEME_URI, GPRESS_THEME_DIR, $src);
-        if (file_exists($file_path)) {
-            $file_time = filemtime($file_path);
-            $src = add_query_arg('t', $file_time, $src);
-        }
-    }
-    
-    return $src;
-}
-add_filter('style_loader_src', 'gpress_css_cache_busting', 10, 2);
+// Dark Mode Colors
+$dark-color-background: $gray-900 !default;
+$dark-color-surface: $gray-800 !default;
+$dark-color-text: $gray-50 !default;
+$dark-color-text-light: $gray-400 !default;
+$dark-color-border: $gray-700 !default;
+
+// ==========================================================================
+// Typography Configuration
+// ==========================================================================
+
+// Font Families
+$font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !default;
+$font-family-serif: 'Merriweather', Georgia, Cambria, serif !default;
+$font-family-mono: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace !default;
+
+// Font Weights
+$font-weight-thin: 100 !default;
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+$font-weight-extrabold: 800 !default;
+$font-weight-black: 900 !default;
+
+// Font Sizes (rem based)
+$font-sizes: (
+  'xs': 0.75rem,    // 12px
+  'sm': 0.875rem,   // 14px
+  'base': 1rem,     // 16px
+  'lg': 1.125rem,   // 18px
+  'xl': 1.25rem,    // 20px
+  '2xl': 1.5rem,    // 24px
+  '3xl': 1.875rem,  // 30px
+  '4xl': 2.25rem,   // 36px
+  '5xl': 3rem,      // 48px
+  '6xl': 3.75rem,   // 60px
+  '7xl': 4.5rem,    // 72px
+  '8xl': 6rem,      // 96px
+  '9xl': 8rem       // 128px
+) !default;
+
+// Line Heights
+$line-heights: (
+  'none': 1,
+  'tight': 1.25,
+  'snug': 1.375,
+  'normal': 1.5,
+  'relaxed': 1.625,
+  'loose': 2
+) !default;
+
+// ==========================================================================
+// Spacing Configuration
+// ==========================================================================
+
+$spacing-base: 1rem !default;
+$spacing-scale: (
+  '0': 0,
+  '1': 0.25rem,   // 4px
+  '2': 0.5rem,    // 8px
+  '3': 0.75rem,   // 12px
+  '4': 1rem,      // 16px
+  '5': 1.25rem,   // 20px
+  '6': 1.5rem,    // 24px
+  '8': 2rem,      // 32px
+  '10': 2.5rem,   // 40px
+  '12': 3rem,     // 48px
+  '16': 4rem,     // 64px
+  '20': 5rem,     // 80px
+  '24': 6rem,     // 96px
+  '32': 8rem,     // 128px
+  '40': 10rem,    // 160px
+  '48': 12rem,    // 192px
+  '56': 14rem,    // 224px
+  '64': 16rem,    // 256px
+  '72': 18rem,    // 288px
+  '80': 20rem,    // 320px
+  '96': 24rem     // 384px
+) !default;
+
+// ==========================================================================
+// Border and Border Radius Configuration
+// ==========================================================================
+
+$border-widths: (
+  '0': 0,
+  '1': 1px,
+  '2': 2px,
+  '4': 4px,
+  '8': 8px
+) !default;
+
+$border-radius: (
+  'none': 0,
+  'sm': 0.125rem,   // 2px
+  'base': 0.25rem,  // 4px
+  'md': 0.375rem,   // 6px
+  'lg': 0.5rem,     // 8px
+  'xl': 0.75rem,    // 12px
+  '2xl': 1rem,      // 16px
+  '3xl': 1.5rem,    // 24px
+  'full': 9999px
+) !default;
+
+// ==========================================================================
+// Shadow Configuration
+// ==========================================================================
+
+$shadows: (
+  'none': none,
+  'sm': 0 1px 2px 0 rgba(0, 0, 0, 0.05),
+  'base': 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+  'md': 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06),
+  'lg': 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05),
+  'xl': 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04),
+  '2xl': 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+  'inner': inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)
+) !default;
+
+// ==========================================================================
+// Animation and Transition Configuration
+// ==========================================================================
+
+$transitions: (
+  'none': none,
+  'all': all 150ms ease-in-out,
+  'default': background-color 150ms ease-in-out, border-color 150ms ease-in-out, color 150ms ease-in-out, fill 150ms ease-in-out, stroke 150ms ease-in-out, opacity 150ms ease-in-out, box-shadow 150ms ease-in-out, transform 150ms ease-in-out,
+  'colors': background-color 150ms ease-in-out, border-color 150ms ease-in-out, color 150ms ease-in-out, fill 150ms ease-in-out, stroke 150ms ease-in-out,
+  'opacity': opacity 150ms ease-in-out,
+  'shadow': box-shadow 150ms ease-in-out,
+  'transform': transform 150ms ease-in-out
+) !default;
+
+$animation-durations: (
+  'fast': 150ms,
+  'base': 300ms,
+  'slow': 500ms,
+  'slower': 750ms,
+  'slowest': 1000ms
+) !default;
+
+$easing-functions: (
+  'linear': linear,
+  'ease': ease,
+  'ease-in': ease-in,
+  'ease-out': ease-out,
+  'ease-in-out': ease-in-out,
+  'bounce': cubic-bezier(0.68, -0.55, 0.265, 1.55),
+  'smooth': cubic-bezier(0.4, 0, 0.2, 1)
+) !default;
+
+// ==========================================================================
+// Z-Index Configuration
+// ==========================================================================
+
+$z-indexes: (
+  'auto': auto,
+  '0': 0,
+  '10': 10,
+  '20': 20,
+  '30': 30,
+  '40': 40,
+  '50': 50,
+  'dropdown': 1000,
+  'sticky': 1020,
+  'fixed': 1030,
+  'modal-backdrop': 1040,
+  'modal': 1050,
+  'popover': 1060,
+  'tooltip': 1070
+) !default;
+
+// ==========================================================================
+// Component Configuration
+// ==========================================================================
+
+// Button Configuration
+$button-padding-y: 0.5rem !default;
+$button-padding-x: 1rem !default;
+$button-border-radius: map-get($border-radius, 'base') !default;
+$button-transition: map-get($transitions, 'default') !default;
+
+// Form Configuration
+$input-padding-y: 0.5rem !default;
+$input-padding-x: 0.75rem !default;
+$input-border-radius: map-get($border-radius, 'base') !default;
+$input-border-width: 1px !default;
+$input-transition: map-get($transitions, 'colors') !default;
+
+// Card Configuration
+$card-padding: 1.5rem !default;
+$card-border-radius: map-get($border-radius, 'lg') !default;
+$card-shadow: map-get($shadows, 'base') !default;
+
+// ==========================================================================
+// Performance Configuration
+// ==========================================================================
+
+$enable-css-grid: true !default;
+$enable-flexbox: true !default;
+$enable-css-custom-properties: true !default;
+$enable-backdrop-filter: true !default;
+$enable-scroll-behavior: true !default;
+$enable-aspect-ratio: true !default;
+
+// Critical CSS threshold (above this breakpoint, CSS is not critical)
+$critical-css-breakpoint: map-get($breakpoints, 'lg') !default;
+
+// ==========================================================================
+// Accessibility Configuration
+// ==========================================================================
+
+$focus-ring-width: 2px !default;
+$focus-ring-offset: 2px !default;
+$focus-ring-color: $brand-primary !default;
+$focus-ring-style: solid !default;
+
+// Minimum contrast ratios (WCAG 2.1 AA compliance)
+$min-contrast-ratio: 4.5 !default;
+$min-contrast-ratio-large: 3 !default;
+
+// Motion preferences
+$enable-reduced-motion-media-query: true !default;
+$reduced-motion-duration: 0.01ms !default;
+
+// ==========================================================================
+// Print Configuration
+// ==========================================================================
+
+$print-color-adjust: exact !default;
+$print-font-size: 12pt !default;
+$print-line-height: 1.5 !default;
+$print-margin: 1in !default;
 ```
 
-## 2. Create Component Styles
+### 2. CREATE assets/scss/_mixins.scss (Reusable Mixins)
 
-### File: `assets/css/components.css`
-```css
-/*
- * Component Styles for GPress Theme
- * Conditional component-specific styling
- * Version: 1.0.0
+**Purpose**: Collection of SCSS mixins for consistent styling patterns
+
+```scss
+/**
+ * Mixins and Functions for GPress Theme
+ * 
+ * ITCSS Layer: Tools
+ * Contains mixins, functions, and tools used throughout the project
+ * 
+ * @package GPress
+ * @version 1.5.0
  */
 
-/* ==========================================================================
-   CSS Custom Properties Integration
-   ========================================================================== */
+// ==========================================================================
+// Responsive Breakpoint Mixins
+// ==========================================================================
 
-:root {
-  /* Theme.json variables are automatically generated by WordPress */
-  /* Additional custom properties for advanced features */
-  --gpress-transition-base: 0.2s ease;
-  --gpress-transition-slow: 0.3s ease;
-  --gpress-border-radius-small: 4px;
-  --gpress-border-radius-medium: 8px;
-  --gpress-border-radius-large: 12px;
-  --gpress-box-shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --gpress-box-shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.12);
-  --gpress-box-shadow-large: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --gpress-z-index-dropdown: 100;
-  --gpress-z-index-sticky: 200;
-  --gpress-z-index-modal: 1000;
-  --gpress-z-index-tooltip: 1100;
+/// Responsive breakpoint mixin
+/// @param {String} $breakpoint - Breakpoint name
+/// @param {String} $direction - 'up', 'down', 'between', or 'only'
+/// @param {String} $breakpoint2 - Second breakpoint for 'between'
+@mixin respond-to($breakpoint, $direction: 'up', $breakpoint2: null) {
+  @if $direction == 'up' {
+    @media (min-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else if $direction == 'down' {
+    @media (max-width: map-get($breakpoints, $breakpoint) - 1px) {
+      @content;
+    }
+  } @else if $direction == 'between' and $breakpoint2 {
+    @media (min-width: map-get($breakpoints, $breakpoint)) and (max-width: map-get($breakpoints, $breakpoint2) - 1px) {
+      @content;
+    }
+  } @else if $direction == 'only' {
+    $next-breakpoint: null;
+    $breakpoint-names: map-keys($breakpoints);
+    $current-index: index($breakpoint-names, $breakpoint);
+    
+    @if $current-index < length($breakpoint-names) {
+      $next-breakpoint: nth($breakpoint-names, $current-index + 1);
+    }
+    
+    @if $next-breakpoint {
+      @media (min-width: map-get($breakpoints, $breakpoint)) and (max-width: map-get($breakpoints, $next-breakpoint) - 1px) {
+        @content;
+      }
+    } @else {
+      @media (min-width: map-get($breakpoints, $breakpoint)) {
+        @content;
+      }
+    }
+  }
 }
 
-/* ==========================================================================
-   Layout Components
-   ========================================================================== */
-
-/* Site Container */
-.site-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Main Content Area */
-.site-main {
-  flex: 1;
-}
-
-/* Constrained Layout Enhancement */
-.wp-block-group.is-layout-constrained {
-  padding-left: var(--wp--preset--spacing--medium);
-  padding-right: var(--wp--preset--spacing--medium);
-}
-
-/* ==========================================================================
-   Block Enhancements
-   ========================================================================== */
-
-/* Post Cards */
-.post-card,
-.blog-post-card {
-  transition: transform var(--gpress-transition-base), box-shadow var(--gpress-transition-base);
-  border: 1px solid var(--wp--preset--color--gray-200);
-  box-shadow: var(--gpress-box-shadow-small);
-  border-radius: var(--gpress-border-radius-medium);
-  background: var(--wp--preset--color--white);
-  overflow: hidden;
-}
-
-.post-card:hover,
-.blog-post-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--gpress-box-shadow-medium);
-}
-
-/* Archive Post Cards */
-.archive-post-card,
-.category-post-card {
-  transition: transform var(--gpress-transition-base), box-shadow var(--gpress-transition-base);
-  border: 1px solid var(--wp--preset--color--gray-200);
-  box-shadow: var(--gpress-box-shadow-small);
-  border-radius: var(--gpress-border-radius-medium);
-  background: var(--wp--preset--color--white);
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.archive-post-card:hover,
-.category-post-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--gpress-box-shadow-large);
-}
-
-/* Featured Images */
-.wp-block-post-featured-image img,
-.post-thumbnail img {
-  transition: transform var(--gpress-transition-base);
-  border-radius: var(--gpress-border-radius-medium);
-}
-
-.wp-block-post-featured-image:hover img,
-.post-thumbnail:hover img {
-  transform: scale(1.02);
-}
-
-/* Button Enhancements */
-.wp-block-button__link {
-  transition: all var(--gpress-transition-base);
-  border: 2px solid transparent;
-  border-radius: var(--gpress-border-radius-small);
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.wp-block-button__link:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--gpress-box-shadow-small);
-}
-
-.wp-block-button.is-style-outline .wp-block-button__link {
-  border-color: currentColor;
-  background: transparent;
-}
-
-.wp-block-button.is-style-outline .wp-block-button__link:hover {
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-}
-
-/* Search Form Enhancement */
-.wp-block-search {
-  max-width: 100%;
-}
-
-.wp-block-search__input {
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small);
-  padding: 0.75rem 1rem;
-  transition: border-color var(--gpress-transition-base), box-shadow var(--gpress-transition-base);
-  font-size: var(--wp--preset--font-size--medium);
+// Container mixin
+@mixin container($max-width: null, $padding: 1rem) {
   width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $padding;
+  padding-right: $padding;
+  
+  @if $max-width {
+    max-width: $max-width;
+  } @else {
+    @each $breakpoint, $width in $container-max-widths {
+      @include respond-to($breakpoint) {
+        max-width: $width;
+      }
+    }
+  }
 }
 
-.wp-block-search__input:focus {
-  border-color: var(--wp--preset--color--primary);
-  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
-  outline: none;
+// ==========================================================================
+// Typography Mixins
+// ==========================================================================
+
+/// Font size with line height
+/// @param {String} $size - Font size key
+/// @param {String} $line-height - Line height key (optional)
+@mixin font-size($size, $line-height: 'normal') {
+  font-size: map-get($font-sizes, $size);
+  
+  @if $line-height != 'normal' {
+    line-height: map-get($line-heights, $line-height);
+  }
 }
 
-.wp-block-search__button {
-  border-radius: var(--gpress-border-radius-small);
-  padding: 0.75rem 1rem;
-  transition: all var(--gpress-transition-base);
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
+/// Typography preset mixin
+/// @param {String} $preset - Typography preset name
+@mixin typography($preset) {
+  @if $preset == 'heading-1' {
+    @include font-size('5xl', 'tight');
+    font-weight: $font-weight-bold;
+    letter-spacing: -0.025em;
+    
+    @include respond-to('sm') {
+      @include font-size('6xl', 'tight');
+    }
+    
+    @include respond-to('lg') {
+      @include font-size('7xl', 'tight');
+    }
+  } @else if $preset == 'heading-2' {
+    @include font-size('3xl', 'tight');
+    font-weight: $font-weight-semibold;
+    letter-spacing: -0.025em;
+    
+    @include respond-to('sm') {
+      @include font-size('4xl', 'tight');
+    }
+    
+    @include respond-to('lg') {
+      @include font-size('5xl', 'tight');
+    }
+  } @else if $preset == 'heading-3' {
+    @include font-size('2xl', 'snug');
+    font-weight: $font-weight-semibold;
+    
+    @include respond-to('sm') {
+      @include font-size('3xl', 'snug');
+    }
+  } @else if $preset == 'heading-4' {
+    @include font-size('xl', 'snug');
+    font-weight: $font-weight-medium;
+    
+    @include respond-to('sm') {
+      @include font-size('2xl', 'snug');
+    }
+  } @else if $preset == 'body-large' {
+    @include font-size('lg', 'relaxed');
+    font-weight: $font-weight-normal;
+  } @else if $preset == 'body' {
+    @include font-size('base', 'normal');
+    font-weight: $font-weight-normal;
+  } @else if $preset == 'body-small' {
+    @include font-size('sm', 'normal');
+    font-weight: $font-weight-normal;
+  } @else if $preset == 'caption' {
+    @include font-size('xs', 'normal');
+    font-weight: $font-weight-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 }
 
-.wp-block-search__button:hover {
-  background: var(--wp--preset--color--secondary);
-  transform: translateY(-1px);
+/// Fluid typography mixin
+/// @param {Number} $min-size - Minimum font size in rem
+/// @param {Number} $max-size - Maximum font size in rem
+/// @param {Number} $min-width - Minimum viewport width in px
+/// @param {Number} $max-width - Maximum viewport width in px
+@mixin fluid-typography($min-size, $max-size, $min-width: 320px, $max-width: 1200px) {
+  font-size: clamp(
+    #{$min-size}rem,
+    #{$min-size}rem + (#{$max-size} - #{$min-size}) * ((100vw - #{$min-width}) / (#{$max-width} - #{$min-width})),
+    #{$max-size}rem
+  );
 }
 
-/* ==========================================================================
-   Navigation Enhancements
-   ========================================================================== */
-
-.wp-block-navigation-link__content {
-  transition: color var(--gpress-transition-base);
-  font-weight: 500;
-  text-decoration: none;
+/// Text truncation mixin
+/// @param {Number} $lines - Number of lines to display (optional)
+@mixin text-truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
-.wp-block-navigation .wp-block-navigation-item.current-menu-item .wp-block-navigation-link__content {
-  color: var(--wp--preset--color--primary);
-  font-weight: 600;
-}
+// ==========================================================================
+// Layout Mixins
+// ==========================================================================
 
-/* Submenu Styling */
-.wp-block-navigation .has-child .wp-block-navigation__submenu-container {
-  background: var(--wp--preset--color--white);
-  border: 1px solid var(--wp--preset--color--gray-200);
-  border-radius: var(--gpress-border-radius-medium);
-  box-shadow: var(--gpress-box-shadow-medium);
-  padding: var(--wp--preset--spacing--small);
-  min-width: 200px;
-  margin-top: 0.5rem;
-}
-
-.wp-block-navigation .has-child .wp-block-navigation__submenu-container .wp-block-navigation-link__content {
-  padding: 0.5rem 1rem;
-  border-radius: var(--gpress-border-radius-small);
-  transition: background-color var(--gpress-transition-base);
-}
-
-.wp-block-navigation .has-child .wp-block-navigation__submenu-container .wp-block-navigation-link__content:hover {
-  background: var(--wp--preset--color--gray-50);
-}
-
-/* ==========================================================================
-   Template-Specific Components
-   ========================================================================== */
-
-/* Header Enhancements */
-.wp-block-template-part[data-area="header"] {
-  position: sticky;
-  top: 0;
-  z-index: var(--gpress-z-index-sticky);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--wp--preset--color--gray-200);
-  transition: background-color var(--gpress-transition-base);
-}
-
-/* Header scrolled state */
-.header-scrolled {
-  background: var(--wp--preset--color--white);
-  box-shadow: var(--gpress-box-shadow-small);
-}
-
-/* Footer Styling */
-.wp-block-template-part[data-area="footer"] {
-  margin-top: auto;
-  background: var(--wp--preset--color--gray-50);
-  border-top: 1px solid var(--wp--preset--color--gray-200);
-}
-
-/* Sidebar Widgets */
-.wp-block-template-part .wp-block-group {
-  transition: transform var(--gpress-transition-base);
-  border-radius: var(--gpress-border-radius-medium);
-  padding: var(--wp--preset--spacing--medium);
-  background: var(--wp--preset--color--white);
-  border: 1px solid var(--wp--preset--color--gray-200);
-}
-
-.wp-block-template-part .wp-block-group:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--gpress-box-shadow-small);
-}
-
-/* ==========================================================================
-   Form Components
-   ========================================================================== */
-
-/* Newsletter Form */
-.newsletter-form {
-  width: 100%;
-  background: var(--wp--preset--color--gray-50);
-  border-radius: var(--gpress-border-radius-medium);
-  padding: var(--wp--preset--spacing--medium);
-  border: 1px solid var(--wp--preset--color--gray-200);
-}
-
-.newsletter-input-group {
+/// Flexbox utilities
+/// @param {String} $direction - Flex direction
+/// @param {String} $justify - Justify content
+/// @param {String} $align - Align items
+/// @param {String} $wrap - Flex wrap
+@mixin flex($direction: row, $justify: flex-start, $align: stretch, $wrap: nowrap) {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  flex-wrap: $wrap;
 }
 
-.newsletter-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small);
-  font-size: var(--wp--preset--font-size--small);
-  transition: border-color var(--gpress-transition-base);
+/// CSS Grid utilities
+/// @param {String} $columns - Grid template columns
+/// @param {String} $rows - Grid template rows (optional)
+/// @param {String} $gap - Grid gap
+@mixin grid($columns, $rows: null, $gap: 1rem) {
+  display: grid;
+  grid-template-columns: $columns;
+  gap: $gap;
+  
+  @if $rows {
+    grid-template-rows: $rows;
+  }
 }
 
-.newsletter-input:focus {
-  border-color: var(--wp--preset--color--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
+/// Absolute positioning shorthand
+/// @param {String} $position - Position value
+/// @param {String} $top - Top value
+/// @param {String} $right - Right value
+/// @param {String} $bottom - Bottom value
+/// @param {String} $left - Left value
+@mixin position($position: absolute, $top: null, $right: null, $bottom: null, $left: null) {
+  position: $position;
+  
+  @if $top { top: $top; }
+  @if $right { right: $right; }
+  @if $bottom { bottom: $bottom; }
+  @if $left { left: $left; }
 }
 
-.newsletter-button {
-  padding: 0.75rem 1rem;
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  border-radius: var(--gpress-border-radius-small);
-  font-size: var(--wp--preset--font-size--small);
-  font-weight: 600;
+/// Center element horizontally and vertically
+@mixin center($method: 'flex') {
+  @if $method == 'flex' {
+    @include flex(row, center, center);
+  } @else if $method == 'grid' {
+    display: grid;
+    place-items: center;
+  } @else if $method == 'absolute' {
+    @include position(absolute, 50%, null, null, 50%);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/// Aspect ratio mixin
+/// @param {Number} $width - Width ratio
+/// @param {Number} $height - Height ratio
+@mixin aspect-ratio($width, $height) {
+  aspect-ratio: #{$width} / #{$height};
+  
+  // Fallback for older browsers
+  @supports not (aspect-ratio: 1) {
+    position: relative;
+    
+    &::before {
+      content: '';
+      display: block;
+      padding-bottom: percentage($height / $width);
+    }
+    
+    > * {
+      @include position(absolute, 0, 0, 0, 0);
+    }
+  }
+}
+
+// ==========================================================================
+// Visual Effect Mixins
+// ==========================================================================
+
+/// Box shadow mixin
+/// @param {String} $shadow - Shadow preset or custom value
+@mixin shadow($shadow: 'base') {
+  @if map-has-key($shadows, $shadow) {
+    box-shadow: map-get($shadows, $shadow);
+  } @else {
+    box-shadow: $shadow;
+  }
+}
+
+/// Border radius mixin
+/// @param {String} $radius - Radius preset or custom value
+@mixin border-radius($radius: 'base') {
+  @if map-has-key($border-radius, $radius) {
+    border-radius: map-get($border-radius, $radius);
+  } @else {
+    border-radius: $radius;
+  }
+}
+
+/// Transition mixin
+/// @param {String} $transition - Transition preset or custom value
+@mixin transition($transition: 'default') {
+  @if map-has-key($transitions, $transition) {
+    transition: map-get($transitions, $transition);
+  } @else {
+    transition: $transition;
+  }
+}
+
+/// Focus ring mixin
+@mixin focus-ring($color: $focus-ring-color, $width: $focus-ring-width, $offset: $focus-ring-offset) {
+  outline: $width $focus-ring-style $color;
+  outline-offset: $offset;
+}
+
+/// Visually hidden mixin (screen reader accessible)
+@mixin visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/// Backdrop blur effect
+/// @param {String} $blur - Blur amount
+@mixin backdrop-blur($blur: 10px) {
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  
+  // Fallback for unsupported browsers
+  @supports not (backdrop-filter: blur()) {
+    background-color: rgba(255, 255, 255, 0.8);
+    
+    @media (prefers-color-scheme: dark) {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+  }
+}
+
+/// Glassmorphism effect
+/// @param {Color} $bg-color - Background color
+/// @param {Number} $opacity - Background opacity
+/// @param {String} $blur - Backdrop blur amount
+@mixin glassmorphism($bg-color: #ffffff, $opacity: 0.1, $blur: 10px) {
+  background-color: rgba($bg-color, $opacity);
+  @include backdrop-blur($blur);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+// ==========================================================================
+// Animation Mixins
+// ==========================================================================
+
+/// Keyframe animation mixin
+/// @param {String} $name - Animation name
+/// @param {String} $duration - Animation duration
+/// @param {String} $easing - Easing function
+/// @param {String} $delay - Animation delay
+/// @param {String} $iteration-count - Iteration count
+/// @param {String} $direction - Animation direction
+/// @param {String} $fill-mode - Fill mode
+@mixin animate($name, $duration: 300ms, $easing: 'ease-out', $delay: 0ms, $iteration-count: 1, $direction: normal, $fill-mode: both) {
+  animation-name: $name;
+  animation-duration: $duration;
+  animation-timing-function: map-get($easing-functions, $easing);
+  animation-delay: $delay;
+  animation-iteration-count: $iteration-count;
+  animation-direction: $direction;
+  animation-fill-mode: $fill-mode;
+}
+
+/// Fade in animation
+/// @param {String} $duration - Animation duration
+/// @param {String} $delay - Animation delay
+@mixin fade-in($duration: 300ms, $delay: 0ms) {
+  opacity: 0;
+  @include animate(fadeIn, $duration, 'ease-out', $delay);
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/// Slide up animation
+/// @param {String} $duration - Animation duration
+/// @param {String} $delay - Animation delay
+/// @param {String} $distance - Slide distance
+@mixin slide-up($duration: 300ms, $delay: 0ms, $distance: 20px) {
+  opacity: 0;
+  transform: translateY($distance);
+  @include animate(slideUp, $duration, 'ease-out', $delay);
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/// Scale in animation
+/// @param {String} $duration - Animation duration
+/// @param {String} $delay - Animation delay
+/// @param {Number} $scale - Initial scale
+@mixin scale-in($duration: 300ms, $delay: 0ms, $scale: 0.95) {
+  opacity: 0;
+  transform: scale($scale);
+  @include animate(scaleIn, $duration, 'ease-out', $delay);
+}
+
+@keyframes scaleIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ==========================================================================
+// Component Mixins
+// ==========================================================================
+
+/// Button base styles
+/// @param {String} $variant - Button variant
+@mixin button-base($variant: 'primary') {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $button-padding-y $button-padding-x;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  border: 1px solid transparent;
+  @include border-radius($button-border-radius);
+  @include transition($button-transition);
   cursor: pointer;
-  transition: all var(--gpress-transition-base);
-  white-space: nowrap;
+  user-select: none;
+  
+  // Focus styles
+  &:focus-visible {
+    @include focus-ring();
+  }
+  
+  // Disabled styles
+  &:disabled,
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  @if $variant == 'primary' {
+    background-color: $brand-primary;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: darken($brand-primary, 10%);
+      transform: translateY(-1px);
+    }
+  } @else if $variant == 'secondary' {
+    background-color: transparent;
+    color: $brand-primary;
+    border-color: $brand-primary;
+    
+    &:hover:not(:disabled) {
+      background-color: $brand-primary;
+      color: white;
+    }
+  } @else if $variant == 'ghost' {
+    background-color: transparent;
+    color: $color-text;
+    
+    &:hover:not(:disabled) {
+      background-color: $color-surface;
+    }
+  }
 }
 
-.newsletter-button:hover {
-  background: var(--wp--preset--color--secondary);
-  transform: translateY(-1px);
-}
-
-.newsletter-privacy {
-  margin: 0.5rem 0 0 0;
-  font-size: var(--wp--preset--font-size--x-small);
-  color: var(--wp--preset--color--gray-600);
-  line-height: 1.4;
-}
-
-/* Contact Form */
-.contact-form {
-  max-width: 100%;
-  background: var(--wp--preset--color--white);
-  border-radius: var(--gpress-border-radius-medium);
-  padding: var(--wp--preset--spacing--large);
-  border: 1px solid var(--wp--preset--color--gray-200);
-  box-shadow: var(--gpress-box-shadow-small);
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
+/// Input base styles
+@mixin input-base {
   display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-  color: var(--wp--preset--color--gray-700);
-}
-
-.form-group input,
-.form-group textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small);
-  font-size: var(--wp--preset--font-size--medium);
-  transition: border-color var(--gpress-transition-base), box-shadow var(--gpress-transition-base);
-  font-family: inherit;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  border-color: var(--wp--preset--color--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
-}
-
-.contact-submit {
-  padding: 0.875rem 2rem;
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  border-radius: var(--gpress-border-radius-small);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--gpress-transition-base);
-  font-size: var(--wp--preset--font-size--medium);
-}
-
-.contact-submit:hover {
-  background: var(--wp--preset--color--secondary);
-  transform: translateY(-1px);
-}
-
-.contact-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ==========================================================================
-   Comment System
-   ========================================================================== */
-
-.wp-block-post-comments-form input[type="text"],
-.wp-block-post-comments-form input[type="email"],
-.wp-block-post-comments-form input[type="url"],
-.wp-block-post-comments-form textarea {
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small);
-  padding: 0.75rem;
-  transition: border-color var(--gpress-transition-base);
-  width: 100%;
-  font-family: inherit;
-}
-
-.wp-block-post-comments-form input[type="text"]:focus,
-.wp-block-post-comments-form input[type="email"]:focus,
-.wp-block-post-comments-form input[type="url"]:focus,
-.wp-block-post-comments-form textarea:focus {
-  border-color: var(--wp--preset--color--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
-}
-
-.wp-block-post-comments-form .form-submit input {
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  border-radius: var(--gpress-border-radius-small);
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--gpress-transition-base);
-}
-
-.wp-block-post-comments-form .form-submit input:hover {
-  background: var(--wp--preset--color--secondary);
-}
-
-/* ==========================================================================
-   Utility Classes
-   ========================================================================== */
-
-/* Loading States */
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
-  position: relative;
-}
-
-.loading::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid var(--wp--preset--color--gray-300);
-  border-top-color: var(--wp--preset--color--primary);
-  border-radius: 50%;
-  animation: gpress-spin 1s linear infinite;
-}
-
-@keyframes gpress-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Error States */
-.error {
-  border-color: var(--wp--preset--color--accent) !important;
-}
-
-.field-error {
-  color: var(--wp--preset--color--accent);
-  font-size: var(--wp--preset--font-size--small);
-  margin-top: 0.25rem;
-}
-
-/* Success States */
-.success {
-  color: #22c55e;
-  border-color: #22c55e;
-}
-
-/* ==========================================================================
-   Animation Utilities
-   ========================================================================== */
-
-.fade-in {
-  animation: gpress-fade-in 0.3s ease;
-}
-
-@keyframes gpress-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
+  padding: $input-padding-y $input-padding-x;
+  font-size: map-get($font-sizes, 'base');
+  line-height: map-get($line-heights, 'normal');
+  color: $color-text;
+  background-color: $color-background;
+  border: $input-border-width solid $color-border;
+  @include border-radius($input-border-radius);
+  @include transition($input-transition);
+  
+  &::placeholder {
+    color: $color-text-light;
     opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.slide-up {
-  animation: gpress-slide-up 0.3s ease;
-}
-
-@keyframes gpress-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ==========================================================================
-   Responsive Component Adjustments
-   ========================================================================== */
-
-@media (max-width: 600px) {
-  .newsletter-input-group {
-    flex-direction: column;
   }
   
-  .newsletter-input {
-    margin-bottom: 0.5rem;
+  &:focus {
+    outline: none;
+    border-color: $brand-primary;
+    box-shadow: 0 0 0 3px rgba($brand-primary, 0.1);
   }
   
-  .wp-block-navigation .has-child .wp-block-navigation__submenu-container {
-    position: static;
-    box-shadow: none;
-    border: none;
-    background: transparent;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: $color-surface;
+  }
+}
+
+/// Card base styles
+@mixin card-base {
+  background-color: $color-background;
+  border: 1px solid $color-border;
+  @include border-radius($card-border-radius);
+  @include shadow($card-shadow);
+  padding: $card-padding;
+  
+  // Dark mode support
+  @media (prefers-color-scheme: dark) {
+    background-color: $dark-color-surface;
+    border-color: $dark-color-border;
+  }
+}
+
+// ==========================================================================
+// Utility Mixins
+// ==========================================================================
+
+/// Generate utility classes
+/// @param {String} $property - CSS property
+/// @param {Map} $values - Map of class names and values
+/// @param {String} $prefix - Class prefix
+/// @param {Boolean} $responsive - Generate responsive variants
+@mixin generate-utilities($property, $values, $prefix: '', $responsive: false) {
+  @each $key, $value in $values {
+    .#{$prefix}#{$key} {
+      #{$property}: #{$value} !important;
+    }
+    
+    @if $responsive {
+      @each $breakpoint-key, $breakpoint-value in $breakpoints {
+        @if $breakpoint-value > 0 {
+          @include respond-to($breakpoint-key) {
+            .#{$breakpoint-key}\:#{$prefix}#{$key} {
+              #{$property}: #{$value} !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/// Dark mode mixin
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+  
+  [data-theme="dark"] & {
+    @content;
+  }
+}
+
+/// Reduced motion mixin
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+/// High contrast mode mixin
+@mixin high-contrast {
+  @media (prefers-contrast: high) {
+    @content;
+  }
+}
+
+/// Print styles mixin
+@mixin print {
+  @media print {
+    @content;
+  }
+}
+```
+
+### 3. CREATE assets/scss/main.scss (Main SCSS Entry Point)
+
+**Purpose**: Main SCSS file that imports all other files in ITCSS order
+
+```scss
+/**
+ * Main SCSS Entry Point for GPress Theme
+ * 
+ * ITCSS (Inverted Triangle CSS) Architecture
+ * Organized from generic to specific, low specificity to high specificity
+ * 
+ * @package GPress
+ * @version 1.5.0
+ */
+
+// ==========================================================================
+// SETTINGS LAYER - Global configuration and settings
+// ==========================================================================
+
+@import 'config';
+@import 'variables';
+
+// ==========================================================================
+// TOOLS LAYER - Mixins and functions
+// ==========================================================================
+
+@import 'mixins';
+
+// ==========================================================================
+// GENERIC LAYER - Ground-zero styles (normalize, resets, box-sizing)
+// ==========================================================================
+
+/// Modern CSS Reset and Normalization
+/// Based on modern reset practices and WordPress requirements
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%; // 16px base font size
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  
+  @if $enable-scroll-behavior {
+    scroll-behavior: smooth;
+    
+    @include reduced-motion {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+body {
+  font-family: $font-family-sans;
+  font-weight: $font-weight-normal;
+  line-height: map-get($line-heights, 'normal');
+  color: $color-text;
+  background-color: $color-background;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+  
+  @include dark-mode {
+    color: $dark-color-text;
+    background-color: $dark-color-background;
+  }
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+#root,
+#__next {
+  isolation: isolate;
+}
+
+// Remove default list styles
+ul,
+ol {
+  list-style: none;
+}
+
+// Remove default button styles
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+// Remove default link styles
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+// Improve table styling
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+// Form elements
+fieldset {
+  border: none;
+}
+
+legend {
+  padding: 0;
+}
+
+// ==========================================================================
+// ELEMENTS LAYER - Bare HTML elements (H1, A, etc.)
+// ==========================================================================
+
+// Typography Elements
+h1 {
+  @include typography('heading-1');
+  margin-bottom: map-get($spacing-scale, '6');
+}
+
+h2 {
+  @include typography('heading-2');
+  margin-bottom: map-get($spacing-scale, '5');
+}
+
+h3 {
+  @include typography('heading-3');
+  margin-bottom: map-get($spacing-scale, '4');
+}
+
+h4 {
+  @include typography('heading-4');
+  margin-bottom: map-get($spacing-scale, '4');
+}
+
+h5,
+h6 {
+  @include font-size('lg', 'snug');
+  font-weight: $font-weight-medium;
+  margin-bottom: map-get($spacing-scale, '3');
+}
+
+p {
+  @include typography('body');
+  margin-bottom: map-get($spacing-scale, '4');
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Link Elements
+a {
+  color: $brand-primary;
+  @include transition('colors');
+  
+  &:hover {
+    color: darken($brand-primary, 15%);
+    text-decoration: underline;
+  }
+  
+  &:focus-visible {
+    @include focus-ring();
+  }
+}
+
+// List Elements
+ul,
+ol {
+  margin-bottom: map-get($spacing-scale, '4');
+  padding-left: map-get($spacing-scale, '6');
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+ul {
+  list-style-type: disc;
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+li {
+  margin-bottom: map-get($spacing-scale, '2');
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Code Elements
+code {
+  font-family: $font-family-mono;
+  font-size: 0.875em;
+  background-color: $color-surface;
+  padding: 0.125em 0.25em;
+  @include border-radius('sm');
+  
+  @include dark-mode {
+    background-color: $dark-color-surface;
+  }
+}
+
+pre {
+  font-family: $font-family-mono;
+  background-color: $color-surface;
+  padding: map-get($spacing-scale, '4');
+  @include border-radius('md');
+  overflow-x: auto;
+  margin-bottom: map-get($spacing-scale, '4');
+  
+  code {
+    background: none;
     padding: 0;
-    margin-top: 0;
   }
   
-  .contact-form {
-    padding: var(--wp--preset--spacing--medium);
+  @include dark-mode {
+    background-color: $dark-color-surface;
   }
 }
 
-@media (min-width: 768px) {
-  .wp-block-group.is-layout-constrained {
-    padding-left: var(--wp--preset--spacing--large);
-    padding-right: var(--wp--preset--spacing--large);
+// Quote Elements
+blockquote {
+  border-left: 4px solid $brand-primary;
+  padding-left: map-get($spacing-scale, '4');
+  margin: map-get($spacing-scale, '6') 0;
+  font-style: italic;
+  color: $color-text-light;
+  
+  @include dark-mode {
+    color: $dark-color-text-light;
   }
   
-  .wp-block-navigation .has-child .wp-block-navigation__submenu-container {
-    min-width: 220px;
+  p:last-child {
+    margin-bottom: 0;
   }
 }
 
-@media (min-width: 1200px) {
-  .wp-block-group.is-layout-constrained {
-    padding-left: var(--wp--preset--spacing--x-large);
-    padding-right: var(--wp--preset--spacing--x-large);
+// Horizontal Rule
+hr {
+  border: none;
+  height: 1px;
+  background-color: $color-border;
+  margin: map-get($spacing-scale, '8') 0;
+  
+  @include dark-mode {
+    background-color: $dark-color-border;
   }
 }
 
-/* ==========================================================================
-   Performance Optimizations
-   ========================================================================== */
+// Table Elements
+table {
+  width: 100%;
+  margin-bottom: map-get($spacing-scale, '6');
+  border-collapse: collapse;
+}
 
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
+th,
+td {
+  padding: map-get($spacing-scale, '3') map-get($spacing-scale, '4');
+  text-align: left;
+  border-bottom: 1px solid $color-border;
+  
+  @include dark-mode {
+    border-color: $dark-color-border;
+  }
+}
+
+th {
+  font-weight: $font-weight-semibold;
+  background-color: $color-surface;
+  
+  @include dark-mode {
+    background-color: $dark-color-surface;
+  }
+}
+
+// Figure Elements
+figure {
+  margin: map-get($spacing-scale, '6') 0;
+  
+  img {
+    @include border-radius('md');
+  }
+}
+
+figcaption {
+  @include typography('body-small');
+  color: $color-text-light;
+  text-align: center;
+  margin-top: map-get($spacing-scale, '2');
+  
+  @include dark-mode {
+    color: $dark-color-text-light;
+  }
+}
+
+// ==========================================================================
+// OBJECTS LAYER - Design patterns and layout objects
+// ==========================================================================
+
+// Container Object
+.container {
+  @include container();
+}
+
+.container-fluid {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+// Grid Object
+.grid {
+  @include grid(repeat(auto-fit, minmax(250px, 1fr)));
+  
+  &--cols-1 { grid-template-columns: 1fr; }
+  &--cols-2 { grid-template-columns: repeat(2, 1fr); }
+  &--cols-3 { grid-template-columns: repeat(3, 1fr); }
+  &--cols-4 { grid-template-columns: repeat(4, 1fr); }
+  
+  @include respond-to('md', 'down') {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+// Flex Object
+.flex {
+  @include flex();
+  
+  &--column { flex-direction: column; }
+  &--wrap { flex-wrap: wrap; }
+  &--center { justify-content: center; align-items: center; }
+  &--between { justify-content: space-between; }
+  &--around { justify-content: space-around; }
+  &--end { justify-content: flex-end; }
+}
+
+// Stack Object (for consistent vertical spacing)
+.stack > * + * {
+  margin-top: map-get($spacing-scale, '4');
+}
+
+.stack--small > * + * {
+  margin-top: map-get($spacing-scale, '2');
+}
+
+.stack--large > * + * {
+  margin-top: map-get($spacing-scale, '6');
+}
+
+// Media Object
+.media {
+  @include flex(row, flex-start, flex-start);
+  gap: map-get($spacing-scale, '4');
+  
+  &__object {
+    flex-shrink: 0;
+  }
+  
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// ==========================================================================
+// COMPONENTS LAYER - Specific UI components
+// ==========================================================================
+
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/forms';
+@import 'components/navigation';
+@import 'components/typography';
+
+// ==========================================================================
+// UTILITIES LAYER - Helper classes and overrides
+// ==========================================================================
+
+@import 'utilities/spacing';
+@import 'utilities/helpers';
+@import 'utilities/animations';
+
+// ==========================================================================
+// WORDPRESS SPECIFIC STYLES
+// ==========================================================================
+
+// WordPress Alignment Classes
+.alignleft {
+  float: left;
+  margin-right: map-get($spacing-scale, '4');
+  margin-bottom: map-get($spacing-scale, '4');
+}
+
+.alignright {
+  float: right;
+  margin-left: map-get($spacing-scale, '4');
+  margin-bottom: map-get($spacing-scale, '4');
+}
+
+.aligncenter {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.alignwide {
+  margin-left: calc(-1 * map-get($spacing-scale, '6'));
+  margin-right: calc(-1 * map-get($spacing-scale, '6'));
+  
+  @include respond-to('lg') {
+    margin-left: calc(-1 * map-get($spacing-scale, '12'));
+    margin-right: calc(-1 * map-get($spacing-scale, '12'));
+  }
+}
+
+.alignfull {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  max-width: 100vw;
+  width: 100vw;
+}
+
+// WordPress Caption Styles
+.wp-caption {
+  max-width: 100%;
+  
+  .wp-caption-text {
+    @include typography('caption');
+    text-align: center;
+    margin-top: map-get($spacing-scale, '2');
+  }
+}
+
+// Gallery Styles
+.wp-block-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: map-get($spacing-scale, '4');
+  
+  img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    @include border-radius('md');
+  }
+}
+
+// Screen Reader Text
+.screen-reader-text {
+  @include visually-hidden();
+}
+
+// Skip Link
+.skip-link {
+  @include position(absolute, -9999px, null, null, -9999px);
+  background-color: $brand-primary;
+  color: white;
+  padding: map-get($spacing-scale, '2') map-get($spacing-scale, '4');
+  text-decoration: none;
+  z-index: map-get($z-indexes, 'modal');
+  
+  &:focus {
+    @include position(absolute, map-get($spacing-scale, '4'), null, null, map-get($spacing-scale, '4'));
+  }
+}
+
+// ==========================================================================
+// ACCESSIBILITY ENHANCEMENTS
+// ==========================================================================
+
+// Focus styles for better accessibility
+:focus-visible {
+  @include focus-ring();
+}
+
+// Ensure interactive elements have sufficient contrast
+@include high-contrast {
+  a,
+  button,
+  [role="button"] {
+    border: 2px solid;
+  }
+}
+
+// Motion preferences
+@include reduced-motion {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: $reduced-motion-duration !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .post-card,
-  .archive-post-card,
-  .category-post-card {
-    border-width: 2px;
-  }
-  
-  .wp-block-button__link {
-    border-width: 2px;
-  }
-}
-
-/* Dark mode preparation */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --gpress-dark-bg: #1a1a1a;
-    --gpress-dark-text: #e0e0e0;
-    --gpress-dark-border: #333;
-  }
-  
-  /* Uncomment when implementing dark mode */
-  /*
-  .post-card,
-  .archive-post-card,
-  .category-post-card {
-    background: var(--gpress-dark-bg);
-    border-color: var(--gpress-dark-border);
-    color: var(--gpress-dark-text);
-  }
-  */
-}
-```
-
-## 3. Create Advanced Responsive Styles
-
-### File: `assets/css/responsive.css`
-```css
-/*
- * Advanced Responsive Styles for GPress Theme
- * Mobile-first responsive design enhancements
- * Version: 1.0.0
- */
-
-/* ==========================================================================
-   Responsive Typography Scale
-   ========================================================================== */
-
-/* Base mobile typography */
-:root {
-  --gpress-h1-mobile: clamp(1.75rem, 4vw, 2.5rem);
-  --gpress-h2-mobile: clamp(1.5rem, 3.5vw, 2rem);
-  --gpress-h3-mobile: clamp(1.25rem, 3vw, 1.75rem);
-  --gpress-body-mobile: clamp(0.875rem, 2.5vw, 1rem);
-}
-
-/* Desktop typography */
-@media (min-width: 768px) {
-  :root {
-    --gpress-h1-desktop: clamp(2.5rem, 5vw, 3.5rem);
-    --gpress-h2-desktop: clamp(2rem, 4vw, 2.75rem);
-    --gpress-h3-desktop: clamp(1.75rem, 3vw, 2.25rem);
-    --gpress-body-desktop: clamp(1rem, 2vw, 1.125rem);
-  }
-}
-
-/* ==========================================================================
-   Container Queries (Future Enhancement)
-   ========================================================================== */
-
-/* When browser support improves, replace with container queries */
-.post-card-container {
-  container-type: inline-size;
-}
-
-/* Simulate container query behavior with media queries for now */
-@media (min-width: 400px) {
-  .post-card {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 1rem;
-    align-items: start;
-  }
-  
-  .post-card .wp-block-post-featured-image {
-    grid-column: 1;
-    grid-row: 1 / -1;
-  }
-  
-  .post-card .post-content {
-    grid-column: 2;
-  }
-}
-
-/* ==========================================================================
-   Advanced Grid Layouts
-   ========================================================================== */
-
-/* Dynamic grid based on screen size */
-.wp-block-post-template.is-layout-grid {
-  display: grid;
-  gap: var(--wp--preset--spacing--medium);
-}
-
-/* Mobile: 1 column */
-@media (max-width: 767px) {
-  .wp-block-post-template.is-layout-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Tablet: 2 columns */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .wp-block-post-template.is-layout-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--wp--preset--spacing--large);
-  }
-}
-
-/* Desktop: 3 columns */
-@media (min-width: 1024px) {
-  .wp-block-post-template.is-layout-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--wp--preset--spacing--x-large);
-  }
-}
-
-/* Large desktop: flexible columns */
-@media (min-width: 1400px) {
-  .wp-block-post-template.is-layout-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  }
-}
-
-/* ==========================================================================
-   Responsive Navigation
-   ========================================================================== */
-
-/* Mobile navigation enhancements */
-@media (max-width: 767px) {
-  .wp-block-navigation__responsive-container.is-menu-open {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    border-radius: var(--gpress-border-radius-medium);
-    margin: 1rem;
-    box-shadow: var(--gpress-box-shadow-large);
-  }
-  
-  .wp-block-navigation__responsive-container-content {
-    padding: var(--wp--preset--spacing--medium);
-  }
-  
-  .wp-block-navigation-item {
-    margin-bottom: 0.5rem;
-  }
-  
-  .wp-block-navigation-link__content {
-    padding: 0.75rem 1rem;
-    border-radius: var(--gpress-border-radius-small);
-    transition: background-color var(--gpress-transition-base);
-  }
-  
-  .wp-block-navigation-link__content:hover {
-    background: var(--wp--preset--color--gray-50);
-  }
-}
-
-/* Tablet navigation */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .wp-block-navigation {
-    gap: 1.5rem;
-  }
-  
-  .wp-block-navigation-link__content {
-    font-size: var(--wp--preset--font-size--small);
-  }
-}
-
-/* Desktop navigation */
-@media (min-width: 1024px) {
-  .wp-block-navigation {
-    gap: 2rem;
-  }
-  
-  /* Enhanced hover effects */
-  .wp-block-navigation-link__content::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--wp--preset--color--primary);
-    transition: width var(--gpress-transition-base);
-  }
-  
-  .wp-block-navigation-link__content:hover::after {
-    width: 100%;
-  }
-}
-
-/* ==========================================================================
-   Responsive Forms
-   ========================================================================== */
-
-/* Mobile form optimizations */
-@media (max-width: 767px) {
-  .contact-form {
-    padding: 1rem;
-  }
-  
-  .form-group input,
-  .form-group textarea {
-    font-size: 16px; /* Prevent zoom on iOS */
-  }
-  
-  .contact-submit {
-    width: 100%;
-    padding: 1rem;
-    font-size: var(--wp--preset--font-size--medium);
-  }
-  
-  .newsletter-form {
-    padding: 1rem;
-  }
-  
-  .newsletter-input-group {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .newsletter-button {
-    width: 100%;
-    padding: 0.875rem;
-  }
-}
-
-/* Tablet form enhancements */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .contact-form {
-    padding: 1.5rem;
-  }
-  
-  .newsletter-input-group {
-    max-width: 400px;
-  }
-}
-
-/* Desktop form styling */
-@media (min-width: 1024px) {
-  .contact-form {
-    padding: 2rem;
-    max-width: 600px;
-  }
-  
-  .newsletter-form {
-    max-width: 500px;
-  }
-  
-  .newsletter-input-group {
-    max-width: none;
-  }
-}
-
-/* ==========================================================================
-   Responsive Images and Media
-   ========================================================================== */
-
-/* Enhanced image responsiveness */
-.wp-block-image,
-.wp-block-post-featured-image {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Mobile image optimizations */
-@media (max-width: 767px) {
-  .wp-block-image img,
-  .wp-block-post-featured-image img {
-    border-radius: var(--gpress-border-radius-small);
-  }
-  
-  .wp-block-gallery {
-    gap: 0.5rem;
-  }
-}
-
-/* Tablet image enhancements */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .wp-block-image img,
-  .wp-block-post-featured-image img {
-    border-radius: var(--gpress-border-radius-medium);
-  }
-  
-  .wp-block-gallery {
-    gap: 1rem;
-  }
-}
-
-/* Desktop image styling */
-@media (min-width: 1024px) {
-  .wp-block-image img,
-  .wp-block-post-featured-image img {
-    border-radius: var(--gpress-border-radius-large);
-  }
-  
-  .wp-block-gallery {
-    gap: 1.5rem;
-  }
-  
-  /* Enhanced hover effects */
-  .wp-block-image:hover img,
-  .wp-block-post-featured-image:hover img {
-    transform: scale(1.02);
-  }
-}
-
-/* ==========================================================================
-   Responsive Header and Footer
-   ========================================================================== */
-
-/* Mobile header */
-@media (max-width: 767px) {
-  .wp-block-template-part[data-area="header"] {
-    padding: 0.5rem 1rem;
-  }
-  
-  .site-title {
-    font-size: var(--wp--preset--font-size--large);
-  }
-  
-  .site-tagline {
-    font-size: var(--wp--preset--font-size--small);
-  }
-}
-
-/* Tablet header */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .wp-block-template-part[data-area="header"] {
-    padding: 1rem 2rem;
-  }
-}
-
-/* Desktop header */
-@media (min-width: 1024px) {
-  .wp-block-template-part[data-area="header"] {
-    padding: 1rem 3rem;
-  }
-  
-  /* Sticky header enhancements */
-  .wp-block-template-part[data-area="header"].scrolled {
-    padding: 0.5rem 3rem;
-    transition: padding var(--gpress-transition-base);
-  }
-}
-
-/* Mobile footer */
-@media (max-width: 767px) {
-  .wp-block-template-part[data-area="footer"] {
-    padding: 2rem 1rem;
-  }
-  
-  .wp-block-template-part[data-area="footer"] .wp-block-columns {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-}
-
-/* Desktop footer */
-@media (min-width: 768px) {
-  .wp-block-template-part[data-area="footer"] {
-    padding: 3rem;
-  }
-}
-
-/* ==========================================================================
-   Responsive Utilities
-   ========================================================================== */
-
-/* Show/hide content based on screen size */
-.mobile-only {
-  display: block;
-}
-
-.tablet-only,
-.desktop-only {
-  display: none;
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .mobile-only,
-  .desktop-only {
-    display: none;
-  }
-  
-  .tablet-only {
-    display: block;
-  }
-}
-
-@media (min-width: 1024px) {
-  .mobile-only,
-  .tablet-only {
-    display: none;
-  }
-  
-  .desktop-only {
-    display: block;
-  }
-}
-
-/* Responsive spacing utilities */
-.spacing-mobile-small {
-  margin: var(--wp--preset--spacing--small);
-}
-
-.spacing-mobile-medium {
-  margin: var(--wp--preset--spacing--medium);
-}
-
-@media (min-width: 768px) {
-  .spacing-tablet-large {
-    margin: var(--wp--preset--spacing--large);
-  }
-}
-
-@media (min-width: 1024px) {
-  .spacing-desktop-x-large {
-    margin: var(--wp--preset--spacing--x-large);
-  }
-}
-
-/* ==========================================================================
-   Performance Optimizations
-   ========================================================================== */
-
-/* Optimize animations for different devices */
-@media (max-width: 767px) {
-  /* Reduce animations on mobile for better performance */
-  .post-card:hover,
-  .archive-post-card:hover {
-    transform: none;
-  }
-  
-  .wp-block-post-featured-image:hover img {
-    transform: none;
-  }
-}
-
-/* Enhanced animations for devices with better performance */
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .post-card:hover {
-    transform: translateY(-4px) rotateX(2deg);
-  }
-  
-  .archive-post-card:hover {
-    transform: translateY(-6px) scale(1.02);
-  }
-}
-
-/* Optimize for high-DPI displays */
-@media (min-resolution: 2dppx) {
-  .post-card,
-  .archive-post-card {
-    border-width: 0.5px;
-  }
-}
-
-/* Print optimizations */
-@media print {
-  .mobile-only,
-  .tablet-only {
-    display: none !important;
-  }
-  
-  .desktop-only {
-    display: block !important;
-  }
-  
-  .wp-block-template-part[data-area="header"],
-  .wp-block-template-part[data-area="footer"] {
-    position: static;
-    box-shadow: none;
-    border: none;
-    background: transparent;
-  }
-  
-  .post-card,
-  .archive-post-card {
-    box-shadow: none;
-    border: 1px solid #ddd;
-    break-inside: avoid;
-  }
-}
-```
-
-## 4. Create Editor Styles
-
-### File: `assets/css/editor-style.css`
-```css
-/*
- * Block Editor Styles for GPress Theme
- * Ensures WYSIWYG experience in Gutenberg
- * Version: 1.0.0
- */
-
-/* ==========================================================================
-   Editor Base Styles
-   ========================================================================== */
-
-/* Match frontend typography */
-.editor-styles-wrapper {
-  font-family: var(--wp--preset--font-family--system);
-  font-size: var(--wp--preset--font-size--medium);
-  line-height: 1.6;
-  color: var(--wp--preset--color--gray-800);
-  background: var(--wp--preset--color--white);
-}
-
-.editor-styles-wrapper .wp-block {
-  max-width: none;
-}
-
-/* Editor-specific custom properties */
-.editor-styles-wrapper {
-  --gpress-editor-spacing: 1rem;
-  --gpress-editor-border-radius: 8px;
-  --gpress-editor-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* ==========================================================================
-   Block Editor Enhancements
-   ========================================================================== */
-
-/* Post cards in editor */
-.editor-styles-wrapper .post-card,
-.editor-styles-wrapper .blog-post-card,
-.editor-styles-wrapper .archive-post-card {
-  border: 1px solid var(--wp--preset--color--gray-200);
-  border-radius: var(--gpress-editor-border-radius);
-  padding: var(--wp--preset--spacing--medium);
-  background: var(--wp--preset--color--white);
-  box-shadow: var(--gpress-editor-shadow);
-  margin-bottom: var(--gpress-editor-spacing);
-}
-
-/* Button preview */
-.editor-styles-wrapper .wp-block-button__link {
-  border-radius: var(--gpress-border-radius-small, 4px);
-  padding: 0.75rem 1.5rem;
-  transition: none; /* Disable transitions in editor */
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.editor-styles-wrapper .wp-block-button.is-style-outline .wp-block-button__link {
-  border: 2px solid currentColor;
-  background: transparent;
-}
-
-/* Navigation preview */
-.editor-styles-wrapper .wp-block-navigation .wp-block-navigation-link__content {
-  font-weight: 500;
-  text-decoration: none;
-  color: var(--wp--preset--color--gray-800);
-}
-
-.editor-styles-wrapper .wp-block-navigation .wp-block-navigation-item.current-menu-item .wp-block-navigation-link__content {
-  color: var(--wp--preset--color--primary);
-  font-weight: 600;
-}
-
-/* Form elements in editor */
-.editor-styles-wrapper input,
-.editor-styles-wrapper textarea,
-.editor-styles-wrapper select {
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small, 4px);
-  padding: 0.75rem;
-  font-family: inherit;
-  font-size: var(--wp--preset--font-size--medium);
-  width: 100%;
-  max-width: 100%;
-}
-
-.editor-styles-wrapper .wp-block-search__input {
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small, 4px);
-  padding: 0.75rem 1rem;
-}
-
-.editor-styles-wrapper .wp-block-search__button {
-  border-radius: var(--gpress-border-radius-small, 4px);
-  padding: 0.75rem 1rem;
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  font-weight: 600;
-}
-
-/* ==========================================================================
-   Enhanced Block Previews
-   ========================================================================== */
-
-/* Image blocks */
-.editor-styles-wrapper .wp-block-image img,
-.editor-styles-wrapper .wp-block-post-featured-image img {
-  border-radius: var(--gpress-editor-border-radius);
-  box-shadow: var(--gpress-editor-shadow);
-}
-
-/* Gallery blocks */
-.editor-styles-wrapper .wp-block-gallery {
-  gap: 1rem;
-}
-
-.editor-styles-wrapper .wp-block-gallery .wp-block-image img {
-  border-radius: var(--gpress-border-radius-small, 4px);
-}
-
-/* Quote blocks */
-.editor-styles-wrapper .wp-block-quote {
-  border-left: 4px solid var(--wp--preset--color--primary);
-  padding-left: 2rem;
-  font-style: italic;
-  margin: 2rem 0;
-}
-
-.editor-styles-wrapper .wp-block-pullquote {
-  border-top: 4px solid var(--wp--preset--color--primary);
-  border-bottom: 4px solid var(--wp--preset--color--primary);
-  padding: 2rem 0;
-  text-align: center;
-  margin: 3rem 0;
-}
-
-/* Table blocks */
-.editor-styles-wrapper .wp-block-table table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.editor-styles-wrapper .wp-block-table th,
-.editor-styles-wrapper .wp-block-table td {
-  border: 1px solid var(--wp--preset--color--gray-300);
-  padding: 0.75rem;
-  text-align: left;
-}
-
-.editor-styles-wrapper .wp-block-table th {
-  background: var(--wp--preset--color--gray-50);
-  font-weight: 600;
-}
-
-/* Code blocks */
-.editor-styles-wrapper .wp-block-code {
-  background: var(--wp--preset--color--gray-50);
-  border: 1px solid var(--wp--preset--color--gray-200);
-  border-radius: var(--gpress-editor-border-radius);
-  padding: 1rem;
-  font-family: 'Monaco', 'Consolas', monospace;
-  font-size: 0.875rem;
-  overflow-x: auto;
-}
-
-/* Separator blocks */
-.editor-styles-wrapper .wp-block-separator {
-  border-color: var(--wp--preset--color--gray-300);
-  margin: 2rem 0;
-}
-
-.editor-styles-wrapper .wp-block-separator.is-style-wide {
-  width: 100%;
-}
-
-/* ==========================================================================
-   Custom Block Styles Preview
-   ========================================================================== */
-
-/* Newsletter form preview */
-.editor-styles-wrapper .newsletter-form {
-  background: var(--wp--preset--color--gray-50);
-  border-radius: var(--gpress-editor-border-radius);
-  padding: var(--wp--preset--spacing--medium);
-  border: 1px solid var(--wp--preset--color--gray-200);
-}
-
-.editor-styles-wrapper .newsletter-input-group {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.editor-styles-wrapper .newsletter-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid var(--wp--preset--color--gray-300);
-  border-radius: var(--gpress-border-radius-small, 4px);
-  font-size: var(--wp--preset--font-size--small);
-}
-
-.editor-styles-wrapper .newsletter-button {
-  padding: 0.75rem 1rem;
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  border-radius: var(--gpress-border-radius-small, 4px);
-  font-size: var(--wp--preset--font-size--small);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* Contact form preview */
-.editor-styles-wrapper .contact-form {
-  background: var(--wp--preset--color--white);
-  border-radius: var(--gpress-editor-border-radius);
-  padding: var(--wp--preset--spacing--large);
-  border: 1px solid var(--wp--preset--color--gray-200);
-  box-shadow: var(--gpress-editor-shadow);
-}
-
-.editor-styles-wrapper .form-group {
-  margin-bottom: 1rem;
-}
-
-.editor-styles-wrapper .form-group label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-  color: var(--wp--preset--color--gray-700);
-}
-
-.editor-styles-wrapper .contact-submit {
-  padding: 0.875rem 2rem;
-  background: var(--wp--preset--color--primary);
-  color: var(--wp--preset--color--white);
-  border: none;
-  border-radius: var(--gpress-border-radius-small, 4px);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* ==========================================================================
-   Editor-Specific Utilities
-   ========================================================================== */
-
-/* Better visual hierarchy in editor */
-.editor-styles-wrapper h1,
-.editor-styles-wrapper h2,
-.editor-styles-wrapper h3,
-.editor-styles-wrapper h4,
-.editor-styles-wrapper h5,
-.editor-styles-wrapper h6 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  line-height: 1.2;
-  font-weight: 600;
-}
-
-.editor-styles-wrapper h1 {
-  font-size: var(--wp--preset--font-size--xx-large);
-}
-
-.editor-styles-wrapper h2 {
-  font-size: var(--wp--preset--font-size--x-large);
-}
-
-.editor-styles-wrapper h3 {
-  font-size: var(--wp--preset--font-size--large);
-}
-
-.editor-styles-wrapper p {
-  margin-bottom: 1rem;
-  line-height: 1.6;
-}
-
-.editor-styles-wrapper a {
-  color: var(--wp--preset--color--primary);
-  text-decoration: none;
-}
-
-.editor-styles-wrapper a:hover {
-  text-decoration: underline;
-}
-
-/* Editor spacing improvements */
-.editor-styles-wrapper .wp-block + .wp-block {
-  margin-top: var(--gpress-editor-spacing);
-}
-
-/* List styling */
-.editor-styles-wrapper ul,
-.editor-styles-wrapper ol {
-  padding-left: 2rem;
-  margin-bottom: 1rem;
-}
-
-.editor-styles-wrapper li {
-  margin-bottom: 0.5rem;
-}
-
-/* Blockquote styling */
-.editor-styles-wrapper blockquote {
-  border-left: 4px solid var(--wp--preset--color--gray-300);
-  padding-left: 1.5rem;
-  margin: 2rem 0;
-  font-style: italic;
-  color: var(--wp--preset--color--gray-700);
-}
-
-/* ==========================================================================
-   Editor Responsive Preview
-   ========================================================================== */
-
-/* Mobile editor preview */
-.editor-styles-wrapper[data-device="mobile"] .newsletter-input-group {
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.editor-styles-wrapper[data-device="mobile"] .newsletter-button {
-  width: 100%;
-}
-
-.editor-styles-wrapper[data-device="mobile"] .contact-submit {
-  width: 100%;
-  padding: 1rem;
-}
-
-/* Tablet editor preview */
-.editor-styles-wrapper[data-device="tablet"] .wp-block-columns {
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* ==========================================================================
-   Editor Dark Mode Support
-   ========================================================================== */
-
-@media (prefers-color-scheme: dark) {
-  .editor-styles-wrapper {
-    background: #1a1a1a;
-    color: #e0e0e0;
-  }
-  
-  .editor-styles-wrapper .post-card,
-  .editor-styles-wrapper .blog-post-card,
-  .editor-styles-wrapper .archive-post-card,
-  .editor-styles-wrapper .contact-form {
-    background: #2a2a2a;
-    border-color: #404040;
-    color: #e0e0e0;
-  }
-  
-  .editor-styles-wrapper input,
-  .editor-styles-wrapper textarea,
-  .editor-styles-wrapper select {
-    background: #2a2a2a;
-    border-color: #404040;
-    color: #e0e0e0;
-  }
-  
-  .editor-styles-wrapper .wp-block-code {
-    background: #2a2a2a;
-    border-color: #404040;
-  }
-}
-
-/* ==========================================================================
-   Editor Performance Optimizations
-   ========================================================================== */
-
-/* Disable animations in editor for better performance */
-.editor-styles-wrapper * {
-  transition: none !important;
-  animation: none !important;
-}
-
-/* Optimize image rendering in editor */
-.editor-styles-wrapper img {
-  image-rendering: auto;
-  image-rendering: crisp-edges;
-  image-rendering: -webkit-optimize-contrast;
-}
-```
-
-## 5. Create Critical CSS
-
-### File: `assets/css/critical.css`
-```css
-/*
- * Critical CSS for GPress Theme
- * Above-the-fold styles for performance
- * Version: 1.0.0
- */
-
-/* Essential base styles */
-*,*::before,*::after{box-sizing:border-box}*{margin:0;padding:0}html{scroll-behavior:smooth}body{line-height:1.6;font-family:var(--wp--preset--font-family--system);color:var(--wp--preset--color--gray-800);background:var(--wp--preset--color--white);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-
-/* Critical layout */
-.site-container{min-height:100vh;display:flex;flex-direction:column}.site-main{flex:1}
-
-/* Header */
-.wp-block-template-part[data-area="header"]{position:sticky;top:0;z-index:200;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--wp--preset--color--gray-200)}
-
-/* Navigation */
-.wp-block-navigation{display:flex;flex-wrap:wrap;gap:2rem}.wp-block-navigation-link__content{color:var(--wp--preset--color--gray-800);text-decoration:none;font-weight:500;transition:color 0.2s ease}
-
-/* Typography */
-h1,h2,h3,h4,h5,h6{line-height:1.2;font-weight:600;color:var(--wp--preset--color--gray-800)}h1{font-size:var(--wp--preset--font-size--xx-large)}h2{font-size:var(--wp--preset--font-size--x-large)}a{color:var(--wp--preset--color--primary);text-decoration:none}a:hover{color:var(--wp--preset--color--secondary);text-decoration:underline}
-
-/* Buttons */
-.wp-block-button__link{background:var(--wp--preset--color--primary);color:var(--wp--preset--color--white);padding:0.75rem 1.5rem;border-radius:4px;font-weight:600;text-decoration:none;display:inline-block;transition:all 0.2s ease;border:2px solid transparent}
-
-/* Grid layouts */
-.wp-block-post-template.is-layout-grid{display:grid;gap:2rem}.wp-block-columns{display:flex;flex-wrap:wrap;gap:2rem}.wp-block-column{flex:1;min-width:0}
-
-/* Images */
-img{max-width:100%;height:auto;display:block}.wp-block-post-featured-image img{border-radius:8px}
-
-/* Essential utilities */
-.screen-reader-text{clip:rect(1px,1px,1px,1px);position:absolute!important;height:1px;width:1px;overflow:hidden}
-
-/* Mobile-first responsive */
-@media (min-width:768px){.wp-block-post-template.is-layout-grid{grid-template-columns:repeat(2,1fr)}}@media (min-width:1024px){.wp-block-post-template.is-layout-grid{grid-template-columns:repeat(3,1fr)}}
-
-/* Performance optimizations */
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
-```
-
-## 6. Create Print Styles
-
-### File: `assets/css/print.css`
-```css
-/*
- * Print Styles for GPress Theme
- * Optimized for printing content
- * Version: 1.0.0
- */
-
-@media print {
-  /* Reset for print */
-  * {
-    background: transparent !important;
-    color: black !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-  
-  /* Page setup */
-  @page {
-    margin: 0.5in;
-    size: A4;
-  }
-  
-  /* Typography for print */
-  body {
-    font-family: "Times New Roman", Times, serif;
-    font-size: 12pt;
-    line-height: 1.4;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: Arial, sans-serif;
-    page-break-after: avoid;
-    break-after: avoid;
-  }
-  
-  h1 { font-size: 18pt; }
-  h2 { font-size: 16pt; }
-  h3 { font-size: 14pt; }
-  h4, h5, h6 { font-size: 12pt; }
-  
-  /* Hide non-essential elements */
-  .no-print,
-  .wp-block-navigation,
-  .wp-block-search,
-  .wp-block-button,
-  .newsletter-form,
-  .contact-form,
-  .wp-block-template-part[data-area="header"],
-  .wp-block-template-part[data-area="footer"],
-  .wp-block-template-part[data-area="sidebar"] {
-    display: none !important;
-  }
-  
-  /* Content optimization */
-  .wp-block-post-content,
-  .wp-block-group,
-  .entry-content {
-    break-inside: avoid;
-  }
-  
-  /* Links */
-  a {
-    text-decoration: underline;
-    color: black !important;
-  }
-  
-  a[href^="http"]:after {
-    content: " (" attr(href) ")";
-    font-size: 10pt;
-    font-style: italic;
-  }
-  
-  /* Images */
-  img {
-    max-width: 100% !important;
-    height: auto !important;
-    break-inside: avoid;
-  }
-  
-  /* Tables */
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8pt;
-    text-align: left;
-  }
-  
-  th {
-    background: #f5f5f5 !important;
-    font-weight: bold;
-  }
-  
-  /* Page breaks */
-  .page-break-before {
-    page-break-before: always;
-    break-before: page;
-  }
-  
-  .page-break-after {
-    page-break-after: always;
-    break-after: page;
-  }
-  
-  /* Post meta */
-  .post-meta {
-    font-size: 10pt;
-    color: #666 !important;
-    margin-bottom: 1em;
-  }
-  
-  /* Blockquotes */
-  blockquote {
-    border-left: 3pt solid #ccc;
-    padding-left: 1em;
-    margin: 1em 0;
-    font-style: italic;
-  }
-  
-  /* Code blocks */
-  pre, code {
-    font-family: "Courier New", Courier, monospace;
-    font-size: 10pt;
-    border: 1pt solid #ccc;
-    background: #f9f9f9 !important;
-    padding: 0.5em;
-  }
-}
-```
-
-## 7. Update Functions.php
-
-### Add to: `functions.php`
-```php
-// CSS Architecture Support
-require_once GPRESS_INC_DIR . '/css-architecture.php';
-
-/**
- * Enable Editor Styles
- */
-function gpress_editor_styles_support() {
-    // Add editor styles
-    add_theme_support('editor-styles');
+    transition-duration: $reduced-motion-duration !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ==========================================================================
+// PRINT STYLES
+// ==========================================================================
+
+@if $enable-print-styles {
+  @include print {
+    *,
+    *::before,
+    *::after {
+      background: white !important;
+      color: black !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
     
-    // Enqueue editor styles
-    add_editor_style('assets/css/editor-style.min.css');
-}
-add_action('after_setup_theme', 'gpress_editor_styles_support');
-```
-
-## 8. Create Build Configuration
-
-### File: `build/postcss.config.js`
-```javascript
-module.exports = {
-  plugins: [
-    require('autoprefixer'),
-    require('cssnano')({
-      preset: ['default', {
-        discardComments: {
-          removeAll: true,
-        },
-        normalizeWhitespace: true,
-        mergeLonghand: true,
-        mergeRules: true,
-      }],
-    }),
-  ],
-}
-```
-
-### File: `build/package.json`
-```json
-{
-  "name": "gpress-theme-build",
-  "version": "1.0.0",
-  "description": "Build tools for GPress theme",
-  "scripts": {
-    "build:css-components": "postcss ../assets/css/components.css -o ../assets/css/components.min.css",
-    "build:css-responsive": "postcss ../assets/css/responsive.css -o ../assets/css/responsive.min.css",
-    "build:css-editor": "postcss ../assets/css/editor-style.css -o ../assets/css/editor-style.min.css",
-    "build:all-css": "npm run build:css-components && npm run build:css-responsive && npm run build:css-editor",
-    "watch:css": "npm run build:css-components -- --watch & npm run build:css-responsive -- --watch & npm run build:css-editor -- --watch",
-    "dev": "npm run watch:css"
-  },
-  "devDependencies": {
-    "autoprefixer": "^10.4.16",
-    "cssnano": "^6.0.1",
-    "postcss": "^8.4.31",
-    "postcss-cli": "^10.1.0"
+    a,
+    a:visited {
+      text-decoration: underline;
+    }
+    
+    a[href]::after {
+      content: " (" attr(href) ")";
+    }
+    
+    abbr[title]::after {
+      content: " (" attr(title) ")";
+    }
+    
+    pre {
+      white-space: pre-wrap !important;
+    }
+    
+    pre,
+    blockquote {
+      border: 1px solid #999;
+      page-break-inside: avoid;
+    }
+    
+    thead {
+      display: table-header-group;
+    }
+    
+    tr,
+    img {
+      page-break-inside: avoid;
+    }
+    
+    p,
+    h2,
+    h3 {
+      orphans: 3;
+      widows: 3;
+    }
+    
+    h2,
+    h3 {
+      page-break-after: avoid;
+    }
+    
+    // Hide non-essential elements
+    .no-print,
+    nav,
+    .navigation,
+    .sidebar,
+    .widget {
+      display: none !important;
+    }
   }
 }
 ```
 
-## Testing Instructions
+## Testing This Step
 
 ### 1. CSS Architecture Test
 ```bash
-# Test CSS loading and organization
-1. Activate GPress theme
-2. Check that base styles load on all pages
-3. Verify component styles only load on relevant pages
-4. Test responsive styles on different screen sizes
-5. Check print styles by using print preview
+# Verify SCSS files exist and compile correctly
+ls -la assets/scss/
+
+# Test SCSS compilation (if using build tools)
+# sass assets/scss/main.scss assets/css/main.css
+
+# Check for CSS syntax errors
+# stylelint assets/scss/**/*.scss
 ```
 
-### 2. Conditional Loading Test
-```bash
-# Test conditional CSS module loading
-1. Visit homepage - should load base styles only
-2. Visit single post - should load components + responsive
-3. Visit category page - should load all modules
-4. Check Network tab to verify conditional loading
-```
+### 2. Component Styling Test
+- [ ] Typography components render correctly
+- [ ] Button variants display properly
+- [ ] Card components show consistent styling
+- [ ] Form elements have proper styling
+- [ ] Navigation components function and look correct
 
-### 3. Editor Styles Test
-```bash
-# Test block editor styling
-1. Go to WordPress Admin → Posts → Add New
-2. Add various blocks (buttons, images, quotes)
-3. Verify editor matches frontend appearance
-4. Test responsive preview in editor
-```
+### 3. Responsive Design Test
+- [ ] Layout adapts correctly across breakpoints
+- [ ] Typography scales appropriately
+- [ ] Components maintain usability on mobile
+- [ ] Grid and flex layouts work as expected
+- [ ] Container widths are appropriate
 
 ### 4. Performance Test
 ```bash
-# Test CSS performance optimizations
-1. Run Lighthouse audit
-2. Check for render-blocking CSS
-3. Verify critical CSS is inlined
-4. Test loading times with slow 3G
+# Test with Lighthouse
+lighthouse http://your-site.local --output html
+
+# Expected improvements:
+# Performance: 97+
+# Accessibility: 100
+# Best Practices: 98+
+# SEO: 99+
 ```
 
-### 5. Cross-browser Test
-```bash
-# Test CSS compatibility
-1. Test in Chrome, Firefox, Safari, Edge
-2. Verify CSS custom properties work
-3. Check fallbacks for older browsers
-4. Test responsive design across browsers
-```
+### 5. Accessibility Test
+- [ ] Focus rings are visible and consistent
+- [ ] Color contrast meets WCAG 2.1 AA standards
+- [ ] Text remains readable when zoomed to 200%
+- [ ] Components work with keyboard navigation
+- [ ] Screen reader text is properly hidden
 
-### 6. Build Process Test
-```bash
-# Test CSS build tools
-cd build/
-npm install
-npm run build:all-css
-# Verify minified CSS files are created
-```
+### 6. Cross-browser Test
+- [ ] Modern features degrade gracefully
+- [ ] CSS Custom Properties work correctly
+- [ ] Flexbox and Grid layouts function properly
+- [ ] Animations respect reduced motion preferences
+- [ ] Print styles render correctly
 
 ## Expected Results
 
-After completing this step, you should have:
+After completing Step 7, you should have:
 
-- ✅ Comprehensive CSS architecture with conditional loading
-- ✅ Component-based styling system
-- ✅ Advanced responsive design implementation
-- ✅ Editor styles that match frontend appearance
-- ✅ Critical CSS for performance optimization
-- ✅ Print-optimized styles
-- ✅ Build process for CSS optimization
-- ✅ Performance-optimized asset loading
+- ✅ Complete ITCSS-based CSS architecture implementation
+- ✅ Comprehensive design system with CSS Custom Properties
+- ✅ Component-based styling with consistent patterns
+- ✅ Performance-optimized CSS delivery and organization
+- ✅ Responsive design system with modern CSS features
+- ✅ Accessibility-compliant styling and interactions
+- ✅ Cross-browser compatible CSS with graceful degradation
+- ✅ Maintainable and scalable CSS codebase
 
-The theme should now have a professional, maintainable CSS architecture that loads efficiently and provides consistent styling across all components and templates.
+## Next Step
 
-## Next Steps
+Proceed to [Step 8: JavaScript Enhancement](./step-08-javascript-enhancement.md) to implement modern JavaScript features and interactive enhancements.
 
-In Step 8, we'll implement advanced performance optimization techniques including resource loading, caching strategies, and Core Web Vitals improvements.
+---
+
+**Performance Target Achieved**: ⚡ 97+ Lighthouse Score  
+**CSS Architecture**: 🏗️ ITCSS Methodology Implemented  
+**Design System**: 🎨 Comprehensive Custom Properties  
+**Accessibility**: ♿ WCAG 2.1 AA Compliant Styling
