@@ -1,619 +1,1217 @@
-# Step 11: Advanced Form Handling & Contact Features
+# Step 11: Custom Post Types & Taxonomies Implementation
 
 ## Overview
-This step implements advanced form handling capabilities, contact forms, newsletter subscriptions, and user interaction features while maintaining performance and security. We'll create reusable form components with conditional asset loading.
+This step implements advanced custom post types and taxonomies with conditional asset loading, optimized templates, and seamless integration with the existing theme architecture. We'll create a comprehensive system for managing diverse content types while maintaining performance and accessibility standards.
 
 ## Objectives
-- Implement advanced contact forms
-- Add newsletter subscription functionality  
-- Create form validation and security
-- Implement conditional form asset loading
-- Add AJAX form submissions
-- Ensure accessibility and user experience
+- Implement custom post types with full FSE support
+- Create custom taxonomies with hierarchical structures
+- Build optimized templates for custom content
+- Establish conditional asset loading for CPT-specific features
+- Integrate custom fields and meta boxes
+- Ensure accessibility and SEO optimization for custom content
 
-## Implementation
+## What You'll Learn
+- Advanced WordPress CPT and taxonomy registration
+- Template hierarchy optimization for custom content
+- Conditional PHP and asset loading strategies
+- Custom field management and API integration
+- Performance optimization for content-heavy sites
+- Accessibility best practices for diverse content types
 
-### 1. Form Handler Foundation
+## Files Structure for This Step
 
-Create `inc/form-handler.php`:
+### 📁 Files to CREATE:
+```
+inc/
+├── custom-post-types.php          # CPT registration and management
+├── custom-taxonomies.php          # Taxonomy registration and management
+├── custom-fields.php              # Meta boxes and custom fields
+└── cpt-optimization.php           # Performance optimization for CPTs
+
+templates/
+├── single-portfolio.html          # Portfolio single template
+├── archive-portfolio.html         # Portfolio archive template
+├── single-testimonial.html        # Testimonial single template
+├── archive-testimonial.html       # Testimonial archive template
+├── single-team.html               # Team member single template
+├── archive-team.html              # Team archive template
+├── taxonomy-portfolio-category.html  # Portfolio category archive
+├── taxonomy-skill.html            # Skills taxonomy archive
+└── taxonomy-service.html          # Services taxonomy archive
+
+parts/
+├── portfolio-card.html            # Portfolio item card component
+├── testimonial-card.html          # Testimonial card component
+├── team-card.html                 # Team member card component
+└── cpt-filters.html               # Filtering component for archives
+
+assets/css/
+├── custom-post-types.css          # CPT-specific styles
+├── portfolio.css                  # Portfolio-specific styles
+├── testimonials.css               # Testimonials-specific styles
+└── team.css                       # Team-specific styles
+
+assets/js/
+├── cpt-manager.js                 # CPT JavaScript functionality
+├── portfolio-gallery.js          # Portfolio gallery features
+├── testimonial-slider.js         # Testimonial carousel
+└── archive-filters.js            # Archive filtering and sorting
+```
+
+### 📝 Files to UPDATE:
+```
+functions.php                      # Include CPT files and initialization
+inc/theme-setup.php               # Add CPT support and capabilities
+inc/enqueue-scripts.php           # Conditional CPT asset loading
+style.css                         # Base CPT integration styles
+README.md                         # Document CPT features and usage
+theme.json                        # Add CPT-specific settings and styles
+```
+
+### 🎯 Optimization Features Implemented:
+- Conditional asset loading based on post type detection
+- Optimized database queries for custom content
+- Lazy loading for portfolio galleries and media
+- Advanced caching strategies for CPT archives
+- SEO-optimized templates with structured data
+- Performance monitoring for custom content pages
+- Accessibility enhancements for diverse content types
+
+## Step-by-Step Implementation
+
+### 1. Create Custom Post Types Registration
+
+Create `inc/custom-post-types.php`:
 
 ```php
 <?php
 /**
- * Advanced Form Handler
+ * Custom Post Types Registration for GPress Theme
+ * Implements performant CPTs with FSE support and conditional loading
+ *
+ * @package GPress
+ * @subpackage Custom_Content
+ * @version 1.0.0
+ * @since 1.0.0
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
- * Initialize form handling system
+ * GPress Custom Post Types Manager
+ * 
+ * @since 1.0.0
  */
-function gpress_init_form_handler() {
-    // Conditional asset loading for forms
-    add_action('wp_enqueue_scripts', 'gpress_conditional_form_assets');
-    
-    // Form submission handlers
-    add_action('wp_ajax_gpress_contact_form', 'gpress_handle_contact_form');
-    add_action('wp_ajax_nopriv_gpress_contact_form', 'gpress_handle_contact_form');
-    add_action('wp_ajax_gpress_newsletter', 'gpress_handle_newsletter_subscription');
-    add_action('wp_ajax_nopriv_gpress_newsletter', 'gpress_handle_newsletter_subscription');
-    
-    // Add form shortcodes
-    add_shortcode('gpress_contact_form', 'gpress_contact_form_shortcode');
-    add_shortcode('gpress_newsletter', 'gpress_newsletter_form_shortcode');
-    
-    // Security enhancements
-    add_action('init', 'gpress_form_security_setup');
-}
-add_action('after_setup_theme', 'gpress_init_form_handler');
+class GPress_Custom_Post_Types {
 
-/**
- * Conditional form asset loading
- */
-function gpress_conditional_form_assets() {
-    global $post;
-    
-    $load_forms = false;
-    
-    // Check if forms are needed on this page
-    if (is_page() && $post) {
-        $content = $post->post_content;
+    /**
+     * Initialize CPT system
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('init', array(__CLASS__, 'register_post_types'));
+        add_action('init', array(__CLASS__, 'add_cpt_capabilities'));
+        add_action('wp_enqueue_scripts', array(__CLASS__, 'conditional_cpt_assets'));
+        add_filter('template_include', array(__CLASS__, 'cpt_template_loader'));
+        add_action('wp_head', array(__CLASS__, 'cpt_structured_data'));
+        add_filter('body_class', array(__CLASS__, 'cpt_body_classes'));
         
-        // Check for form shortcodes or blocks
-        if (strpos($content, '[gpress_contact_form]') !== false || 
-            strpos($content, '[gpress_newsletter]') !== false ||
-            strpos($content, 'wp:gpress/contact-form') !== false ||
-            has_block('core/contact-form') ||
-            is_page_template('page-contact.html')) {
-            $load_forms = true;
+        // Admin enhancements
+        add_action('admin_init', array(__CLASS__, 'setup_cpt_admin'));
+        add_filter('manage_posts_columns', array(__CLASS__, 'custom_admin_columns'));
+        add_action('manage_posts_custom_column', array(__CLASS__, 'populate_admin_columns'), 10, 2);
+    }
+
+    /**
+     * Register all custom post types
+     *
+     * @since 1.0.0
+     */
+    public static function register_post_types() {
+        
+        // Portfolio Post Type
+        register_post_type('portfolio', array(
+            'labels' => array(
+                'name' => __('Portfolio', 'gpress'),
+                'singular_name' => __('Portfolio Item', 'gpress'),
+                'menu_name' => __('Portfolio', 'gpress'),
+                'add_new' => __('Add New Item', 'gpress'),
+                'add_new_item' => __('Add New Portfolio Item', 'gpress'),
+                'edit_item' => __('Edit Portfolio Item', 'gpress'),
+                'new_item' => __('New Portfolio Item', 'gpress'),
+                'view_item' => __('View Portfolio Item', 'gpress'),
+                'search_items' => __('Search Portfolio', 'gpress'),
+                'not_found' => __('No portfolio items found', 'gpress'),
+                'not_found_in_trash' => __('No portfolio items found in trash', 'gpress'),
+                'all_items' => __('All Portfolio Items', 'gpress'),
+                'archives' => __('Portfolio Archives', 'gpress'),
+                'attributes' => __('Portfolio Attributes', 'gpress'),
+                'insert_into_item' => __('Insert into portfolio item', 'gpress'),
+                'uploaded_to_this_item' => __('Uploaded to this portfolio item', 'gpress'),
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array(
+                'slug' => 'portfolio',
+                'with_front' => false,
+            ),
+            'supports' => array(
+                'title',
+                'editor',
+                'thumbnail',
+                'excerpt',
+                'custom-fields',
+                'revisions',
+                'page-attributes',
+                'comments'
+            ),
+            'menu_icon' => 'dashicons-portfolio',
+            'menu_position' => 5,
+            'show_in_rest' => true,
+            'rest_base' => 'portfolio',
+            'show_in_graphql' => true,
+            'graphql_single_name' => 'portfolioItem',
+            'graphql_plural_name' => 'portfolioItems',
+            'capability_type' => 'portfolio_item',
+            'map_meta_cap' => true,
+            'template' => array(
+                array('core/image'),
+                array('core/heading', array('level' => 2, 'placeholder' => __('Project Title', 'gpress'))),
+                array('core/paragraph', array('placeholder' => __('Project description...', 'gpress'))),
+                array('core/columns', array(), array(
+                    array('core/column', array(), array(
+                        array('core/heading', array('level' => 3, 'content' => __('Client', 'gpress'))),
+                        array('core/paragraph', array('placeholder' => __('Client name...', 'gpress')))
+                    )),
+                    array('core/column', array(), array(
+                        array('core/heading', array('level' => 3, 'content' => __('Date', 'gpress'))),
+                        array('core/paragraph', array('placeholder' => __('Project date...', 'gpress')))
+                    ))
+                ))
+            ),
+            'template_lock' => false,
+        ));
+
+        // Testimonials Post Type
+        register_post_type('testimonial', array(
+            'labels' => array(
+                'name' => __('Testimonials', 'gpress'),
+                'singular_name' => __('Testimonial', 'gpress'),
+                'menu_name' => __('Testimonials', 'gpress'),
+                'add_new' => __('Add New Testimonial', 'gpress'),
+                'add_new_item' => __('Add New Testimonial', 'gpress'),
+                'edit_item' => __('Edit Testimonial', 'gpress'),
+                'new_item' => __('New Testimonial', 'gpress'),
+                'view_item' => __('View Testimonial', 'gpress'),
+                'search_items' => __('Search Testimonials', 'gpress'),
+                'not_found' => __('No testimonials found', 'gpress'),
+                'not_found_in_trash' => __('No testimonials found in trash', 'gpress'),
+                'all_items' => __('All Testimonials', 'gpress'),
+                'archives' => __('Testimonial Archives', 'gpress'),
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array(
+                'slug' => 'testimonials',
+                'with_front' => false,
+            ),
+            'supports' => array(
+                'title',
+                'editor',
+                'thumbnail',
+                'excerpt',
+                'custom-fields',
+                'revisions'
+            ),
+            'menu_icon' => 'dashicons-format-quote',
+            'menu_position' => 6,
+            'show_in_rest' => true,
+            'rest_base' => 'testimonials',
+            'show_in_graphql' => true,
+            'graphql_single_name' => 'testimonial',
+            'graphql_plural_name' => 'testimonials',
+            'capability_type' => 'testimonial',
+            'map_meta_cap' => true,
+            'template' => array(
+                array('core/quote', array('className' => 'testimonial-quote')),
+                array('core/columns', array(), array(
+                    array('core/column', array('width' => '25%'), array(
+                        array('core/image', array('className' => 'testimonial-avatar is-style-rounded'))
+                    )),
+                    array('core/column', array('width' => '75%'), array(
+                        array('core/heading', array('level' => 3, 'placeholder' => __('Client Name', 'gpress'))),
+                        array('core/paragraph', array('placeholder' => __('Client title and company...', 'gpress')))
+                    ))
+                ))
+            ),
+        ));
+
+        // Team Post Type
+        register_post_type('team', array(
+            'labels' => array(
+                'name' => __('Team Members', 'gpress'),
+                'singular_name' => __('Team Member', 'gpress'),
+                'menu_name' => __('Team', 'gpress'),
+                'add_new' => __('Add Team Member', 'gpress'),
+                'add_new_item' => __('Add New Team Member', 'gpress'),
+                'edit_item' => __('Edit Team Member', 'gpress'),
+                'new_item' => __('New Team Member', 'gpress'),
+                'view_item' => __('View Team Member', 'gpress'),
+                'search_items' => __('Search Team', 'gpress'),
+                'not_found' => __('No team members found', 'gpress'),
+                'not_found_in_trash' => __('No team members found in trash', 'gpress'),
+                'all_items' => __('All Team Members', 'gpress'),
+                'archives' => __('Team Archives', 'gpress'),
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array(
+                'slug' => 'team',
+                'with_front' => false,
+            ),
+            'supports' => array(
+                'title',
+                'editor',
+                'thumbnail',
+                'excerpt',
+                'custom-fields',
+                'revisions',
+                'page-attributes'
+            ),
+            'menu_icon' => 'dashicons-groups',
+            'menu_position' => 7,
+            'show_in_rest' => true,
+            'rest_base' => 'team',
+            'show_in_graphql' => true,
+            'graphql_single_name' => 'teamMember',
+            'graphql_plural_name' => 'teamMembers',
+            'capability_type' => 'team_member',
+            'map_meta_cap' => true,
+            'template' => array(
+                array('core/image', array('className' => 'team-photo')),
+                array('core/heading', array('level' => 2, 'placeholder' => __('Team Member Name', 'gpress'))),
+                array('core/paragraph', array('className' => 'team-title', 'placeholder' => __('Job Title', 'gpress'))),
+                array('core/paragraph', array('placeholder' => __('Bio and experience...', 'gpress'))),
+                array('core/social-links', array('className' => 'team-social'))
+            ),
+        ));
+
+        // Flush rewrite rules on theme activation
+        if (get_option('gpress_cpt_rewrite_rules_flushed') !== 'yes') {
+            flush_rewrite_rules();
+            update_option('gpress_cpt_rewrite_rules_flushed', 'yes');
         }
     }
-    
-    // Load on contact page
-    if (is_page('contact') || is_page_template('contact.html')) {
-        $load_forms = true;
-    }
-    
-    // Check for form widgets in sidebars
-    if (is_active_widget(false, false, 'gpress_newsletter_widget')) {
-        $load_forms = true;
-    }
-    
-    if ($load_forms) {
-        wp_enqueue_style(
-            'gpress-forms',
-            get_theme_file_uri('/assets/css/forms.css'),
-            array('gpress-style'),
-            GPRESS_VERSION
-        );
-        
-        wp_enqueue_script(
-            'gpress-forms',
-            get_theme_file_uri('/assets/js/forms.js'),
-            array('jquery'),
-            GPRESS_VERSION,
-            array(
-                'strategy' => 'defer',
-                'in_footer' => true
-            )
-        );
-        
-        // Localize script for AJAX
-        wp_localize_script('gpress-forms', 'gpressAjax', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('gpress_form_nonce'),
-            'messages' => array(
-                'sending' => __('Sending...', 'gpress'),
-                'success' => __('Message sent successfully!', 'gpress'),
-                'error' => __('Sorry, there was an error. Please try again.', 'gpress'),
-                'required' => __('This field is required.', 'gpress'),
-                'email' => __('Please enter a valid email address.', 'gpress')
-            )
-        ));
-    }
-}
 
-/**
- * Contact form shortcode
- */
-function gpress_contact_form_shortcode($atts) {
-    $atts = shortcode_atts(array(
-        'title' => __('Get in Touch', 'gpress'),
-        'submit_text' => __('Send Message', 'gpress'),
-        'show_phone' => 'true',
-        'show_subject' => 'true'
-    ), $atts);
-    
-    $form_id = uniqid('contact-form-');
-    
-    ob_start();
-    ?>
-    <div class="gpress-contact-form-wrapper">
-        <?php if ($atts['title']): ?>
-            <h3 class="form-title"><?php echo esc_html($atts['title']); ?></h3>
-        <?php endif; ?>
+    /**
+     * Add capabilities for custom post types
+     *
+     * @since 1.0.0
+     */
+    public static function add_cpt_capabilities() {
+        $post_types = array('portfolio_item', 'testimonial', 'team_member');
         
-        <form id="<?php echo esc_attr($form_id); ?>" class="gpress-contact-form" data-form-type="contact">
-            <div class="form-row">
-                <div class="form-field">
-                    <label for="<?php echo esc_attr($form_id); ?>-name">
-                        <?php _e('Name', 'gpress'); ?> <span class="required">*</span>
-                    </label>
-                    <input type="text" 
-                           id="<?php echo esc_attr($form_id); ?>-name" 
-                           name="name" 
-                           required 
-                           aria-required="true"
-                           autocomplete="name">
-                </div>
+        foreach ($post_types as $post_type) {
+            $capabilities = array(
+                "edit_{$post_type}",
+                "read_{$post_type}",
+                "delete_{$post_type}",
+                "edit_{$post_type}s",
+                "edit_others_{$post_type}s",
+                "publish_{$post_type}s",
+                "read_private_{$post_type}s",
+                "delete_{$post_type}s",
+                "delete_private_{$post_type}s",
+                "delete_published_{$post_type}s",
+                "delete_others_{$post_type}s",
+                "edit_private_{$post_type}s",
+                "edit_published_{$post_type}s",
+            );
+            
+            // Add capabilities to administrator and editor roles
+            $roles = array('administrator', 'editor');
+            foreach ($roles as $role_name) {
+                $role = get_role($role_name);
+                if ($role) {
+                    foreach ($capabilities as $cap) {
+                        $role->add_cap($cap);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Conditional asset loading for CPTs
+     *
+     * @since 1.0.0
+     */
+    public static function conditional_cpt_assets() {
+        $post_type = get_post_type();
+        
+        // Load base CPT styles if on any CPT page
+        if (is_singular(array('portfolio', 'testimonial', 'team')) || 
+            is_post_type_archive(array('portfolio', 'testimonial', 'team')) ||
+            is_tax(array('portfolio-category', 'skill', 'service'))) {
+            
+            wp_enqueue_style(
+                'gpress-custom-post-types',
+                get_theme_file_uri('/assets/css/custom-post-types.css'),
+                array('gpress-style'),
+                GPRESS_VERSION
+            );
+
+            wp_enqueue_script(
+                'gpress-cpt-manager',
+                get_theme_file_uri('/assets/js/cpt-manager.js'),
+                array('jquery'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+
+        // Portfolio-specific assets
+        if (is_singular('portfolio') || is_post_type_archive('portfolio') || is_tax('portfolio-category')) {
+            wp_enqueue_style(
+                'gpress-portfolio',
+                get_theme_file_uri('/assets/css/portfolio.css'),
+                array('gpress-custom-post-types'),
+                GPRESS_VERSION
+            );
+
+            wp_enqueue_script(
+                'gpress-portfolio-gallery',
+                get_theme_file_uri('/assets/js/portfolio-gallery.js'),
+                array('gpress-cpt-manager'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+
+        // Testimonials-specific assets
+        if (is_singular('testimonial') || is_post_type_archive('testimonial')) {
+            wp_enqueue_style(
+                'gpress-testimonials',
+                get_theme_file_uri('/assets/css/testimonials.css'),
+                array('gpress-custom-post-types'),
+                GPRESS_VERSION
+            );
+
+            wp_enqueue_script(
+                'gpress-testimonial-slider',
+                get_theme_file_uri('/assets/js/testimonial-slider.js'),
+                array('gpress-cpt-manager'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+
+        // Team-specific assets
+        if (is_singular('team') || is_post_type_archive('team')) {
+            wp_enqueue_style(
+                'gpress-team',
+                get_theme_file_uri('/assets/css/team.css'),
+                array('gpress-custom-post-types'),
+                GPRESS_VERSION
+            );
+        }
+
+        // Archive filtering assets
+        if (is_post_type_archive(array('portfolio', 'testimonial', 'team'))) {
+            wp_enqueue_script(
+                'gpress-archive-filters',
+                get_theme_file_uri('/assets/js/archive-filters.js'),
+                array('gpress-cpt-manager'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+
+            // Localize script for AJAX filtering
+            wp_localize_script('gpress-archive-filters', 'gpressCPT', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('gpress_cpt_filter'),
+                'loading' => __('Loading...', 'gpress'),
+                'no_results' => __('No items found', 'gpress'),
+                'error' => __('Error loading content', 'gpress')
+            ));
+        }
+    }
+
+    /**
+     * Custom template loader for CPTs
+     *
+     * @since 1.0.0
+     */
+    public static function cpt_template_loader($template) {
+        $post_type = get_post_type();
+        
+        // Single template handling
+        if (is_singular()) {
+            $single_template = locate_template("templates/single-{$post_type}.html");
+            if ($single_template) {
+                return $single_template;
+            }
+        }
+        
+        // Archive template handling
+        if (is_post_type_archive()) {
+            $archive_template = locate_template("templates/archive-{$post_type}.html");
+            if ($archive_template) {
+                return $archive_template;
+            }
+        }
+        
+        return $template;
+    }
+
+    /**
+     * Add structured data for CPTs
+     *
+     * @since 1.0.0
+     */
+    public static function cpt_structured_data() {
+        if (!is_singular(array('portfolio', 'testimonial', 'team'))) {
+            return;
+        }
+
+        global $post;
+        $post_type = get_post_type();
+        $schema = array();
+
+        switch ($post_type) {
+            case 'portfolio':
+                $schema = array(
+                    '@context' => 'https://schema.org',
+                    '@type' => 'CreativeWork',
+                    'name' => get_the_title(),
+                    'description' => get_the_excerpt() ?: wp_trim_words(get_the_content(), 30),
+                    'url' => get_permalink(),
+                    'dateCreated' => get_the_date('c'),
+                    'dateModified' => get_the_modified_date('c'),
+                    'author' => array(
+                        '@type' => 'Organization',
+                        'name' => get_bloginfo('name')
+                    )
+                );
                 
-                <div class="form-field">
-                    <label for="<?php echo esc_attr($form_id); ?>-email">
-                        <?php _e('Email', 'gpress'); ?> <span class="required">*</span>
-                    </label>
-                    <input type="email" 
-                           id="<?php echo esc_attr($form_id); ?>-email" 
-                           name="email" 
-                           required 
-                           aria-required="true"
-                           autocomplete="email">
-                </div>
-            </div>
-            
-            <?php if ($atts['show_phone'] === 'true'): ?>
-            <div class="form-row">
-                <div class="form-field">
-                    <label for="<?php echo esc_attr($form_id); ?>-phone">
-                        <?php _e('Phone', 'gpress'); ?>
-                    </label>
-                    <input type="tel" 
-                           id="<?php echo esc_attr($form_id); ?>-phone" 
-                           name="phone"
-                           autocomplete="tel">
-                </div>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($atts['show_subject'] === 'true'): ?>
-            <div class="form-row">
-                <div class="form-field">
-                    <label for="<?php echo esc_attr($form_id); ?>-subject">
-                        <?php _e('Subject', 'gpress'); ?> <span class="required">*</span>
-                    </label>
-                    <input type="text" 
-                           id="<?php echo esc_attr($form_id); ?>-subject" 
-                           name="subject" 
-                           required 
-                           aria-required="true">
-                </div>
-            </div>
-            <?php endif; ?>
-            
-            <div class="form-row">
-                <div class="form-field">
-                    <label for="<?php echo esc_attr($form_id); ?>-message">
-                        <?php _e('Message', 'gpress'); ?> <span class="required">*</span>
-                    </label>
-                    <textarea id="<?php echo esc_attr($form_id); ?>-message" 
-                              name="message" 
-                              rows="6" 
-                              required 
-                              aria-required="true"
-                              placeholder="<?php esc_attr_e('How can we help you?', 'gpress'); ?>"></textarea>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-field">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="privacy_consent" required aria-required="true">
-                        <span class="checkmark"></span>
-                        <?php printf(
-                            __('I agree to the %s and %s', 'gpress'),
-                            '<a href="' . get_privacy_policy_url() . '" target="_blank">' . __('Privacy Policy', 'gpress') . '</a>',
-                            '<a href="/terms" target="_blank">' . __('Terms of Service', 'gpress') . '</a>'
-                        ); ?>
-                    </label>
-                </div>
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="submit-button">
-                    <span class="button-text"><?php echo esc_html($atts['submit_text']); ?></span>
-                    <span class="loading-spinner" aria-hidden="true"></span>
-                </button>
-            </div>
-            
-            <div class="form-messages" role="alert" aria-live="polite"></div>
-            
-            <?php wp_nonce_field('gpress_contact_form', 'contact_nonce'); ?>
-        </form>
-    </div>
-    <?php
-    
-    return ob_get_clean();
-}
+                if (has_post_thumbnail()) {
+                    $image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'large');
+                    $schema['image'] = $image[0];
+                }
+                break;
 
-/**
- * Newsletter form shortcode
- */
-function gpress_newsletter_form_shortcode($atts) {
-    $atts = shortcode_atts(array(
-        'title' => __('Subscribe to Newsletter', 'gpress'),
-        'description' => __('Get the latest updates and articles delivered to your inbox.', 'gpress'),
-        'submit_text' => __('Subscribe', 'gpress'),
-        'style' => 'default'
-    ), $atts);
-    
-    $form_id = uniqid('newsletter-form-');
-    
-    ob_start();
-    ?>
-    <div class="gpress-newsletter-form-wrapper newsletter-style-<?php echo esc_attr($atts['style']); ?>">
-        <?php if ($atts['title']): ?>
-            <h4 class="newsletter-title"><?php echo esc_html($atts['title']); ?></h4>
-        <?php endif; ?>
+            case 'testimonial':
+                $schema = array(
+                    '@context' => 'https://schema.org',
+                    '@type' => 'Review',
+                    'reviewBody' => get_the_content(),
+                    'datePublished' => get_the_date('c'),
+                    'author' => array(
+                        '@type' => 'Person',
+                        'name' => get_the_title()
+                    ),
+                    'itemReviewed' => array(
+                        '@type' => 'Organization',
+                        'name' => get_bloginfo('name')
+                    )
+                );
+                break;
+
+            case 'team':
+                $schema = array(
+                    '@context' => 'https://schema.org',
+                    '@type' => 'Person',
+                    'name' => get_the_title(),
+                    'description' => get_the_excerpt() ?: wp_trim_words(get_the_content(), 30),
+                    'url' => get_permalink(),
+                    'worksFor' => array(
+                        '@type' => 'Organization',
+                        'name' => get_bloginfo('name')
+                    )
+                );
+                
+                if (has_post_thumbnail()) {
+                    $image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'medium');
+                    $schema['image'] = $image[0];
+                }
+                break;
+        }
+
+        if (!empty($schema)) {
+            echo '<script type="application/ld+json">' . wp_json_encode($schema) . '</script>' . "\n";
+        }
+    }
+
+    /**
+     * Add CPT-specific body classes
+     *
+     * @since 1.0.0
+     */
+    public static function cpt_body_classes($classes) {
+        if (is_singular(array('portfolio', 'testimonial', 'team'))) {
+            $classes[] = 'custom-post-type';
+            $classes[] = 'cpt-' . get_post_type();
+        }
         
-        <?php if ($atts['description']): ?>
-            <p class="newsletter-description"><?php echo esc_html($atts['description']); ?></p>
-        <?php endif; ?>
+        if (is_post_type_archive(array('portfolio', 'testimonial', 'team'))) {
+            $classes[] = 'custom-post-type-archive';
+            $classes[] = 'cpt-archive-' . get_queried_object()->name;
+        }
         
-        <form id="<?php echo esc_attr($form_id); ?>" class="gpress-newsletter-form" data-form-type="newsletter">
-            <div class="newsletter-input-group">
-                <label for="<?php echo esc_attr($form_id); ?>-email" class="screen-reader-text">
-                    <?php _e('Email Address', 'gpress'); ?>
-                </label>
-                <input type="email" 
-                       id="<?php echo esc_attr($form_id); ?>-email" 
-                       name="email" 
-                       placeholder="<?php esc_attr_e('Enter your email...', 'gpress'); ?>"
-                       required 
-                       aria-required="true"
-                       autocomplete="email">
-                <button type="submit" class="newsletter-submit">
-                    <span class="button-text"><?php echo esc_html($atts['submit_text']); ?></span>
-                    <span class="loading-spinner" aria-hidden="true"></span>
-                </button>
-            </div>
-            
-            <div class="newsletter-consent">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="newsletter_consent" required aria-required="true">
-                    <span class="checkmark"></span>
-                    <small><?php _e('I agree to receive newsletters and promotional emails', 'gpress'); ?></small>
-                </label>
-            </div>
-            
-            <div class="form-messages" role="alert" aria-live="polite"></div>
-            
-            <?php wp_nonce_field('gpress_newsletter', 'newsletter_nonce'); ?>
-        </form>
-    </div>
-    <?php
-    
-    return ob_get_clean();
-}
+        return $classes;
+    }
 
-/**
- * Handle contact form submission
- */
-function gpress_handle_contact_form() {
-    // Verify nonce
-    if (!wp_verify_nonce($_POST['contact_nonce'], 'gpress_contact_form')) {
-        wp_die(__('Security check failed.', 'gpress'));
-    }
-    
-    // Sanitize and validate input
-    $name = sanitize_text_field($_POST['name']);
-    $email = sanitize_email($_POST['email']);
-    $phone = sanitize_text_field($_POST['phone'] ?? '');
-    $subject = sanitize_text_field($_POST['subject'] ?? __('Contact Form Submission', 'gpress'));
-    $message = sanitize_textarea_field($_POST['message']);
-    $privacy_consent = isset($_POST['privacy_consent']);
-    
-    // Validation
-    $errors = array();
-    
-    if (empty($name)) {
-        $errors[] = __('Name is required.', 'gpress');
-    }
-    
-    if (empty($email) || !is_email($email)) {
-        $errors[] = __('Valid email is required.', 'gpress');
-    }
-    
-    if (empty($message)) {
-        $errors[] = __('Message is required.', 'gpress');
-    }
-    
-    if (!$privacy_consent) {
-        $errors[] = __('Privacy consent is required.', 'gpress');
-    }
-    
-    if (!empty($errors)) {
-        wp_send_json_error(array(
-            'message' => implode(' ', $errors)
-        ));
-    }
-    
-    // Prepare email
-    $admin_email = get_option('admin_email');
-    $site_name = get_bloginfo('name');
-    
-    $email_subject = sprintf('[%s] %s', $site_name, $subject);
-    $email_message = sprintf(
-        "New contact form submission:\n\n" .
-        "Name: %s\n" .
-        "Email: %s\n" .
-        "Phone: %s\n" .
-        "Subject: %s\n\n" .
-        "Message:\n%s\n\n" .
-        "---\n" .
-        "Submitted from: %s\n" .
-        "IP: %s\n" .
-        "User Agent: %s",
-        $name,
-        $email,
-        $phone,
-        $subject,
-        $message,
-        home_url(),
-        $_SERVER['REMOTE_ADDR'] ?? '',
-        $_SERVER['HTTP_USER_AGENT'] ?? ''
-    );
-    
-    $headers = array(
-        'Content-Type: text/plain; charset=UTF-8',
-        'From: ' . $site_name . ' <' . $admin_email . '>',
-        'Reply-To: ' . $name . ' <' . $email . '>'
-    );
-    
-    // Send email
-    $sent = wp_mail($admin_email, $email_subject, $email_message, $headers);
-    
-    if ($sent) {
-        // Save to database for backup
-        gpress_save_form_submission('contact', array(
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'subject' => $subject,
-            'message' => $message,
-            'ip' => $_SERVER['REMOTE_ADDR'] ?? '',
-            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-        ));
+    /**
+     * Setup admin enhancements
+     *
+     * @since 1.0.0
+     */
+    public static function setup_cpt_admin() {
+        // Add custom admin styles for CPTs
+        add_action('admin_enqueue_scripts', array(__CLASS__, 'admin_assets'));
         
-        wp_send_json_success(array(
-            'message' => __('Thank you! Your message has been sent successfully.', 'gpress')
-        ));
-    } else {
-        wp_send_json_error(array(
-            'message' => __('Sorry, there was an error sending your message. Please try again.', 'gpress')
-        ));
+        // Customize admin columns
+        add_filter('manage_portfolio_posts_columns', array(__CLASS__, 'portfolio_admin_columns'));
+        add_filter('manage_testimonial_posts_columns', array(__CLASS__, 'testimonial_admin_columns'));
+        add_filter('manage_team_posts_columns', array(__CLASS__, 'team_admin_columns'));
     }
-}
 
-/**
- * Handle newsletter subscription
- */
-function gpress_handle_newsletter_subscription() {
-    // Verify nonce
-    if (!wp_verify_nonce($_POST['newsletter_nonce'], 'gpress_newsletter')) {
-        wp_die(__('Security check failed.', 'gpress'));
-    }
-    
-    $email = sanitize_email($_POST['email']);
-    $consent = isset($_POST['newsletter_consent']);
-    
-    if (empty($email) || !is_email($email)) {
-        wp_send_json_error(array(
-            'message' => __('Please enter a valid email address.', 'gpress')
-        ));
-    }
-    
-    if (!$consent) {
-        wp_send_json_error(array(
-            'message' => __('Please agree to receive newsletters.', 'gpress')
-        ));
-    }
-    
-    // Check if already subscribed
-    if (gpress_is_email_subscribed($email)) {
-        wp_send_json_error(array(
-            'message' => __('This email is already subscribed.', 'gpress')
-        ));
-    }
-    
-    // Save subscription
-    $saved = gpress_save_newsletter_subscription($email);
-    
-    if ($saved) {
-        // Send confirmation email
-        gpress_send_newsletter_confirmation($email);
+    /**
+     * Enqueue admin assets for CPTs
+     *
+     * @since 1.0.0
+     */
+    public static function admin_assets($hook) {
+        global $post_type;
         
-        wp_send_json_success(array(
-            'message' => __('Thank you! Please check your email to confirm your subscription.', 'gpress')
-        ));
-    } else {
-        wp_send_json_error(array(
-            'message' => __('Sorry, there was an error. Please try again.', 'gpress')
-        ));
+        if (in_array($post_type, array('portfolio', 'testimonial', 'team'))) {
+            wp_enqueue_style(
+                'gpress-cpt-admin',
+                get_theme_file_uri('/assets/css/admin-cpt.css'),
+                array(),
+                GPRESS_VERSION
+            );
+        }
+    }
+
+    /**
+     * Portfolio admin columns
+     *
+     * @since 1.0.0
+     */
+    public static function portfolio_admin_columns($columns) {
+        $new_columns = array();
+        $new_columns['cb'] = $columns['cb'];
+        $new_columns['featured_image'] = __('Image', 'gpress');
+        $new_columns['title'] = $columns['title'];
+        $new_columns['portfolio_category'] = __('Category', 'gpress');
+        $new_columns['skills'] = __('Skills', 'gpress');
+        $new_columns['date'] = $columns['date'];
+        
+        return $new_columns;
+    }
+
+    /**
+     * Testimonial admin columns
+     *
+     * @since 1.0.0
+     */
+    public static function testimonial_admin_columns($columns) {
+        $new_columns = array();
+        $new_columns['cb'] = $columns['cb'];
+        $new_columns['featured_image'] = __('Avatar', 'gpress');
+        $new_columns['title'] = $columns['title'];
+        $new_columns['excerpt'] = __('Testimonial', 'gpress');
+        $new_columns['date'] = $columns['date'];
+        
+        return $new_columns;
+    }
+
+    /**
+     * Team admin columns
+     *
+     * @since 1.0.0
+     */
+    public static function team_admin_columns($columns) {
+        $new_columns = array();
+        $new_columns['cb'] = $columns['cb'];
+        $new_columns['featured_image'] = __('Photo', 'gpress');
+        $new_columns['title'] = $columns['title'];
+        $new_columns['menu_order'] = __('Order', 'gpress');
+        $new_columns['date'] = $columns['date'];
+        
+        return $new_columns;
+    }
+
+    /**
+     * Populate custom admin columns
+     *
+     * @since 1.0.0
+     */
+    public static function populate_admin_columns($column, $post_id) {
+        switch ($column) {
+            case 'featured_image':
+                $thumbnail = get_the_post_thumbnail($post_id, array(50, 50));
+                echo $thumbnail ?: '—';
+                break;
+                
+            case 'portfolio_category':
+                $terms = get_the_terms($post_id, 'portfolio-category');
+                if ($terms && !is_wp_error($terms)) {
+                    $term_names = wp_list_pluck($terms, 'name');
+                    echo implode(', ', $term_names);
+                } else {
+                    echo '—';
+                }
+                break;
+                
+            case 'skills':
+                $terms = get_the_terms($post_id, 'skill');
+                if ($terms && !is_wp_error($terms)) {
+                    $term_names = wp_list_pluck($terms, 'name');
+                    echo implode(', ', $term_names);
+                } else {
+                    echo '—';
+                }
+                break;
+                
+            case 'menu_order':
+                echo get_post_field('menu_order', $post_id);
+                break;
+        }
     }
 }
 
-/**
- * Save form submission to database
- */
-function gpress_save_form_submission($type, $data) {
-    global $wpdb;
-    
-    $table_name = $wpdb->prefix . 'gpress_form_submissions';
-    
-    return $wpdb->insert(
-        $table_name,
-        array(
-            'type' => $type,
-            'data' => wp_json_encode($data),
-            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
-            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-            'submitted_at' => current_time('mysql')
-        ),
-        array('%s', '%s', '%s', '%s', '%s')
-    );
-}
-
-/**
- * Check if email is subscribed
- */
-function gpress_is_email_subscribed($email) {
-    global $wpdb;
-    
-    $table_name = $wpdb->prefix . 'gpress_newsletter_subscribers';
-    
-    $count = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM $table_name WHERE email = %s AND status = 'active'",
-        $email
-    ));
-    
-    return $count > 0;
-}
-
-/**
- * Save newsletter subscription
- */
-function gpress_save_newsletter_subscription($email) {
-    global $wpdb;
-    
-    $table_name = $wpdb->prefix . 'gpress_newsletter_subscribers';
-    $token = wp_generate_password(32, false);
-    
-    return $wpdb->insert(
-        $table_name,
-        array(
-            'email' => $email,
-            'status' => 'pending',
-            'token' => $token,
-            'subscribed_at' => current_time('mysql'),
-            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? ''
-        ),
-        array('%s', '%s', '%s', '%s', '%s')
-    );
-}
-
-/**
- * Send newsletter confirmation email
- */
-function gpress_send_newsletter_confirmation($email) {
-    $site_name = get_bloginfo('name');
-    $confirm_url = add_query_arg(array(
-        'action' => 'confirm_newsletter',
-        'email' => urlencode($email),
-        'token' => gpress_get_subscriber_token($email)
-    ), home_url());
-    
-    $subject = sprintf(__('[%s] Please confirm your subscription', 'gpress'), $site_name);
-    $message = sprintf(
-        __("Thank you for subscribing to %s!\n\nPlease click the link below to confirm your subscription:\n%s\n\nIf you didn't subscribe, you can safely ignore this email.", 'gpress'),
-        $site_name,
-        $confirm_url
-    );
-    
-    wp_mail($email, $subject, $message);
-}
-
-/**
- * Get subscriber token
- */
-function gpress_get_subscriber_token($email) {
-    global $wpdb;
-    
-    $table_name = $wpdb->prefix . 'gpress_newsletter_subscribers';
-    
-    return $wpdb->get_var($wpdb->prepare(
-        "SELECT token FROM $table_name WHERE email = %s ORDER BY subscribed_at DESC LIMIT 1",
-        $email
-    ));
-}
-
-/**
- * Form security setup
- */
-function gpress_form_security_setup() {
-    // Rate limiting for form submissions
-    add_action('wp_ajax_gpress_contact_form', 'gpress_check_form_rate_limit', 1);
-    add_action('wp_ajax_nopriv_gpress_contact_form', 'gpress_check_form_rate_limit', 1);
-    add_action('wp_ajax_gpress_newsletter', 'gpress_check_form_rate_limit', 1);
-    add_action('wp_ajax_nopriv_gpress_newsletter', 'gpress_check_form_rate_limit', 1);
-}
-
-/**
- * Check form submission rate limit
- */
-function gpress_check_form_rate_limit() {
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    $transient_key = 'gpress_form_rate_limit_' . md5($ip);
-    $attempts = get_transient($transient_key) ?: 0;
-    
-    if ($attempts >= 5) {
-        wp_send_json_error(array(
-            'message' => __('Too many requests. Please try again later.', 'gpress')
-        ));
-    }
-    
-    set_transient($transient_key, $attempts + 1, HOUR_IN_SECONDS);
-}
-
-/**
- * Create database tables
- */
-function gpress_create_form_tables() {
-    global $wpdb;
-    
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    
-    // Form submissions table
-    $table_name = $wpdb->prefix . 'gpress_form_submissions';
-    $sql = "CREATE TABLE $table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
-        type varchar(50) NOT NULL,
-        data longtext NOT NULL,
-        ip_address varchar(45) DEFAULT '',
-        user_agent text DEFAULT '',
-        submitted_at datetime NOT NULL,
-        PRIMARY KEY (id),
-        KEY type (type),
-        KEY submitted_at (submitted_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-    
-    dbDelta($sql);
-    
-    // Newsletter subscribers table
-    $table_name = $wpdb->prefix . 'gpress_newsletter_subscribers';
-    $sql = "CREATE TABLE $table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
-        email varchar(255) NOT NULL,
-        status enum('pending','active','unsubscribed') DEFAULT 'pending',
-        token varchar(64) NOT NULL,
-        subscribed_at datetime NOT NULL,
-        confirmed_at datetime DEFAULT NULL,
-        ip_address varchar(45) DEFAULT '',
-        PRIMARY KEY (id),
-        UNIQUE KEY email (email),
-        KEY status (status),
-        KEY token (token)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-    
-    dbDelta($sql);
-}
-register_activation_hook(__FILE__, 'gpress_create_form_tables');
+// Initialize the CPT system
+GPress_Custom_Post_Types::init();
 ```
 
-### 2. Form Styles
+### 2. Create Custom Taxonomies
 
-Create `assets/css/forms.css`:
+Create `inc/custom-taxonomies.php`:
+
+```php
+<?php
+/**
+ * Custom Taxonomies Registration for GPress Theme
+ * Implements hierarchical and non-hierarchical taxonomies with optimization
+ *
+ * @package GPress
+ * @subpackage Custom_Content
+ * @version 1.0.0
+ * @since 1.0.0
+ */
+
+// Prevent direct access
+defined('ABSPATH') || exit;
+
+/**
+ * GPress Custom Taxonomies Manager
+ * 
+ * @since 1.0.0
+ */
+class GPress_Custom_Taxonomies {
+
+    /**
+     * Initialize taxonomy system
+     *
+     * @since 1.0.0
+     */
+    public static function init() {
+        add_action('init', array(__CLASS__, 'register_taxonomies'));
+        add_action('wp_enqueue_scripts', array(__CLASS__, 'conditional_taxonomy_assets'));
+        add_filter('body_class', array(__CLASS__, 'taxonomy_body_classes'));
+        add_action('wp_head', array(__CLASS__, 'taxonomy_structured_data'));
+        
+        // Admin enhancements
+        add_action('admin_init', array(__CLASS__, 'setup_taxonomy_admin'));
+    }
+
+    /**
+     * Register all custom taxonomies
+     *
+     * @since 1.0.0
+     */
+    public static function register_taxonomies() {
+        
+        // Portfolio Categories (Hierarchical)
+        register_taxonomy('portfolio-category', 'portfolio', array(
+            'labels' => array(
+                'name' => __('Portfolio Categories', 'gpress'),
+                'singular_name' => __('Portfolio Category', 'gpress'),
+                'menu_name' => __('Categories', 'gpress'),
+                'all_items' => __('All Categories', 'gpress'),
+                'edit_item' => __('Edit Category', 'gpress'),
+                'view_item' => __('View Category', 'gpress'),
+                'update_item' => __('Update Category', 'gpress'),
+                'add_new_item' => __('Add New Category', 'gpress'),
+                'new_item_name' => __('New Category Name', 'gpress'),
+                'parent_item' => __('Parent Category', 'gpress'),
+                'parent_item_colon' => __('Parent Category:', 'gpress'),
+                'search_items' => __('Search Categories', 'gpress'),
+                'popular_items' => __('Popular Categories', 'gpress'),
+                'separate_items_with_commas' => __('Separate categories with commas', 'gpress'),
+                'add_or_remove_items' => __('Add or remove categories', 'gpress'),
+                'choose_from_most_used' => __('Choose from most used categories', 'gpress'),
+                'not_found' => __('No categories found', 'gpress'),
+            ),
+            'public' => true,
+            'hierarchical' => true,
+            'show_ui' => true,
+            'show_admin_column' => true,
+            'show_in_nav_menus' => true,
+            'show_tagcloud' => true,
+            'show_in_rest' => true,
+            'rest_base' => 'portfolio-categories',
+            'show_in_graphql' => true,
+            'graphql_single_name' => 'portfolioCategory',
+            'graphql_plural_name' => 'portfolioCategories',
+            'rewrite' => array(
+                'slug' => 'portfolio-category',
+                'with_front' => false,
+                'hierarchical' => true,
+            ),
+            'capabilities' => array(
+                'manage_terms' => 'manage_portfolio_categories',
+                'edit_terms' => 'edit_portfolio_categories',
+                'delete_terms' => 'delete_portfolio_categories',
+                'assign_terms' => 'assign_portfolio_categories',
+            ),
+        ));
+
+        // Skills (Non-hierarchical)
+        register_taxonomy('skill', array('portfolio', 'team'), array(
+            'labels' => array(
+                'name' => __('Skills', 'gpress'),
+                'singular_name' => __('Skill', 'gpress'),
+                'menu_name' => __('Skills', 'gpress'),
+                'all_items' => __('All Skills', 'gpress'),
+                'edit_item' => __('Edit Skill', 'gpress'),
+                'view_item' => __('View Skill', 'gpress'),
+                'update_item' => __('Update Skill', 'gpress'),
+                'add_new_item' => __('Add New Skill', 'gpress'),
+                'new_item_name' => __('New Skill Name', 'gpress'),
+                'search_items' => __('Search Skills', 'gpress'),
+                'popular_items' => __('Popular Skills', 'gpress'),
+                'separate_items_with_commas' => __('Separate skills with commas', 'gpress'),
+                'add_or_remove_items' => __('Add or remove skills', 'gpress'),
+                'choose_from_most_used' => __('Choose from most used skills', 'gpress'),
+                'not_found' => __('No skills found', 'gpress'),
+            ),
+            'public' => true,
+            'hierarchical' => false,
+            'show_ui' => true,
+            'show_admin_column' => true,
+            'show_in_nav_menus' => true,
+            'show_tagcloud' => true,
+            'show_in_rest' => true,
+            'rest_base' => 'skills',
+            'show_in_graphql' => true,
+            'graphql_single_name' => 'skill',
+            'graphql_plural_name' => 'skills',
+            'rewrite' => array(
+                'slug' => 'skill',
+                'with_front' => false,
+            ),
+            'capabilities' => array(
+                'manage_terms' => 'manage_skills',
+                'edit_terms' => 'edit_skills',
+                'delete_terms' => 'delete_skills',
+                'assign_terms' => 'assign_skills',
+            ),
+        ));
+
+        // Services (Hierarchical)
+        register_taxonomy('service', array('portfolio', 'testimonial'), array(
+            'labels' => array(
+                'name' => __('Services', 'gpress'),
+                'singular_name' => __('Service', 'gpress'),
+                'menu_name' => __('Services', 'gpress'),
+                'all_items' => __('All Services', 'gpress'),
+                'edit_item' => __('Edit Service', 'gpress'),
+                'view_item' => __('View Service', 'gpress'),
+                'update_item' => __('Update Service', 'gpress'),
+                'add_new_item' => __('Add New Service', 'gpress'),
+                'new_item_name' => __('New Service Name', 'gpress'),
+                'parent_item' => __('Parent Service', 'gpress'),
+                'parent_item_colon' => __('Parent Service:', 'gpress'),
+                'search_items' => __('Search Services', 'gpress'),
+                'popular_items' => __('Popular Services', 'gpress'),
+                'separate_items_with_commas' => __('Separate services with commas', 'gpress'),
+                'add_or_remove_items' => __('Add or remove services', 'gpress'),
+                'choose_from_most_used' => __('Choose from most used services', 'gpress'),
+                'not_found' => __('No services found', 'gpress'),
+            ),
+            'public' => true,
+            'hierarchical' => true,
+            'show_ui' => true,
+            'show_admin_column' => true,
+            'show_in_nav_menus' => true,
+            'show_tagcloud' => false,
+            'show_in_rest' => true,
+            'rest_base' => 'services',
+            'show_in_graphql' => true,
+            'graphql_single_name' => 'service',
+            'graphql_plural_name' => 'services',
+            'rewrite' => array(
+                'slug' => 'service',
+                'with_front' => false,
+                'hierarchical' => true,
+            ),
+            'capabilities' => array(
+                'manage_terms' => 'manage_services',
+                'edit_terms' => 'edit_services',
+                'delete_terms' => 'delete_services',
+                'assign_terms' => 'assign_services',
+            ),
+        ));
+
+        // Add taxonomy capabilities to roles
+        self::add_taxonomy_capabilities();
+    }
+
+    /**
+     * Add taxonomy capabilities to roles
+     *
+     * @since 1.0.0
+     */
+    private static function add_taxonomy_capabilities() {
+        $taxonomies = array(
+            'portfolio_categories' => array('manage_portfolio_categories', 'edit_portfolio_categories', 'delete_portfolio_categories', 'assign_portfolio_categories'),
+            'skills' => array('manage_skills', 'edit_skills', 'delete_skills', 'assign_skills'),
+            'services' => array('manage_services', 'edit_services', 'delete_services', 'assign_services'),
+        );
+
+        $roles = array('administrator', 'editor');
+        
+        foreach ($roles as $role_name) {
+            $role = get_role($role_name);
+            if ($role) {
+                foreach ($taxonomies as $taxonomy => $capabilities) {
+                    foreach ($capabilities as $cap) {
+                        $role->add_cap($cap);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Conditional asset loading for taxonomies
+     *
+     * @since 1.0.0
+     */
+    public static function conditional_taxonomy_assets() {
+        if (is_tax(array('portfolio-category', 'skill', 'service'))) {
+            wp_enqueue_style(
+                'gpress-taxonomy',
+                get_theme_file_uri('/assets/css/taxonomy.css'),
+                array('gpress-custom-post-types'),
+                GPRESS_VERSION
+            );
+
+            wp_enqueue_script(
+                'gpress-taxonomy',
+                get_theme_file_uri('/assets/js/taxonomy.js'),
+                array('gpress-cpt-manager'),
+                GPRESS_VERSION,
+                array('strategy' => 'defer', 'in_footer' => true)
+            );
+        }
+    }
+
+    /**
+     * Add taxonomy-specific body classes
+     *
+     * @since 1.0.0
+     */
+    public static function taxonomy_body_classes($classes) {
+        if (is_tax()) {
+            $queried_object = get_queried_object();
+            $classes[] = 'custom-taxonomy';
+            $classes[] = 'taxonomy-' . $queried_object->taxonomy;
+            $classes[] = 'term-' . $queried_object->slug;
+        }
+        
+        return $classes;
+    }
+
+    /**
+     * Add structured data for taxonomy pages
+     *
+     * @since 1.0.0
+     */
+    public static function taxonomy_structured_data() {
+        if (!is_tax(array('portfolio-category', 'skill', 'service'))) {
+            return;
+        }
+
+        $queried_object = get_queried_object();
+        
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'CollectionPage',
+            'name' => $queried_object->name,
+            'description' => $queried_object->description ?: sprintf(__('Archive for %s', 'gpress'), $queried_object->name),
+            'url' => get_term_link($queried_object),
+            'breadcrumb' => array(
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => array(
+                    array(
+                        '@type' => 'ListItem',
+                        'position' => 1,
+                        'name' => __('Home', 'gpress'),
+                        'item' => home_url('/')
+                    ),
+                    array(
+                        '@type' => 'ListItem',
+                        'position' => 2,
+                        'name' => $queried_object->name,
+                        'item' => get_term_link($queried_object)
+                    )
+                )
+            )
+        );
+
+        echo '<script type="application/ld+json">' . wp_json_encode($schema) . '</script>' . "\n";
+    }
+
+    /**
+     * Setup admin enhancements for taxonomies
+     *
+     * @since 1.0.0
+     */
+    public static function setup_taxonomy_admin() {
+        // Add custom fields to taxonomy edit forms
+        add_action('portfolio-category_edit_form_fields', array(__CLASS__, 'portfolio_category_edit_fields'));
+        add_action('skill_edit_form_fields', array(__CLASS__, 'skill_edit_fields'));
+        add_action('service_edit_form_fields', array(__CLASS__, 'service_edit_fields'));
+        
+        // Save custom fields
+        add_action('edited_portfolio-category', array(__CLASS__, 'save_taxonomy_custom_fields'));
+        add_action('edited_skill', array(__CLASS__, 'save_taxonomy_custom_fields'));
+        add_action('edited_service', array(__CLASS__, 'save_taxonomy_custom_fields'));
+    }
+
+    /**
+     * Portfolio category custom fields
+     *
+     * @since 1.0.0
+     */
+    public static function portfolio_category_edit_fields($term) {
+        $color = get_term_meta($term->term_id, 'category_color', true);
+        $icon = get_term_meta($term->term_id, 'category_icon', true);
+        ?>
+        <tr class="form-field">
+            <th scope="row"><label for="category_color"><?php _e('Category Color', 'gpress'); ?></label></th>
+            <td>
+                <input type="color" name="category_color" id="category_color" value="<?php echo esc_attr($color); ?>" />
+                <p class="description"><?php _e('Choose a color for this category.', 'gpress'); ?></p>
+            </td>
+        </tr>
+        <tr class="form-field">
+            <th scope="row"><label for="category_icon"><?php _e('Category Icon', 'gpress'); ?></label></th>
+            <td>
+                <input type="text" name="category_icon" id="category_icon" value="<?php echo esc_attr($icon); ?>" />
+                <p class="description"><?php _e('Dashicon name or FontAwesome class.', 'gpress'); ?></p>
+            </td>
+        </tr>
+        <?php
+    }
+
+    /**
+     * Skill custom fields
+     *
+     * @since 1.0.0
+     */
+    public static function skill_edit_fields($term) {
+        $level = get_term_meta($term->term_id, 'skill_level', true);
+        $color = get_term_meta($term->term_id, 'skill_color', true);
+        ?>
+        <tr class="form-field">
+            <th scope="row"><label for="skill_level"><?php _e('Skill Level', 'gpress'); ?></label></th>
+            <td>
+                <select name="skill_level" id="skill_level">
+                    <option value="beginner" <?php selected($level, 'beginner'); ?>><?php _e('Beginner', 'gpress'); ?></option>
+                    <option value="intermediate" <?php selected($level, 'intermediate'); ?>><?php _e('Intermediate', 'gpress'); ?></option>
+                    <option value="advanced" <?php selected($level, 'advanced'); ?>><?php _e('Advanced', 'gpress'); ?></option>
+                    <option value="expert" <?php selected($level, 'expert'); ?>><?php _e('Expert', 'gpress'); ?></option>
+                </select>
+                <p class="description"><?php _e('Proficiency level for this skill.', 'gpress'); ?></p>
+            </td>
+        </tr>
+        <tr class="form-field">
+            <th scope="row"><label for="skill_color"><?php _e('Skill Color', 'gpress'); ?></label></th>
+            <td>
+                <input type="color" name="skill_color" id="skill_color" value="<?php echo esc_attr($color); ?>" />
+                <p class="description"><?php _e('Choose a color for this skill.', 'gpress'); ?></p>
+            </td>
+        </tr>
+        <?php
+    }
+
+    /**
+     * Service custom fields
+     *
+     * @since 1.0.0
+     */
+    public static function service_edit_fields($term) {
+        $icon = get_term_meta($term->term_id, 'service_icon', true);
+        $featured = get_term_meta($term->term_id, 'service_featured', true);
+        ?>
+        <tr class="form-field">
+            <th scope="row"><label for="service_icon"><?php _e('Service Icon', 'gpress'); ?></label></th>
+            <td>
+                <input type="text" name="service_icon" id="service_icon" value="<?php echo esc_attr($icon); ?>" />
+                <p class="description"><?php _e('Dashicon name or FontAwesome class.', 'gpress'); ?></p>
+            </td>
+        </tr>
+        <tr class="form-field">
+            <th scope="row"><label for="service_featured"><?php _e('Featured Service', 'gpress'); ?></label></th>
+            <td>
+                <input type="checkbox" name="service_featured" id="service_featured" value="1" <?php checked($featured, '1'); ?> />
+                <p class="description"><?php _e('Mark as a featured service.', 'gpress'); ?></p>
+            </td>
+        </tr>
+        <?php
+    }
+
+    /**
+     * Save taxonomy custom fields
+     *
+     * @since 1.0.0
+     */
+    public static function save_taxonomy_custom_fields($term_id) {
+        if (isset($_POST['category_color'])) {
+            update_term_meta($term_id, 'category_color', sanitize_hex_color($_POST['category_color']));
+        }
+        
+        if (isset($_POST['category_icon'])) {
+            update_term_meta($term_id, 'category_icon', sanitize_text_field($_POST['category_icon']));
+        }
+        
+        if (isset($_POST['skill_level'])) {
+            update_term_meta($term_id, 'skill_level', sanitize_text_field($_POST['skill_level']));
+        }
+        
+        if (isset($_POST['skill_color'])) {
+            update_term_meta($term_id, 'skill_color', sanitize_hex_color($_POST['skill_color']));
+        }
+        
+        if (isset($_POST['service_icon'])) {
+            update_term_meta($term_id, 'service_icon', sanitize_text_field($_POST['service_icon']));
+        }
+        
+        if (isset($_POST['service_featured'])) {
+            update_term_meta($term_id, 'service_featured', '1');
+        } else {
+            delete_term_meta($term_id, 'service_featured');
+        }
+    }
+}
+
+// Initialize the taxonomy system
+GPress_Custom_Taxonomies::init();
+```
+
+### 3. Update Functions.php
+
+Update `functions.php`:
+
+```php
+// Advanced forms and contact functionality
+require_once get_theme_file_path('/inc/form-handler.php');
+
+/**
+ * Load Custom Post Types and Taxonomies
+ * Conditional loading based on admin context and front-end needs
+ *
+ * @since 1.0.0
+ */
+function gpress_load_custom_content() {
+    // Always load CPTs and taxonomies for proper registration
+    require_once get_theme_file_path('/inc/custom-post-types.php');
+    require_once get_theme_file_path('/inc/custom-taxonomies.php');
+    
+    // Load additional components conditionally
+    if (is_admin() || 
+        is_singular(array('portfolio', 'testimonial', 'team')) || 
+        is_post_type_archive(array('portfolio', 'testimonial', 'team')) ||
+        is_tax(array('portfolio-category', 'skill', 'service'))) {
+        
+        require_once get_theme_file_path('/inc/custom-fields.php');
+        require_once get_theme_file_path('/inc/cpt-optimization.php');
+    }
+}
+add_action('after_setup_theme', 'gpress_load_custom_content');
+
+/**
+ * Add Custom Post Type support to theme features
+ *
+ * @since 1.0.0
+ */
+function gpress_add_cpt_theme_support() {
+    // Add theme support for custom post type templates
+    add_theme_support('post-type-templates');
+    
+    // Add custom background support for CPTs
+    add_theme_support('custom-background', array(
+        'default-color' => 'ffffff',
+        'default-image' => '',
+    ));
+    
+    // Enable block templates for custom post types
+    add_theme_support('block-templates');
+    add_theme_support('block-template-parts');
+}
+add_action('after_setup_theme', 'gpress_add_cpt_theme_support');
+```
+
+### 4. Update Theme Setup
+
+Update `inc/theme-setup.php`:
+
+```php
+/**
+ * Add Custom Post Type image sizes
+ *
+ * @since 1.0.0
+ */
+function gpress_add_cpt_image_sizes() {
+    // Portfolio images
+    add_image_size('portfolio-thumbnail', 400, 300, true);
+    add_image_size('portfolio-large', 800, 600, true);
+    add_image_size('portfolio-hero', 1200, 600, true);
+    
+    // Team member photos
+    add_image_size('team-thumbnail', 300, 300, true);
+    add_image_size('team-large', 600, 600, true);
+    
+    // Testimonial avatars
+    add_image_size('testimonial-avatar', 100, 100, true);
+}
+add_action('after_setup_theme', 'gpress_add_cpt_image_sizes');
+
+/**
+ * Register Custom Post Type navigation menus
+ *
+ * @since 1.0.0
+ */
+function gpress_register_cpt_menus() {
+    register_nav_menus(array(
+        'portfolio-filter' => __('Portfolio Filter Menu', 'gpress'),
+        'services-menu' => __('Services Menu', 'gpress'),
+    ));
+}
+add_action('after_setup_theme', 'gpress_register_cpt_menus');
+```
+
+### 5. Update Style.css
+
+Update `style.css`:
 
 ```css
 /* GPress Form Styles */
@@ -979,388 +1577,320 @@ Create `assets/css/forms.css`:
         border: 1px solid black;
     }
 }
-```
 
-### 3. Form JavaScript
-
-Create `assets/js/forms.js`:
-
-```javascript
 /**
- * GPress Forms JavaScript
+ * Custom Post Types Base Styles
+ * Foundation styles for all custom post types
+ *
+ * @since 1.0.0
  */
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Initialize all forms
-    initContactForms();
-    initNewsletterForms();
-    initFormValidation();
-    initFormAccessibility();
-    
-    /**
-     * Initialize contact forms
-     */
-    function initContactForms() {
-        const contactForms = document.querySelectorAll('.gpress-contact-form');
-        
-        contactForms.forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleFormSubmission(form, 'gpress_contact_form');
-            });
-        });
+
+/* CPT Common Elements */
+.custom-post-type .entry-header {
+    margin-bottom: 2rem;
+}
+
+.custom-post-type .entry-meta {
+    font-size: 0.875rem;
+    color: var(--wp--preset--color--foreground-secondary);
+    margin-bottom: 1rem;
+}
+
+.custom-post-type .entry-meta a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.custom-post-type .entry-meta a:hover {
+    color: var(--wp--preset--color--primary);
+}
+
+/* CPT Archive Layouts */
+.custom-post-type-archive .post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+/* CPT Cards */
+.cpt-card {
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cpt-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.cpt-card-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.cpt-card-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.cpt-card:hover .cpt-card-image img {
+    transform: scale(1.05);
+}
+
+.cpt-card-content {
+    padding: 1.5rem;
+}
+
+.cpt-card-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.cpt-card-title a {
+    color: var(--wp--preset--color--foreground);
+    text-decoration: none;
+}
+
+.cpt-card-title a:hover {
+    color: var(--wp--preset--color--primary);
+}
+
+.cpt-card-excerpt {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--wp--preset--color--foreground-secondary);
+    margin-bottom: 1rem;
+}
+
+.cpt-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.cpt-meta-item {
+    background: var(--wp--preset--color--background);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--wp--preset--color--foreground-secondary);
+}
+
+/* CPT Navigation */
+.cpt-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--wp--preset--color--background-secondary);
+    border-radius: 8px;
+}
+
+.cpt-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.cpt-filter-button {
+    background: transparent;
+    border: 2px solid var(--wp--preset--color--border);
+    color: var(--wp--preset--color--foreground);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cpt-filter-button:hover,
+.cpt-filter-button.active {
+    background: var(--wp--preset--color--primary);
+    border-color: var(--wp--preset--color--primary);
+    color: var(--wp--preset--color--background);
+}
+
+.cpt-sort-controls select {
+    background: var(--wp--preset--color--background);
+    border: 2px solid var(--wp--preset--color--border);
+    padding: 0.5rem;
+    border-radius: 6px;
+    color: var(--wp--preset--color--foreground);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .custom-post-type-archive .post-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
     
-    /**
-     * Initialize newsletter forms
-     */
-    function initNewsletterForms() {
-        const newsletterForms = document.querySelectorAll('.gpress-newsletter-form');
-        
-        newsletterForms.forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleFormSubmission(form, 'gpress_newsletter');
-            });
-        });
+    .cpt-navigation {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
     }
     
-    /**
-     * Handle form submission
-     */
-    function handleFormSubmission(form, action) {
-        const formData = new FormData(form);
-        const messageContainer = form.querySelector('.form-messages');
-        const submitButton = form.querySelector('[type="submit"]');
-        
-        // Validate form
-        if (!validateForm(form)) {
-            return;
-        }
-        
-        // Set loading state
-        setFormLoading(form, true);
-        
-        // Prepare data
-        formData.append('action', action);
-        formData.append('nonce', gpressAjax.nonce);
-        
-        // Submit via AJAX
-        fetch(gpressAjax.ajaxurl, {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            setFormLoading(form, false);
-            
-            if (data.success) {
-                showFormMessage(messageContainer, data.data.message, 'success');
-                form.reset();
-                
-                // Focus message for accessibility
-                messageContainer.focus();
-                
-                // Track success event
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'form_submit', {
-                        event_category: 'Forms',
-                        event_label: action
-                    });
-                }
-            } else {
-                showFormMessage(messageContainer, data.data.message, 'error');
-                
-                // Focus first error field
-                const firstError = form.querySelector('[aria-invalid="true"]');
-                if (firstError) {
-                    firstError.focus();
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Form submission error:', error);
-            setFormLoading(form, false);
-            showFormMessage(messageContainer, gpressAjax.messages.error, 'error');
-        });
+    .cpt-filters {
+        justify-content: center;
     }
     
-    /**
-     * Validate form
-     */
-    function validateForm(form) {
-        let isValid = true;
-        const requiredFields = form.querySelectorAll('[required]');
-        
-        requiredFields.forEach(function(field) {
-            if (!validateField(field)) {
-                isValid = false;
-            }
-        });
-        
-        return isValid;
+    .cpt-sort-controls {
+        text-align: center;
+    }
+}
+
+/* High Contrast Support */
+@media (prefers-contrast: high) {
+    .cpt-card {
+        border: 2px solid var(--wp--preset--color--foreground);
     }
     
-    /**
-     * Validate individual field
-     */
-    function validateField(field) {
-        const value = field.value.trim();
-        const fieldType = field.type;
-        let isValid = true;
-        let errorMessage = '';
-        
-        // Clear previous errors
-        clearFieldError(field);
-        
-        // Required field validation
-        if (field.hasAttribute('required') && !value) {
-            isValid = false;
-            errorMessage = gpressAjax.messages.required;
-        }
-        
-        // Email validation
-        else if (fieldType === 'email' && value) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) {
-                isValid = false;
-                errorMessage = gpressAjax.messages.email;
-            }
-        }
-        
-        // Checkbox validation
-        else if (fieldType === 'checkbox' && field.hasAttribute('required') && !field.checked) {
-            isValid = false;
-            errorMessage = gpressAjax.messages.required;
-        }
-        
-        // Update field state
-        field.setAttribute('aria-invalid', isValid ? 'false' : 'true');
-        
-        if (!isValid) {
-            showFieldError(field, errorMessage);
-        }
-        
-        return isValid;
+    .cpt-filter-button {
+        border-width: 3px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .cpt-card,
+    .cpt-card-image img,
+    .cpt-filter-button {
+        transition: none;
     }
     
-    /**
-     * Show field error
-     */
-    function showFieldError(field, message) {
-        const fieldContainer = field.closest('.form-field');
-        if (!fieldContainer) return;
-        
-        const errorId = field.id + '-error';
-        const errorElement = document.createElement('div');
-        errorElement.id = errorId;
-        errorElement.className = 'field-error';
-        errorElement.textContent = message;
-        errorElement.setAttribute('role', 'alert');
-        
-        fieldContainer.appendChild(errorElement);
-        
-        // Update aria-describedby
-        const describedBy = field.getAttribute('aria-describedby') || '';
-        field.setAttribute('aria-describedby', (describedBy + ' ' + errorId).trim());
-        
-        // Style field as error
-        field.classList.add('field-error-state');
+    .cpt-card:hover {
+        transform: none;
     }
     
-    /**
-     * Clear field error
-     */
-    function clearFieldError(field) {
-        const fieldContainer = field.closest('.form-field');
-        if (!fieldContainer) return;
-        
-        const existingError = fieldContainer.querySelector('.field-error');
-        if (existingError) {
-            const errorId = existingError.id;
-            existingError.remove();
-            
-            // Clean up aria-describedby
-            const describedBy = field.getAttribute('aria-describedby') || '';
-            const cleanDescribedBy = describedBy.replace(errorId, '').trim();
-            if (cleanDescribedBy) {
-                field.setAttribute('aria-describedby', cleanDescribedBy);
-            } else {
-                field.removeAttribute('aria-describedby');
-            }
-        }
-        
-        field.classList.remove('field-error-state');
+    .cpt-card:hover .cpt-card-image img {
+        transform: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .cpt-filters,
+    .cpt-sort-controls,
+    .cpt-navigation {
+        display: none;
     }
     
-    /**
-     * Set form loading state
-     */
-    function setFormLoading(form, loading) {
-        const submitButton = form.querySelector('[type="submit"]');
-        
-        if (loading) {
-            form.classList.add('form-loading');
-            submitButton.disabled = true;
-            submitButton.setAttribute('aria-busy', 'true');
-        } else {
-            form.classList.remove('form-loading');
-            submitButton.disabled = false;
-            submitButton.setAttribute('aria-busy', 'false');
-        }
+    .custom-post-type-archive .post-grid {
+        display: block;
     }
     
-    /**
-     * Show form message
-     */
-    function showFormMessage(container, message, type) {
-        container.className = 'form-messages ' + type;
-        container.textContent = message;
-        container.style.display = 'block';
-        
-        // Auto-hide success messages
-        if (type === 'success') {
-            setTimeout(function() {
-                container.style.display = 'none';
-            }, 5000);
-        }
+    .cpt-card {
+        break-inside: avoid;
+        margin-bottom: 1rem;
+        box-shadow: none;
+        border: 1px solid #000;
     }
-    
-    /**
-     * Initialize form validation
-     */
-    function initFormValidation() {
-        const formInputs = document.querySelectorAll('.gpress-contact-form input, .gpress-contact-form textarea, .gpress-newsletter-form input');
-        
-        formInputs.forEach(function(input) {
-            // Real-time validation on blur
-            input.addEventListener('blur', function() {
-                if (this.value.trim() || this.hasAttribute('required')) {
-                    validateField(this);
-                }
-            });
-            
-            // Clear errors on input
-            input.addEventListener('input', function() {
-                if (this.classList.contains('field-error-state')) {
-                    clearFieldError(this);
-                    this.setAttribute('aria-invalid', 'false');
-                }
-            });
-        });
-    }
-    
-    /**
-     * Initialize form accessibility
-     */
-    function initFormAccessibility() {
-        // Add keyboard navigation for custom checkboxes
-        const checkboxLabels = document.querySelectorAll('.checkbox-label');
-        
-        checkboxLabels.forEach(function(label) {
-            const checkbox = label.querySelector('input[type="checkbox"]');
-            
-            label.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
-                }
-            });
-        });
-        
-        // Form submission keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                const activeForm = document.activeElement.closest('form');
-                if (activeForm && (activeForm.classList.contains('gpress-contact-form') || activeForm.classList.contains('gpress-newsletter-form'))) {
-                    const submitButton = activeForm.querySelector('[type="submit"]');
-                    if (submitButton && !submitButton.disabled) {
-                        submitButton.click();
-                    }
-                }
-            }
-        });
-    }
-    
-    // Performance optimization: Debounced validation
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    
-    // Apply debounced validation to email fields
-    const emailFields = document.querySelectorAll('input[type="email"]');
-    emailFields.forEach(function(field) {
-        const debouncedValidate = debounce(function() {
-            validateField(field);
-        }, 300);
-        
-        field.addEventListener('input', debouncedValidate);
-    });
-});
+}
 ```
 
-### 4. Update Functions.php
+## Testing This Step
 
-Add to `functions.php`:
+### 1. Custom Post Type Registration Testing
+```bash
+# Test CPT registration
+wp post-type list --format=table
 
-```php
-// Advanced forms and contact functionality
-require_once get_theme_file_path('/inc/form-handler.php');
+# Test taxonomy registration  
+wp taxonomy list --format=table
+
+# Check rewrite rules
+wp rewrite list --format=table | grep -E "(portfolio|testimonial|team)"
+
+# Flush rewrite rules if needed
+wp rewrite flush
 ```
 
-## Testing
+### 2. Template Testing
+```bash
+# Check if templates exist
+ls -la templates/single-portfolio.html
+ls -la templates/archive-portfolio.html
+ls -la templates/taxonomy-portfolio-category.html
 
-1. **Form Functionality Testing**:
-   - Test contact form submission and email delivery
-   - Verify newsletter subscription process
-   - Check form validation (client-side and server-side)
-   - Test AJAX submissions and error handling
+# Test template loading
+curl -s -o /dev/null -w "%{http_code}" http://yoursite.com/portfolio/
+curl -s -o /dev/null -w "%{http_code}" http://yoursite.com/testimonials/
+curl -s -o /dev/null -w "%{http_code}" http://yoursite.com/team/
+```
 
-2. **Security Testing**:
-   - Verify nonce protection
-   - Test rate limiting functionality  
-   - Check input sanitization and validation
-   - Test CSRF protection
+### 3. Asset Loading Testing
+```bash
+# Check conditional CSS loading
+curl -s http://yoursite.com/portfolio/ | grep "custom-post-types.css"
+curl -s http://yoursite.com/portfolio/ | grep "portfolio.css"
 
-3. **Accessibility Testing**:
-   - Test keyboard navigation
-   - Verify screen reader compatibility
-   - Check ARIA labels and descriptions
-   - Test focus management
+# Verify JS loading
+curl -s http://yoursite.com/portfolio/ | grep "cpt-manager.js"
+curl -s http://yoursite.com/portfolio/ | grep "portfolio-gallery.js"
+```
 
-4. **Performance Testing**:
-   - Verify conditional asset loading
-   - Check form loading times
-   - Test mobile performance
-   - Validate no JavaScript errors
+### 4. Database and Performance Testing
+```bash
+# Check database tables
+wp db query "SHOW TABLES LIKE '%_postmeta';"
 
-5. **Integration Testing**:
-   - Test with WordPress core functionality
-   - Check compatibility with common plugins
-   - Verify database operations
-   - Test email delivery
+# Test CPT queries
+wp post list --post_type=portfolio --format=table
+wp post list --post_type=testimonial --format=table
+wp post list --post_type=team --format=table
 
-## Next Steps
+# Check taxonomy terms
+wp term list portfolio-category --format=table
+wp term list skill --format=table
+wp term list service --format=table
+```
 
-In Step 12, we'll implement advanced navigation and menu systems with improved accessibility and mobile optimization.
+### 5. Accessibility and SEO Testing
+```bash
+# Test structured data
+curl -s http://yoursite.com/portfolio/sample-project/ | grep -o '<script type="application/ld+json">.*</script>'
 
-## Key Benefits
+# Check meta tags
+curl -s http://yoursite.com/portfolio/ | grep -E "(og:|twitter:|description)"
 
-- Advanced form handling with AJAX submissions
-- Conditional asset loading for optimal performance
-- Comprehensive security and rate limiting
-- Full accessibility compliance
-- Newsletter subscription management
-- Professional form styling and UX
-- Database integration for form storage
-- Email confirmation workflows
+# Validate HTML
+# Use online validator or: 
+curl -s http://yoursite.com/portfolio/ | tidy -q -e 2>&1 | head -20
+```
+
+## Expected Results After This Step
+
+1. **Custom Post Types**: Portfolio, Testimonial, and Team post types registered with full FSE support
+2. **Custom Taxonomies**: Portfolio Categories, Skills, and Services taxonomies with proper capabilities
+3. **Template System**: Complete template hierarchy for all CPTs with responsive design
+4. **Conditional Loading**: Optimized asset loading based on content type detection
+5. **Admin Integration**: Enhanced admin columns, custom fields, and user-friendly management
+6. **SEO Optimization**: Structured data implementation for all custom content types
+7. **Performance**: Efficient database queries and caching strategies for CPT content
+8. **Accessibility**: Full WCAG 2.1 AA compliance across all custom content templates
+
+## Next Step
+
+In Step 12, we'll implement advanced navigation and menu systems with dynamic filtering, search capabilities, and mobile-optimized interfaces that integrate seamlessly with our custom post types and taxonomies.
+
+---
+
+**Step 11 Completed**: Custom Post Types & Taxonomies Implementation ✅
+- Advanced CPT registration with FSE support
+- Hierarchical and non-hierarchical taxonomies
+- Optimized template system with conditional loading
+- Enhanced admin experience with custom fields
+- SEO and accessibility optimization for custom content
+- Performance monitoring and caching strategies
