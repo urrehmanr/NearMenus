@@ -6,7 +6,7 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 
 ## Theme Specifications
 
-- **Theme Name**: ModernBlog2025
+- **Theme Name**: GPress
 - **Architecture**: Block-based Full Site Editing (FSE) theme
 - **Performance Target**: 95+ Lighthouse score
 - **Compatibility**: WordPress 6.4+ with Gutenberg blocks
@@ -30,14 +30,14 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 - **Step 9**: [Typography & Layout Systems](./steps/step-09-typography-layout.md)
 
 ### Phase 4: Functionality & Features
-- **Step 10**: [Gutenberg Block Support](./steps/step-10-gutenberg-support.md)
-- **Step 11**: [Custom Post Types & Fields](./steps/step-11-custom-features.md)
-- **Step 12**: [Navigation & Menus](./steps/step-12-navigation.md)
+- **Step 10**: [Gutenberg Block Support](./steps/step-10-gutenberg-block-support.md)
+- **Step 11**: [Custom Post Types & Fields](./steps/step-11-custom-post-types.md)
+- **Step 12**: [Navigation & Menus](./steps/step-12-navigation-menus.md)
 
 ### Phase 5: Accessibility & SEO
-- **Step 13**: [Accessibility Implementation](./steps/step-13-accessibility.md)
-- **Step 14**: [SEO Optimization](./steps/step-14-seo.md)
-- **Step 15**: [Semantic HTML Structure](./steps/step-15-semantic-html.md)
+- **Step 13**: [Accessibility Implementation](./steps/step-13-accessibility-implementation.md)
+- **Step 14**: [SEO Optimization](./steps/step-14-seo-optimization.md)
+- **Step 15**: [Semantic HTML Structure](./steps/step-15-semantic-html-structure.md)
 
 ### Phase 6: Testing & Optimization
 - **Step 16**: [Performance Testing](./steps/step-16-performance-testing.md)
@@ -45,8 +45,8 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 - **Step 18**: [Quality Assurance](./steps/step-18-quality-assurance.md)
 
 ### Phase 7: Documentation & Deployment
-- **Step 19**: [Theme Documentation](./steps/step-19-documentation.md)
-- **Step 20**: [Deployment & Distribution](./steps/step-20-deployment.md)
+- **Step 19**: [Theme Documentation](./steps/step-19-theme-documentation.md)
+- **Step 20**: [Deployment & Distribution](./steps/step-20-deployment-distribution.md)
 
 ## Key Features
 

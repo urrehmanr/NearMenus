@@ -126,13 +126,13 @@ function gpress_conditional_accessibility_assets() {
 /**
  * Add skip links
  */
-function modernblog2025_add_skip_links() {
+function gpress_add_skip_links() {
     ?>
     <div class="skip-links">
-        <a class="skip-link screen-reader-text" href="#main"><?php esc_html_e('Skip to main content', 'modernblog2025'); ?></a>
-        <a class="skip-link screen-reader-text" href="#primary-navigation"><?php esc_html_e('Skip to navigation', 'modernblog2025'); ?></a>
-        <a class="skip-link screen-reader-text" href="#sidebar"><?php esc_html_e('Skip to sidebar', 'modernblog2025'); ?></a>
-        <a class="skip-link screen-reader-text" href="#footer"><?php esc_html_e('Skip to footer', 'modernblog2025'); ?></a>
+        <a class="skip-link screen-reader-text" href="#main"><?php esc_html_e('Skip to main content', 'gpress'); ?></a>
+        <a class="skip-link screen-reader-text" href="#primary-navigation"><?php esc_html_e('Skip to navigation', 'gpress'); ?></a>
+        <a class="skip-link screen-reader-text" href="#sidebar"><?php esc_html_e('Skip to sidebar', 'gpress'); ?></a>
+        <a class="skip-link screen-reader-text" href="#footer"><?php esc_html_e('Skip to footer', 'gpress'); ?></a>
     </div>
     <?php
 }
@@ -140,19 +140,19 @@ function modernblog2025_add_skip_links() {
 /**
  * Enqueue accessibility styles
  */
-function modernblog2025_enqueue_accessibility_styles() {
+function gpress_enqueue_accessibility_styles() {
     wp_enqueue_style(
-        'modernblog2025-accessibility',
+        'gpress-accessibility',
         get_theme_file_uri('/assets/css/accessibility.min.css'),
-        array('modernblog2025-style'),
-        MODERNBLOG2025_VERSION
+        array('gpress-style'),
+        GPRESS_VERSION
     );
 }
 
 /**
  * Enhance image accessibility
  */
-function modernblog2025_enhance_image_accessibility($attr, $attachment, $size) {
+function gpress_enhance_image_accessibility($attr, $attachment, $size) {
     $image_id = $attachment->ID;
     
     // Add better alt text if empty
@@ -191,7 +191,7 @@ function modernblog2025_enhance_image_accessibility($attr, $attachment, $size) {
 /**
  * Enhance content accessibility
  */
-function modernblog2025_enhance_content_accessibility($content) {
+function gpress_enhance_content_accessibility($content) {
     // Add aria-label to links that open in new window
     $content = preg_replace(
         '/<a([^>]*?)target=["\']_blank["\']([^>]*?)>/',
@@ -200,10 +200,10 @@ function modernblog2025_enhance_content_accessibility($content) {
     );
     
     // Add proper heading hierarchy
-    $content = modernblog2025_fix_heading_hierarchy($content);
+    $content = gpress_fix_heading_hierarchy($content);
     
     // Enhance table accessibility
-    $content = modernblog2025_enhance_table_accessibility($content);
+    $content = gpress_enhance_table_accessibility($content);
     
     return $content;
 }
@@ -211,7 +211,7 @@ function modernblog2025_enhance_content_accessibility($content) {
 /**
  * Fix heading hierarchy
  */
-function modernblog2025_fix_heading_hierarchy($content) {
+function gpress_fix_heading_hierarchy($content) {
     // Extract all headings
     preg_match_all('/<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/i', $content, $matches, PREG_SET_ORDER);
     
@@ -250,7 +250,7 @@ function modernblog2025_fix_heading_hierarchy($content) {
 /**
  * Enhance table accessibility
  */
-function modernblog2025_enhance_table_accessibility($content) {
+function gpress_enhance_table_accessibility($content) {
     // Add scope attributes to table headers
     $content = preg_replace(
         '/<th([^>]*)>/',
@@ -281,7 +281,7 @@ function modernblog2025_enhance_table_accessibility($content) {
 /**
  * Focus management script
  */
-function modernblog2025_focus_management_script() {
+function gpress_focus_management_script() {
     ?>
     <script>
     // Focus management for dynamic content
@@ -335,7 +335,7 @@ function modernblog2025_focus_management_script() {
 /**
  * Add accessibility testing tools in development
  */
-function modernblog2025_accessibility_dev_tools() {
+function gpress_accessibility_dev_tools() {
     if (defined('WP_DEBUG') && WP_DEBUG) {
         ?>
         <script>
@@ -372,7 +372,7 @@ function modernblog2025_accessibility_dev_tools() {
         <?php
     }
 }
-add_action('wp_footer', 'modernblog2025_accessibility_dev_tools');
+add_action('wp_footer', 'gpress_accessibility_dev_tools');
 ```
 
 ### 2. Accessibility CSS
@@ -868,48 +868,48 @@ if (!defined('ABSPATH')) {
 /**
  * Enhance form accessibility
  */
-function modernblog2025_enhance_form_accessibility() {
+function gpress_enhance_form_accessibility() {
     // Add ARIA attributes to search forms
-    add_filter('get_search_form', 'modernblog2025_accessible_search_form');
+    add_filter('get_search_form', 'gpress_accessible_search_form');
     
     // Enhance comment form accessibility
-    add_filter('comment_form_defaults', 'modernblog2025_accessible_comment_form');
+    add_filter('comment_form_defaults', 'gpress_accessible_comment_form');
     
     // Add form validation enhancements
-    add_action('wp_footer', 'modernblog2025_form_validation_script');
+    add_action('wp_footer', 'gpress_form_validation_script');
 }
-add_action('init', 'modernblog2025_enhance_form_accessibility');
+add_action('init', 'gpress_enhance_form_accessibility');
 
 /**
  * Make search form more accessible
  */
-function modernblog2025_accessible_search_form($form) {
+function gpress_accessible_search_form($form) {
     $search_id = uniqid('search-');
     $label_id = $search_id . '-label';
     
     $form = '
     <form role="search" method="get" class="search-form" action="' . esc_url(home_url('/')) . '" aria-labelledby="' . $label_id . '">
         <label for="' . $search_id . '" id="' . $label_id . '" class="search-label">
-            <span class="screen-reader-text">' . __('Search for:', 'modernblog2025') . '</span>
+            <span class="screen-reader-text">' . __('Search for:', 'gpress') . '</span>
         </label>
         <div class="search-input-wrapper">
             <input type="search" 
                    id="' . $search_id . '" 
                    class="search-field" 
-                   placeholder="' . esc_attr__('Search...', 'modernblog2025') . '" 
+                   placeholder="' . esc_attr__('Search...', 'gpress') . '" 
                    value="' . get_search_query() . '" 
                    name="s" 
                    autocomplete="off"
                    aria-describedby="' . $search_id . '-desc" />
             <button type="submit" 
                     class="search-submit" 
-                    aria-label="' . esc_attr__('Submit search', 'modernblog2025') . '">
+                    aria-label="' . esc_attr__('Submit search', 'gpress') . '">
                 <span class="search-icon" aria-hidden="true">🔍</span>
-                <span class="screen-reader-text">' . __('Search', 'modernblog2025') . '</span>
+                <span class="screen-reader-text">' . __('Search', 'gpress') . '</span>
             </button>
         </div>
         <div id="' . $search_id . '-desc" class="screen-reader-text">
-            ' . __('Press Enter to search or Escape to close', 'modernblog2025') . '
+            ' . __('Press Enter to search or Escape to close', 'gpress') . '
         </div>
     </form>';
     
@@ -919,12 +919,12 @@ function modernblog2025_accessible_search_form($form) {
 /**
  * Enhance comment form accessibility
  */
-function modernblog2025_accessible_comment_form($defaults) {
+function gpress_accessible_comment_form($defaults) {
     $comment_id = uniqid('comment-');
     
     $defaults['fields']['author'] = '
     <div class="comment-form-author">
-        <label for="author-' . $comment_id . '">' . __('Name', 'modernblog2025') . ' 
+        <label for="author-' . $comment_id . '">' . __('Name', 'gpress') . ' 
             <span class="required" aria-label="required">*</span>
         </label>
         <input id="author-' . $comment_id . '" 
@@ -936,13 +936,13 @@ function modernblog2025_accessible_comment_form($defaults) {
                aria-required="true"
                aria-describedby="author-' . $comment_id . '-desc" />
         <div id="author-' . $comment_id . '-desc" class="field-description">
-            ' . __('Your name will be displayed publicly with your comment', 'modernblog2025') . '
+            ' . __('Your name will be displayed publicly with your comment', 'gpress') . '
         </div>
     </div>';
     
     $defaults['fields']['email'] = '
     <div class="comment-form-email">
-        <label for="email-' . $comment_id . '">' . __('Email', 'modernblog2025') . ' 
+        <label for="email-' . $comment_id . '">' . __('Email', 'gpress') . ' 
             <span class="required" aria-label="required">*</span>
         </label>
         <input id="email-' . $comment_id . '" 
@@ -954,13 +954,13 @@ function modernblog2025_accessible_comment_form($defaults) {
                aria-required="true"
                aria-describedby="email-' . $comment_id . '-desc" />
         <div id="email-' . $comment_id . '-desc" class="field-description">
-            ' . __('Your email address will not be published', 'modernblog2025') . '
+            ' . __('Your email address will not be published', 'gpress') . '
         </div>
     </div>';
     
     $defaults['fields']['url'] = '
     <div class="comment-form-url">
-        <label for="url-' . $comment_id . '">' . __('Website', 'modernblog2025') . '</label>
+        <label for="url-' . $comment_id . '">' . __('Website', 'gpress') . '</label>
         <input id="url-' . $comment_id . '" 
                name="url" 
                type="url" 
@@ -968,13 +968,13 @@ function modernblog2025_accessible_comment_form($defaults) {
                size="30"
                aria-describedby="url-' . $comment_id . '-desc" />
         <div id="url-' . $comment_id . '-desc" class="field-description">
-            ' . __('Optional: Include your website URL', 'modernblog2025') . '
+            ' . __('Optional: Include your website URL', 'gpress') . '
         </div>
     </div>';
     
     $defaults['comment_field'] = '
     <div class="comment-form-comment">
-        <label for="comment-' . $comment_id . '">' . __('Comment', 'modernblog2025') . ' 
+        <label for="comment-' . $comment_id . '">' . __('Comment', 'gpress') . ' 
             <span class="required" aria-label="required">*</span>
         </label>
         <textarea id="comment-' . $comment_id . '" 
@@ -984,9 +984,9 @@ function modernblog2025_accessible_comment_form($defaults) {
                   required 
                   aria-required="true"
                   aria-describedby="comment-' . $comment_id . '-desc"
-                  placeholder="' . esc_attr__('Share your thoughts...', 'modernblog2025') . '"></textarea>
+                  placeholder="' . esc_attr__('Share your thoughts...', 'gpress') . '"></textarea>
         <div id="comment-' . $comment_id . '-desc" class="field-description">
-            ' . __('Please be respectful and constructive in your comments', 'modernblog2025') . '
+            ' . __('Please be respectful and constructive in your comments', 'gpress') . '
         </div>
     </div>';
     
@@ -994,10 +994,10 @@ function modernblog2025_accessible_comment_form($defaults) {
     <button type="submit" 
             class="submit-comment" 
             aria-describedby="submit-' . $comment_id . '-desc">
-        ' . __('Post Comment', 'modernblog2025') . '
+        ' . __('Post Comment', 'gpress') . '
     </button>
     <div id="submit-' . $comment_id . '-desc" class="screen-reader-text">
-        ' . __('Your comment will be reviewed before being published', 'modernblog2025') . '
+        ' . __('Your comment will be reviewed before being published', 'gpress') . '
     </div>';
     
     return $defaults;
@@ -1006,7 +1006,7 @@ function modernblog2025_accessible_comment_form($defaults) {
 /**
  * Form validation script
  */
-function modernblog2025_form_validation_script() {
+function gpress_form_validation_script() {
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1159,14 +1159,14 @@ if (!defined('ABSPATH')) {
 /**
  * Check color contrast ratio
  */
-function modernblog2025_check_color_contrast($color1, $color2) {
+function gpress_check_color_contrast($color1, $color2) {
     // Convert hex to RGB
-    $rgb1 = modernblog2025_hex_to_rgb($color1);
-    $rgb2 = modernblog2025_hex_to_rgb($color2);
+    $rgb1 = gpress_hex_to_rgb($color1);
+    $rgb2 = gpress_hex_to_rgb($color2);
     
     // Calculate relative luminance
-    $l1 = modernblog2025_relative_luminance($rgb1);
-    $l2 = modernblog2025_relative_luminance($rgb2);
+    $l1 = gpress_relative_luminance($rgb1);
+    $l2 = gpress_relative_luminance($rgb2);
     
     // Calculate contrast ratio
     $ratio = ($l1 > $l2) ? ($l1 + 0.05) / ($l2 + 0.05) : ($l2 + 0.05) / ($l1 + 0.05);
@@ -1177,7 +1177,7 @@ function modernblog2025_check_color_contrast($color1, $color2) {
 /**
  * Convert hex color to RGB
  */
-function modernblog2025_hex_to_rgb($hex) {
+function gpress_hex_to_rgb($hex) {
     $hex = ltrim($hex, '#');
     
     if (strlen($hex) === 3) {
@@ -1194,7 +1194,7 @@ function modernblog2025_hex_to_rgb($hex) {
 /**
  * Calculate relative luminance
  */
-function modernblog2025_relative_luminance($rgb) {
+function gpress_relative_luminance($rgb) {
     $r = $rgb['r'] / 255;
     $g = $rgb['g'] / 255;
     $b = $rgb['b'] / 255;
@@ -1209,7 +1209,7 @@ function modernblog2025_relative_luminance($rgb) {
 /**
  * Validate theme color accessibility
  */
-function modernblog2025_validate_theme_colors() {
+function gpress_validate_theme_colors() {
     $theme_json = wp_get_global_settings();
     $colors = $theme_json['color']['palette']['theme'] ?? array();
     
@@ -1230,13 +1230,13 @@ function modernblog2025_validate_theme_colors() {
             }
             
             if ($foreground && $background) {
-                $ratio = modernblog2025_check_color_contrast($foreground, $background);
+                $ratio = gpress_check_color_contrast($foreground, $background);
                 
                 if ($ratio < 4.5) {
                     $warnings[] = array(
                         'type' => 'contrast',
                         'message' => sprintf(
-                            __('Text contrast ratio of %s:1 may not meet WCAG AA standards (4.5:1 required)', 'modernblog2025'),
+                            __('Text contrast ratio of %s:1 may not meet WCAG AA standards (4.5:1 required)', 'gpress'),
                             number_format($ratio, 2)
                         ),
                         'colors' => array($foreground, $background)
@@ -1252,22 +1252,22 @@ function modernblog2025_validate_theme_colors() {
 /**
  * Add accessibility admin notice for color issues
  */
-function modernblog2025_accessibility_admin_notices() {
+function gpress_accessibility_admin_notices() {
     if (!current_user_can('manage_options')) {
         return;
     }
     
-    $warnings = modernblog2025_validate_theme_colors();
+    $warnings = gpress_validate_theme_colors();
     
     if (!empty($warnings)) {
         foreach ($warnings as $warning) {
             echo '<div class="notice notice-warning is-dismissible">';
-            echo '<p><strong>' . __('Accessibility Warning:', 'modernblog2025') . '</strong> ' . esc_html($warning['message']) . '</p>';
+            echo '<p><strong>' . __('Accessibility Warning:', 'gpress') . '</strong> ' . esc_html($warning['message']) . '</p>';
             echo '</div>';
         }
     }
 }
-add_action('admin_notices', 'modernblog2025_accessibility_admin_notices');
+add_action('admin_notices', 'gpress_accessibility_admin_notices');
 ```
 
 ### 6. Update Functions.php
@@ -1299,7 +1299,7 @@ if (!defined('ABSPATH')) {
 /**
  * Add ARIA live regions to footer
  */
-function modernblog2025_aria_live_regions() {
+function gpress_aria_live_regions() {
     ?>
     <!-- ARIA Live Regions for Screen Reader Announcements -->
     <div id="aria-live-polite" aria-live="polite" aria-atomic="true" class="screen-reader-text"></div>
@@ -1348,7 +1348,7 @@ function modernblog2025_aria_live_regions() {
     </script>
     <?php
 }
-add_action('wp_footer', 'modernblog2025_aria_live_regions');
+add_action('wp_footer', 'gpress_aria_live_regions');
 ```
 
 ## Testing

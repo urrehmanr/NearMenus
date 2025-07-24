@@ -61,39 +61,39 @@ function gpress_seo_setup() {
     add_theme_support('title-tag');
     
     // Add custom SEO meta tags
-    add_action('wp_head', 'modernblog2025_add_meta_tags', 5);
+    add_action('wp_head', 'gpress_add_meta_tags', 5);
     
     // Add OpenGraph tags
-    add_action('wp_head', 'modernblog2025_add_opengraph_tags', 10);
+    add_action('wp_head', 'gpress_add_opengraph_tags', 10);
     
     // Add Twitter Card tags
-    add_action('wp_head', 'modernblog2025_add_twitter_cards', 15);
+    add_action('wp_head', 'gpress_add_twitter_cards', 15);
     
     // Add JSON-LD structured data
-    add_action('wp_head', 'modernblog2025_add_json_ld', 20);
+    add_action('wp_head', 'gpress_add_json_ld', 20);
     
     // Optimize meta descriptions
-    add_filter('get_the_excerpt', 'modernblog2025_optimize_excerpt_for_seo');
+    add_filter('get_the_excerpt', 'gpress_optimize_excerpt_for_seo');
     
     // Add canonical URLs
-    add_action('wp_head', 'modernblog2025_add_canonical_url', 25);
+    add_action('wp_head', 'gpress_add_canonical_url', 25);
     
     // Add robots meta tag
-    add_action('wp_head', 'modernblog2025_add_robots_meta', 30);
+    add_action('wp_head', 'gpress_add_robots_meta', 30);
 }
-add_action('after_setup_theme', 'modernblog2025_seo_setup');
+add_action('after_setup_theme', 'gpress_seo_setup');
 
 /**
  * Add comprehensive meta tags
  */
-function modernblog2025_add_meta_tags() {
+function gpress_add_meta_tags() {
     global $post;
     
     // Get page data
-    $title = modernblog2025_get_seo_title();
-    $description = modernblog2025_get_seo_description();
-    $keywords = modernblog2025_get_seo_keywords();
-    $author = modernblog2025_get_seo_author();
+    $title = gpress_get_seo_title();
+    $description = gpress_get_seo_description();
+    $keywords = gpress_get_seo_keywords();
+    $author = gpress_get_seo_author();
     
     // Essential meta tags
     echo '<meta charset="' . get_bloginfo('charset') . '">' . "\n";
@@ -109,7 +109,7 @@ function modernblog2025_add_meta_tags() {
     }
     
     // Generator tag (WordPress version)
-    echo '<meta name="generator" content="WordPress ' . get_bloginfo('version') . '; ModernBlog2025 Theme">' . "\n";
+    echo '<meta name="generator" content="WordPress ' . get_bloginfo('version') . '; GPress Theme">' . "\n";
     
     // Language meta
     echo '<meta name="language" content="' . get_locale() . '">' . "\n";
@@ -153,13 +153,13 @@ function modernblog2025_add_meta_tags() {
 /**
  * Add OpenGraph tags
  */
-function modernblog2025_add_opengraph_tags() {
+function gpress_add_opengraph_tags() {
     global $post;
     
-    $title = modernblog2025_get_seo_title();
-    $description = modernblog2025_get_seo_description();
-    $url = modernblog2025_get_canonical_url();
-    $image = modernblog2025_get_seo_image();
+    $title = gpress_get_seo_title();
+    $description = gpress_get_seo_description();
+    $url = gpress_get_canonical_url();
+    $image = gpress_get_seo_image();
     $site_name = get_bloginfo('name');
     
     // Essential OpenGraph tags
@@ -195,10 +195,10 @@ function modernblog2025_add_opengraph_tags() {
 /**
  * Add Twitter Card tags
  */
-function modernblog2025_add_twitter_cards() {
-    $title = modernblog2025_get_seo_title();
-    $description = modernblog2025_get_seo_description();
-    $image = modernblog2025_get_seo_image();
+function gpress_add_twitter_cards() {
+    $title = gpress_get_seo_title();
+    $description = gpress_get_seo_description();
+    $image = gpress_get_seo_image();
     $twitter_handle = get_theme_mod('twitter_handle', '');
     
     // Twitter Card type
@@ -221,7 +221,7 @@ function modernblog2025_add_twitter_cards() {
 /**
  * Get SEO title
  */
-function modernblog2025_get_seo_title() {
+function gpress_get_seo_title() {
     if (is_home() && !is_front_page()) {
         return get_the_title(get_option('page_for_posts')) . ' - ' . get_bloginfo('name');
     } elseif (is_front_page()) {
@@ -248,7 +248,7 @@ function modernblog2025_get_seo_title() {
 /**
  * Get SEO description
  */
-function modernblog2025_get_seo_description() {
+function gpress_get_seo_description() {
     if (is_single() || is_page()) {
         $excerpt = get_the_excerpt();
         return $excerpt ? wp_trim_words($excerpt, 25) : wp_trim_words(get_the_content(), 25);
@@ -273,7 +273,7 @@ function modernblog2025_get_seo_description() {
 /**
  * Get SEO keywords
  */
-function modernblog2025_get_seo_keywords() {
+function gpress_get_seo_keywords() {
     if (is_single()) {
         $tags = get_the_tags();
         if ($tags) {
@@ -293,7 +293,7 @@ function modernblog2025_get_seo_keywords() {
 /**
  * Get SEO author
  */
-function modernblog2025_get_seo_author() {
+function gpress_get_seo_author() {
     if (is_single()) {
         return get_the_author();
     }
@@ -304,7 +304,7 @@ function modernblog2025_get_seo_author() {
 /**
  * Get SEO image
  */
-function modernblog2025_get_seo_image() {
+function gpress_get_seo_image() {
     $image = null;
     
     if (is_single() || is_page()) {
@@ -344,7 +344,7 @@ function modernblog2025_get_seo_image() {
 /**
  * Get canonical URL
  */
-function modernblog2025_get_canonical_url() {
+function gpress_get_canonical_url() {
     if (is_singular()) {
         return get_permalink();
     } elseif (is_category()) {
@@ -363,15 +363,15 @@ function modernblog2025_get_canonical_url() {
 /**
  * Add canonical URL
  */
-function modernblog2025_add_canonical_url() {
-    $canonical_url = modernblog2025_get_canonical_url();
+function gpress_add_canonical_url() {
+    $canonical_url = gpress_get_canonical_url();
     echo '<link rel="canonical" href="' . esc_url($canonical_url) . '">' . "\n";
 }
 
 /**
  * Add robots meta tag
  */
-function modernblog2025_add_robots_meta() {
+function gpress_add_robots_meta() {
     $robots = array();
     
     if (is_search() || is_404()) {
@@ -397,7 +397,7 @@ function modernblog2025_add_robots_meta() {
 /**
  * Optimize excerpt for SEO
  */
-function modernblog2025_optimize_excerpt_for_seo($excerpt) {
+function gpress_optimize_excerpt_for_seo($excerpt) {
     if (empty($excerpt)) {
         $excerpt = get_the_content();
     }
@@ -429,26 +429,26 @@ if (!defined('ABSPATH')) {
 /**
  * Add JSON-LD structured data
  */
-function modernblog2025_add_json_ld() {
+function gpress_add_json_ld() {
     $structured_data = array();
     
     // Website/Organization schema
-    $structured_data[] = modernblog2025_get_organization_schema();
+    $structured_data[] = gpress_get_organization_schema();
     
     // Page-specific schemas
     if (is_single()) {
-        $structured_data[] = modernblog2025_get_article_schema();
+        $structured_data[] = gpress_get_article_schema();
     } elseif (is_page()) {
-        $structured_data[] = modernblog2025_get_webpage_schema();
+        $structured_data[] = gpress_get_webpage_schema();
     } elseif (is_home() || is_front_page()) {
-        $structured_data[] = modernblog2025_get_website_schema();
+        $structured_data[] = gpress_get_website_schema();
     } elseif (is_author()) {
-        $structured_data[] = modernblog2025_get_person_schema();
+        $structured_data[] = gpress_get_person_schema();
     }
     
     // Breadcrumb schema
     if (!is_front_page()) {
-        $breadcrumb_schema = modernblog2025_get_breadcrumb_schema();
+        $breadcrumb_schema = gpress_get_breadcrumb_schema();
         if ($breadcrumb_schema) {
             $structured_data[] = $breadcrumb_schema;
         }
@@ -465,7 +465,7 @@ function modernblog2025_add_json_ld() {
 /**
  * Get Organization schema
  */
-function modernblog2025_get_organization_schema() {
+function gpress_get_organization_schema() {
     $site_name = get_bloginfo('name');
     $site_url = home_url('/');
     $site_description = get_bloginfo('description');
@@ -520,7 +520,7 @@ function modernblog2025_get_organization_schema() {
 /**
  * Get Article schema
  */
-function modernblog2025_get_article_schema() {
+function gpress_get_article_schema() {
     global $post;
     
     if (!$post) {
@@ -529,13 +529,13 @@ function modernblog2025_get_article_schema() {
     
     $author = get_the_author_meta('display_name', $post->post_author);
     $author_url = get_author_posts_url($post->post_author);
-    $featured_image = modernblog2025_get_seo_image();
+    $featured_image = gpress_get_seo_image();
     
     $schema = array(
         '@context' => 'https://schema.org',
         '@type' => 'Article',
         'headline' => get_the_title(),
-        'description' => modernblog2025_get_seo_description(),
+        'description' => gpress_get_seo_description(),
         'url' => get_permalink(),
         'datePublished' => get_the_date('c'),
         'dateModified' => get_the_modified_date('c'),
@@ -594,12 +594,12 @@ function modernblog2025_get_article_schema() {
 /**
  * Get WebPage schema
  */
-function modernblog2025_get_webpage_schema() {
+function gpress_get_webpage_schema() {
     $schema = array(
         '@context' => 'https://schema.org',
         '@type' => 'WebPage',
         'name' => get_the_title(),
-        'description' => modernblog2025_get_seo_description(),
+        'description' => gpress_get_seo_description(),
         'url' => get_permalink(),
         'datePublished' => get_the_date('c'),
         'dateModified' => get_the_modified_date('c'),
@@ -616,7 +616,7 @@ function modernblog2025_get_webpage_schema() {
 /**
  * Get Website schema
  */
-function modernblog2025_get_website_schema() {
+function gpress_get_website_schema() {
     $schema = array(
         '@context' => 'https://schema.org',
         '@type' => 'WebSite',
@@ -639,7 +639,7 @@ function modernblog2025_get_website_schema() {
 /**
  * Get Person schema for author pages
  */
-function modernblog2025_get_person_schema() {
+function gpress_get_person_schema() {
     $author_id = get_queried_object_id();
     $author_name = get_the_author_meta('display_name', $author_id);
     $author_description = get_the_author_meta('description', $author_id);
@@ -670,7 +670,7 @@ function modernblog2025_get_person_schema() {
 /**
  * Get Breadcrumb schema
  */
-function modernblog2025_get_breadcrumb_schema() {
+function gpress_get_breadcrumb_schema() {
     $breadcrumbs = array();
     $position = 1;
     
@@ -771,12 +771,12 @@ if (!defined('ABSPATH')) {
 /**
  * Add SEO settings to customizer
  */
-function modernblog2025_seo_customizer($wp_customize) {
+function gpress_seo_customizer($wp_customize) {
     // SEO Section
-    $wp_customize->add_section('modernblog2025_seo', array(
-        'title' => __('SEO Settings', 'modernblog2025'),
+    $wp_customize->add_section('gpress_seo', array(
+        'title' => __('SEO Settings', 'gpress'),
         'priority' => 35,
-        'description' => __('Configure SEO and social media settings for your site.', 'modernblog2025')
+        'description' => __('Configure SEO and social media settings for your site.', 'gpress')
     ));
     
     // Site verification settings
@@ -787,9 +787,9 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control('google_site_verification', array(
-        'label' => __('Google Site Verification', 'modernblog2025'),
-        'description' => __('Enter your Google Search Console verification code', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('Google Site Verification', 'gpress'),
+        'description' => __('Enter your Google Search Console verification code', 'gpress'),
+        'section' => 'gpress_seo',
         'type' => 'text'
     ));
     
@@ -800,9 +800,9 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control('bing_site_verification', array(
-        'label' => __('Bing Site Verification', 'modernblog2025'),
-        'description' => __('Enter your Bing Webmaster Tools verification code', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('Bing Site Verification', 'gpress'),
+        'description' => __('Enter your Bing Webmaster Tools verification code', 'gpress'),
+        'section' => 'gpress_seo',
         'type' => 'text'
     ));
     
@@ -814,9 +814,9 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control('twitter_handle', array(
-        'label' => __('Twitter Handle', 'modernblog2025'),
-        'description' => __('Enter your Twitter username (without @)', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('Twitter Handle', 'gpress'),
+        'description' => __('Enter your Twitter username (without @)', 'gpress'),
+        'section' => 'gpress_seo',
         'type' => 'text'
     ));
     
@@ -827,9 +827,9 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control('facebook_url', array(
-        'label' => __('Facebook Page URL', 'modernblog2025'),
-        'description' => __('Enter your Facebook page URL', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('Facebook Page URL', 'gpress'),
+        'description' => __('Enter your Facebook page URL', 'gpress'),
+        'section' => 'gpress_seo',
         'type' => 'url'
     ));
     
@@ -840,9 +840,9 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control('instagram_url', array(
-        'label' => __('Instagram Profile URL', 'modernblog2025'),
-        'description' => __('Enter your Instagram profile URL', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('Instagram Profile URL', 'gpress'),
+        'description' => __('Enter your Instagram profile URL', 'gpress'),
+        'section' => 'gpress_seo',
         'type' => 'url'
     ));
     
@@ -853,9 +853,9 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control('linkedin_url', array(
-        'label' => __('LinkedIn Profile URL', 'modernblog2025'),
-        'description' => __('Enter your LinkedIn profile URL', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('LinkedIn Profile URL', 'gpress'),
+        'description' => __('Enter your LinkedIn profile URL', 'gpress'),
+        'section' => 'gpress_seo',
         'type' => 'url'
     ));
     
@@ -867,13 +867,13 @@ function modernblog2025_seo_customizer($wp_customize) {
     ));
     
     $wp_customize->add_control(new WP_Customize_Media_Control($wp_customize, 'default_social_image', array(
-        'label' => __('Default Social Media Image', 'modernblog2025'),
-        'description' => __('Choose a default image for social media sharing (1200x630px recommended)', 'modernblog2025'),
-        'section' => 'modernblog2025_seo',
+        'label' => __('Default Social Media Image', 'gpress'),
+        'description' => __('Choose a default image for social media sharing (1200x630px recommended)', 'gpress'),
+        'section' => 'gpress_seo',
         'mime_type' => 'image'
     )));
 }
-add_action('customize_register', 'modernblog2025_seo_customizer');
+add_action('customize_register', 'gpress_seo_customizer');
 ```
 
 ### 4. Technical SEO Optimizations
@@ -894,31 +894,31 @@ if (!defined('ABSPATH')) {
 /**
  * Technical SEO setup
  */
-function modernblog2025_technical_seo_setup() {
+function gpress_technical_seo_setup() {
     // Clean up WordPress head
-    add_action('init', 'modernblog2025_clean_wp_head');
+    add_action('init', 'gpress_clean_wp_head');
     
     // Add preload and prefetch tags
-    add_action('wp_head', 'modernblog2025_add_resource_hints', 5);
+    add_action('wp_head', 'gpress_add_resource_hints', 5);
     
     // Optimize feed links
-    add_action('wp_head', 'modernblog2025_add_feed_links', 10);
+    add_action('wp_head', 'gpress_add_feed_links', 10);
     
     // Add hreflang for internationalization
-    add_action('wp_head', 'modernblog2025_add_hreflang', 15);
+    add_action('wp_head', 'gpress_add_hreflang', 15);
     
     // Optimize images for SEO
-    add_filter('wp_get_attachment_image_attributes', 'modernblog2025_optimize_image_seo', 10, 3);
+    add_filter('wp_get_attachment_image_attributes', 'gpress_optimize_image_seo', 10, 3);
     
     // Add structured data for images
-    add_action('wp_footer', 'modernblog2025_add_image_structured_data');
+    add_action('wp_footer', 'gpress_add_image_structured_data');
 }
-add_action('after_setup_theme', 'modernblog2025_technical_seo_setup');
+add_action('after_setup_theme', 'gpress_technical_seo_setup');
 
 /**
  * Clean up WordPress head
  */
-function modernblog2025_clean_wp_head() {
+function gpress_clean_wp_head() {
     // Remove unnecessary meta tags
     remove_action('wp_head', 'wp_generator');
     remove_action('wp_head', 'wlwmanifest_link');
@@ -942,7 +942,7 @@ function modernblog2025_clean_wp_head() {
 /**
  * Add resource hints
  */
-function modernblog2025_add_resource_hints() {
+function gpress_add_resource_hints() {
     // DNS prefetch for external domains
     $external_domains = array(
         '//fonts.googleapis.com',
@@ -981,7 +981,7 @@ function modernblog2025_add_resource_hints() {
 /**
  * Add optimized feed links
  */
-function modernblog2025_add_feed_links() {
+function gpress_add_feed_links() {
     echo '<link rel="alternate" type="application/rss+xml" title="' . esc_attr(get_bloginfo('name')) . ' RSS Feed" href="' . esc_url(get_feed_link()) . '">' . "\n";
     echo '<link rel="alternate" type="application/atom+xml" title="' . esc_attr(get_bloginfo('name')) . ' Atom Feed" href="' . esc_url(get_feed_link('atom')) . '">' . "\n";
 }
@@ -989,9 +989,9 @@ function modernblog2025_add_feed_links() {
 /**
  * Add hreflang tags
  */
-function modernblog2025_add_hreflang() {
+function gpress_add_hreflang() {
     $current_locale = get_locale();
-    $current_url = modernblog2025_get_canonical_url();
+    $current_url = gpress_get_canonical_url();
     
     // Main language
     echo '<link rel="alternate" hreflang="' . esc_attr($current_locale) . '" href="' . esc_url($current_url) . '">' . "\n";
@@ -1003,7 +1003,7 @@ function modernblog2025_add_hreflang() {
 /**
  * Optimize images for SEO
  */
-function modernblog2025_optimize_image_seo($attr, $attachment, $size) {
+function gpress_optimize_image_seo($attr, $attachment, $size) {
     // Ensure images have loading attribute
     if (!isset($attr['loading'])) {
         $attr['loading'] = 'lazy';
@@ -1023,7 +1023,7 @@ function modernblog2025_optimize_image_seo($attr, $attachment, $size) {
 /**
  * Add image structured data
  */
-function modernblog2025_add_image_structured_data() {
+function gpress_add_image_structured_data() {
     if (is_single() || is_page()) {
         global $post;
         
@@ -1064,7 +1064,7 @@ function modernblog2025_add_image_structured_data() {
 /**
  * Add XML sitemap functionality
  */
-function modernblog2025_add_sitemap_support() {
+function gpress_add_sitemap_support() {
     // WordPress 5.5+ has built-in sitemaps, enhance them
     add_filter('wp_sitemaps_max_urls', function() {
         return 2000; // Increase URL limit
@@ -1092,13 +1092,13 @@ function modernblog2025_add_sitemap_support() {
         return $args;
     }, 10, 2);
 }
-add_action('init', 'modernblog2025_add_sitemap_support');
+add_action('init', 'gpress_add_sitemap_support');
 
 /**
  * Add robots.txt optimization
  */
-function modernblog2025_optimize_robots_txt($output) {
-    $output .= "# ModernBlog2025 Theme Optimizations\n";
+function gpress_optimize_robots_txt($output) {
+    $output .= "# GPress Theme Optimizations\n";
     $output .= "User-agent: *\n";
     $output .= "Disallow: /wp-admin/\n";
     $output .= "Disallow: /wp-includes/\n";
@@ -1116,7 +1116,7 @@ function modernblog2025_optimize_robots_txt($output) {
     
     return $output;
 }
-add_filter('robots_txt', 'modernblog2025_optimize_robots_txt');
+add_filter('robots_txt', 'gpress_optimize_robots_txt');
 ```
 
 ### 5. Performance SEO
@@ -1137,25 +1137,25 @@ if (!defined('ABSPATH')) {
 /**
  * Performance SEO setup
  */
-function modernblog2025_performance_seo_setup() {
+function gpress_performance_seo_setup() {
     // Optimize database queries
-    add_action('pre_get_posts', 'modernblog2025_optimize_queries');
+    add_action('pre_get_posts', 'gpress_optimize_queries');
     
     // Add lazy loading enhancements
-    add_filter('wp_get_attachment_image_attributes', 'modernblog2025_enhance_lazy_loading', 10, 3);
+    add_filter('wp_get_attachment_image_attributes', 'gpress_enhance_lazy_loading', 10, 3);
     
     // Optimize embed performance
-    add_action('init', 'modernblog2025_optimize_embeds');
+    add_action('init', 'gpress_optimize_embeds');
     
     // Add Core Web Vitals monitoring
-    add_action('wp_footer', 'modernblog2025_add_web_vitals_monitoring');
+    add_action('wp_footer', 'gpress_add_web_vitals_monitoring');
 }
-add_action('after_setup_theme', 'modernblog2025_performance_seo_setup');
+add_action('after_setup_theme', 'gpress_performance_seo_setup');
 
 /**
  * Optimize database queries
  */
-function modernblog2025_optimize_queries($query) {
+function gpress_optimize_queries($query) {
     if (!is_admin() && $query->is_main_query()) {
         // Limit posts per page for better performance
         if (is_home()) {
@@ -1179,7 +1179,7 @@ function modernblog2025_optimize_queries($query) {
 /**
  * Enhance lazy loading for SEO
  */
-function modernblog2025_enhance_lazy_loading($attr, $attachment, $size) {
+function gpress_enhance_lazy_loading($attr, $attachment, $size) {
     // Skip lazy loading for above-the-fold images
     $priority_images = array('large', 'full');
     
@@ -1199,7 +1199,7 @@ function modernblog2025_enhance_lazy_loading($attr, $attachment, $size) {
 /**
  * Optimize embeds for performance
  */
-function modernblog2025_optimize_embeds() {
+function gpress_optimize_embeds() {
     // Remove embed discovery for better performance
     remove_action('wp_head', 'wp_oembed_add_discovery_links');
     remove_action('wp_head', 'wp_oembed_add_host_js');
@@ -1216,7 +1216,7 @@ function modernblog2025_optimize_embeds() {
 /**
  * Add Web Vitals monitoring
  */
-function modernblog2025_add_web_vitals_monitoring() {
+function gpress_add_web_vitals_monitoring() {
     if (defined('WP_DEBUG') && WP_DEBUG) {
         ?>
         <script>
