@@ -1,7 +1,7 @@
 # Step 14: SEO Optimization
 
 ## Overview
-This step implements comprehensive SEO optimization to improve search engine visibility, ranking, and performance. We'll focus on structured data, meta tags, OpenGraph integration, XML sitemaps, and technical SEO best practices.
+This step implements comprehensive SEO optimization to improve search engine visibility, ranking, and performance. We'll focus on structured data, meta tags, OpenGraph integration, XML sitemaps, and technical SEO best practices with conditional asset loading.
 
 ## Objectives
 - Implement structured data (Schema.org)
@@ -11,6 +11,7 @@ This step implements comprehensive SEO optimization to improve search engine vis
 - Implement JSON-LD markup
 - Add social media optimization
 - Ensure mobile-first indexing compatibility
+- Implement conditional SEO asset loading
 
 ## Implementation
 
@@ -21,7 +22,7 @@ Create `inc/seo.php`:
 ```php
 <?php
 /**
- * SEO Features
+ * GPress SEO Features
  */
 
 // Prevent direct access
@@ -30,9 +31,32 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Initialize SEO system
+ */
+function gpress_init_seo_system() {
+    // Core SEO setup
+    add_action('after_setup_theme', 'gpress_seo_setup');
+    
+    // Conditional SEO asset loading
+    add_action('wp_enqueue_scripts', 'gpress_conditional_seo_assets');
+    
+    // Meta tags and structured data
+    add_action('wp_head', 'gpress_add_meta_tags', 5);
+    add_action('wp_head', 'gpress_add_opengraph_tags', 10);
+    add_action('wp_head', 'gpress_add_twitter_cards', 15);
+    add_action('wp_head', 'gpress_add_json_ld', 20);
+    add_action('wp_head', 'gpress_add_canonical_url', 25);
+    add_action('wp_head', 'gpress_add_robots_meta', 30);
+    
+    // Content optimization
+    add_filter('get_the_excerpt', 'gpress_optimize_excerpt_for_seo');
+}
+add_action('after_setup_theme', 'gpress_init_seo_system');
+
+/**
  * SEO setup
  */
-function modernblog2025_seo_setup() {
+function gpress_seo_setup() {
     // Add theme support for title-tag
     add_theme_support('title-tag');
     

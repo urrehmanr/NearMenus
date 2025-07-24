@@ -1,7 +1,7 @@
 # Step 12: Navigation & Menus
 
 ## Overview
-This step implements advanced navigation and menu systems with improved accessibility, mobile optimization, and modern UX patterns. We'll create multiple navigation areas, implement keyboard navigation, and ensure WCAG compliance.
+This step implements advanced navigation and menu systems with improved accessibility, mobile optimization, and modern UX patterns. We'll create multiple navigation areas, implement keyboard navigation, and ensure WCAG compliance with conditional asset loading.
 
 ## Objectives
 - Register multiple navigation menus
@@ -10,47 +10,135 @@ This step implements advanced navigation and menu systems with improved accessib
 - Add breadcrumb navigation
 - Support mega menus
 - Ensure keyboard navigation compliance
+- Implement conditional navigation asset loading
 
 ## Implementation
 
-### 1. Menu Registration and Setup
+### 1. Navigation System Foundation
 
-Update `inc/theme-setup.php`:
+Create `inc/navigation-system.php`:
 
 ```php
+<?php
+/**
+ * Advanced Navigation System
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Initialize navigation system
+ */
+function gpress_init_navigation_system() {
+    // Register navigation menus
+    add_action('after_setup_theme', 'gpress_register_nav_menus');
+    
+    // Conditional navigation asset loading
+    add_action('wp_enqueue_scripts', 'gpress_conditional_navigation_assets');
+    
+    // Enhance navigation with custom walker
+    add_filter('wp_nav_menu_args', 'gpress_enhance_nav_menu_args');
+    
+    // Add menu item custom fields
+    add_action('wp_nav_menu_item_custom_fields', 'gpress_add_menu_item_fields', 10, 2);
+    add_action('wp_update_nav_menu_item', 'gpress_save_menu_item_fields', 10, 2);
+    
+    // Navigation body classes
+    add_filter('body_class', 'gpress_navigation_body_classes');
+    
+    // AJAX navigation handlers
+    add_action('wp_ajax_gpress_mobile_menu', 'gpress_handle_mobile_menu');
+    add_action('wp_ajax_nopriv_gpress_mobile_menu', 'gpress_handle_mobile_menu');
+}
+add_action('after_setup_theme', 'gpress_init_navigation_system');
+
 /**
  * Register navigation menus
  */
-function modernblog2025_register_nav_menus() {
+function gpress_register_nav_menus() {
     register_nav_menus(array(
-        'primary' => __('Primary Navigation', 'modernblog2025'),
-        'secondary' => __('Secondary Navigation', 'modernblog2025'),
-        'footer' => __('Footer Navigation', 'modernblog2025'),
-        'social' => __('Social Media Links', 'modernblog2025'),
-        'mobile' => __('Mobile Navigation', 'modernblog2025'),
-        'breadcrumb' => __('Breadcrumb Navigation', 'modernblog2025')
+        'primary' => __('Primary Navigation', 'gpress'),
+        'secondary' => __('Secondary Navigation', 'gpress'),
+        'footer' => __('Footer Navigation', 'gpress'),
+        'social' => __('Social Media Links', 'gpress'),
+        'mobile' => __('Mobile Navigation', 'gpress'),
+        'breadcrumb' => __('Breadcrumb Navigation', 'gpress')
     ));
 }
-add_action('after_setup_theme', 'modernblog2025_register_nav_menus');
 
 /**
- * Enhance navigation menu support
+ * Conditional navigation asset loading
  */
-function modernblog2025_enhance_nav_menu_support() {
-    // Add custom menu fields
-    add_theme_support('nav-menu-item-custom-fields', array(
-        'menu-item-icon',
-        'menu-item-description',
-        'menu-item-badge',
-        'menu-item-highlight'
-    ));
+function gpress_conditional_navigation_assets() {
+    $load_navigation = false;
     
-    // Add menu item custom fields
-    add_filter('wp_edit_nav_menu_walker', function() {
-        return 'ModernBlog2025_Walker_Nav_Menu_Edit';
-    });
+    // Check if advanced navigation features are needed
+    if (has_nav_menu('primary') || has_nav_menu('mobile') || 
+        is_page_template('page-contact.html') || 
+        wp_is_mobile() || 
+        get_theme_mod('enable_mega_menu', false)) {
+        $load_navigation = true;
+    }
+    
+    // Always load basic navigation styles
+    wp_enqueue_style(
+        'gpress-navigation-base',
+        get_theme_file_uri('/assets/css/navigation-base.css'),
+        array('gpress-style'),
+        GPRESS_VERSION
+    );
+    
+    if ($load_navigation) {
+        wp_enqueue_style(
+            'gpress-navigation',
+            get_theme_file_uri('/assets/css/navigation.css'),
+            array('gpress-navigation-base'),
+            GPRESS_VERSION
+        );
+        
+        wp_enqueue_script(
+            'gpress-navigation',
+            get_theme_file_uri('/assets/js/navigation.js'),
+            array('jquery'),
+            GPRESS_VERSION,
+            array(
+                'strategy' => 'defer',
+                'in_footer' => true
+            )
+        );
+        
+        // Localize navigation script
+        wp_localize_script('gpress-navigation', 'gpressNav', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('gpress_nav_nonce'),
+            'strings' => array(
+                'menu_toggle' => __('Toggle menu', 'gpress'),
+                'submenu_toggle' => __('Toggle submenu', 'gpress'),
+                'close_menu' => __('Close menu', 'gpress'),
+                'open_menu' => __('Open menu', 'gpress')
+            )
+        ));
+    }
 }
-add_action('after_setup_theme', 'modernblog2025_enhance_nav_menu_support');
+
+/**
+ * Enhance navigation menu args
+ */
+function gpress_enhance_nav_menu_args($args) {
+    if (!isset($args['walker'])) {
+        $args['walker'] = new GPress_Walker_Nav_Menu();
+    }
+    
+    // Add container classes based on menu location
+    if (isset($args['theme_location'])) {
+        $args['container_class'] = 'nav-container nav-' . $args['theme_location'];
+    }
+    
+    return $args;
+}
 ```
 
 ### 2. Custom Navigation Walker
@@ -60,7 +148,7 @@ Create `inc/navigation-walker.php`:
 ```php
 <?php
 /**
- * Custom Navigation Walker
+ * GPress Navigation Walker
  */
 
 // Prevent direct access
@@ -71,7 +159,7 @@ if (!defined('ABSPATH')) {
 /**
  * Custom walker for navigation menus
  */
-class ModernBlog2025_Walker_Nav_Menu extends Walker_Nav_Menu {
+class GPress_Walker_Nav_Menu extends Walker_Nav_Menu {
     
     /**
      * Start element output
@@ -170,7 +258,7 @@ class ModernBlog2025_Walker_Nav_Menu extends Walker_Nav_Menu {
 /**
  * Admin walker for menu editing
  */
-class ModernBlog2025_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
+class GPress_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
     
     /**
      * Start element output in admin
@@ -183,34 +271,34 @@ class ModernBlog2025_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
         
         ob_start();
         ?>
-        <div class="modernblog2025-menu-options">
+        <div class="gpress-menu-options">
             <p class="field-icon description description-wide">
                 <label for="edit-menu-item-icon-<?php echo $item_id; ?>">
-                    <?php _e('Icon (emoji or text)', 'modernblog2025'); ?><br>
+                    <?php _e('Icon (emoji or text)', 'gpress'); ?><br>
                     <input type="text" id="edit-menu-item-icon-<?php echo $item_id; ?>" 
                            class="widefat edit-menu-item-icon" name="menu-item-icon[<?php echo $item_id; ?>]" 
                            value="<?php echo esc_attr($item->menu_item_icon); ?>" />
-                    <small><?php _e('Add an emoji or text icon (e.g., 🏠, ★)', 'modernblog2025'); ?></small>
+                    <small><?php _e('Add an emoji or text icon (e.g., 🏠, ★)', 'gpress'); ?></small>
                 </label>
             </p>
             
             <p class="field-description description description-wide">
                 <label for="edit-menu-item-description-<?php echo $item_id; ?>">
-                    <?php _e('Description', 'modernblog2025'); ?><br>
+                    <?php _e('Description', 'gpress'); ?><br>
                     <textarea id="edit-menu-item-description-<?php echo $item_id; ?>" 
                               class="widefat edit-menu-item-description" 
                               rows="3" cols="20" name="menu-item-description[<?php echo $item_id; ?>]"><?php echo esc_textarea($item->menu_item_description); ?></textarea>
-                    <small><?php _e('Brief description for accessibility and mega menus', 'modernblog2025'); ?></small>
+                    <small><?php _e('Brief description for accessibility and mega menus', 'gpress'); ?></small>
                 </label>
             </p>
             
             <p class="field-badge description description-thin">
                 <label for="edit-menu-item-badge-<?php echo $item_id; ?>">
-                    <?php _e('Badge Text', 'modernblog2025'); ?><br>
+                    <?php _e('Badge Text', 'gpress'); ?><br>
                     <input type="text" id="edit-menu-item-badge-<?php echo $item_id; ?>" 
                            class="widefat edit-menu-item-badge" name="menu-item-badge[<?php echo $item_id; ?>]" 
                            value="<?php echo esc_attr($item->menu_item_badge); ?>" />
-                    <small><?php _e('e.g., "New", "Hot"', 'modernblog2025'); ?></small>
+                    <small><?php _e('e.g., "New", "Hot"', 'gpress'); ?></small>
                 </label>
             </p>
             
@@ -219,7 +307,7 @@ class ModernBlog2025_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
                     <input type="checkbox" id="edit-menu-item-highlight-<?php echo $item_id; ?>" 
                            value="1" name="menu-item-highlight[<?php echo $item_id; ?>]" 
                            <?php checked($item->menu_item_highlight, 1); ?> />
-                    <?php _e('Highlight this item', 'modernblog2025'); ?>
+                    <?php _e('Highlight this item', 'gpress'); ?>
                 </label>
             </p>
         </div>
@@ -233,7 +321,7 @@ class ModernBlog2025_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
 /**
  * Save custom menu item fields
  */
-function modernblog2025_save_menu_item_custom_fields($menu_id, $menu_item_db_id) {
+function gpress_save_menu_item_fields($menu_id, $menu_item_db_id) {
     $fields = array('menu-item-icon', 'menu-item-description', 'menu-item-badge', 'menu-item-highlight');
     
     foreach ($fields as $field) {
@@ -254,12 +342,12 @@ function modernblog2025_save_menu_item_custom_fields($menu_id, $menu_item_db_id)
         }
     }
 }
-add_action('wp_update_nav_menu_item', 'modernblog2025_save_menu_item_custom_fields', 10, 2);
+add_action('wp_update_nav_menu_item', 'gpress_save_menu_item_fields', 10, 2);
 
 /**
  * Load custom menu item fields
  */
-function modernblog2025_load_menu_item_custom_fields($menu_item) {
+function gpress_load_menu_item_fields($menu_item) {
     $menu_item->menu_item_icon = get_post_meta($menu_item->ID, '_menu_item_icon', true);
     $menu_item->menu_item_description = get_post_meta($menu_item->ID, '_menu_item_description', true);
     $menu_item->menu_item_badge = get_post_meta($menu_item->ID, '_menu_item_badge', true);
@@ -267,7 +355,7 @@ function modernblog2025_load_menu_item_custom_fields($menu_item) {
     
     return $menu_item;
 }
-add_filter('wp_setup_nav_menu_item', 'modernblog2025_load_menu_item_custom_fields');
+add_filter('wp_setup_nav_menu_item', 'gpress_load_menu_item_fields');
 ```
 
 ### 3. Navigation Template Parts
@@ -382,7 +470,7 @@ if (!defined('ABSPATH')) {
 /**
  * Generate breadcrumb navigation
  */
-function modernblog2025_breadcrumbs() {
+function gpress_breadcrumbs() {
     global $post;
     
     // Don't display on homepage
@@ -394,7 +482,7 @@ function modernblog2025_breadcrumbs() {
     $separator = '<span class="breadcrumb-separator" aria-hidden="true">›</span>';
     
     // Home link
-    $breadcrumbs[] = '<a href="' . esc_url(home_url('/')) . '" aria-label="' . esc_attr__('Home', 'modernblog2025') . '">🏠 <span class="sr-only">' . __('Home', 'modernblog2025') . '</span></a>';
+    $breadcrumbs[] = '<a href="' . esc_url(home_url('/')) . '" aria-label="' . esc_attr__('Home', 'gpress') . '">🏠 <span class="sr-only">' . __('Home', 'gpress') . '</span></a>';
     
     if (is_single()) {
         // Single post
@@ -456,20 +544,20 @@ function modernblog2025_breadcrumbs() {
     } elseif (is_tag()) {
         // Tag archives
         $tag = get_queried_object();
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Tag: %s', 'modernblog2025'), esc_html($tag->name)) . '</span>';
+        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Tag: %s', 'gpress'), esc_html($tag->name)) . '</span>';
         
     } elseif (is_author()) {
         // Author archives
         $author = get_queried_object();
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Author: %s', 'modernblog2025'), esc_html($author->display_name)) . '</span>';
+        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Author: %s', 'gpress'), esc_html($author->display_name)) . '</span>';
         
     } elseif (is_search()) {
         // Search results
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Search results for: %s', 'modernblog2025'), esc_html(get_search_query())) . '</span>';
+        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . sprintf(__('Search results for: %s', 'gpress'), esc_html(get_search_query())) . '</span>';
         
     } elseif (is_404()) {
         // 404 page
-        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . __('Page not found', 'modernblog2025') . '</span>';
+        $breadcrumbs[] = '<span class="breadcrumb-current" aria-current="page">' . __('Page not found', 'gpress') . '</span>';
         
     } elseif (is_archive()) {
         // Other archives
@@ -479,7 +567,7 @@ function modernblog2025_breadcrumbs() {
     
     // Output breadcrumbs
     if (!empty($breadcrumbs)) {
-        echo '<nav class="breadcrumb-navigation" role="navigation" aria-label="' . esc_attr__('Breadcrumb', 'modernblog2025') . '">';
+        echo '<nav class="breadcrumb-navigation" role="navigation" aria-label="' . esc_attr__('Breadcrumb', 'gpress') . '">';
         echo '<div class="breadcrumb-container">';
         echo implode(' ' . $separator . ' ', $breadcrumbs);
         echo '</div>';
@@ -490,7 +578,7 @@ function modernblog2025_breadcrumbs() {
 /**
  * Add breadcrumbs schema markup
  */
-function modernblog2025_breadcrumbs_schema() {
+function gpress_breadcrumbs_schema() {
     if (is_front_page()) {
         return;
     }
@@ -541,7 +629,7 @@ function modernblog2025_breadcrumbs_schema() {
         echo '<script type="application/ld+json">' . wp_json_encode($schema) . '</script>';
     }
 }
-add_action('wp_head', 'modernblog2025_breadcrumbs_schema');
+add_action('wp_head', 'gpress_breadcrumbs_schema');
 ```
 
 ### 5. Navigation CSS
@@ -1020,41 +1108,124 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 ```
 
-### 7. Update Functions.php
+### 9. Update Functions.php
 
 Add to `functions.php`:
 
 ```php
-// Navigation and breadcrumbs
+// Advanced navigation system
+require_once get_theme_file_path('/inc/navigation-system.php');
 require_once get_theme_file_path('/inc/navigation-walker.php');
 require_once get_theme_file_path('/inc/breadcrumbs.php');
 ```
 
-### 8. Enqueue Navigation Scripts
+### 8. Add Menu Item Custom Fields
 
-Update `inc/enqueue-scripts.php`:
+Add to `inc/navigation-system.php`:
 
 ```php
-// Navigation script
-wp_enqueue_script(
-    'modernblog2025-navigation',
-    get_theme_file_uri('/assets/js/navigation.min.js'),
-    array(),
-    MODERNBLOG2025_VERSION,
-    array(
-        'strategy' => 'defer',
-        'in_footer' => true
-    )
-);
+/**
+ * Add menu item custom fields
+ */
+function gpress_add_menu_item_fields($item_id, $item) {
+    $icon = get_post_meta($item_id, '_menu_item_icon', true);
+    $description = get_post_meta($item_id, '_menu_item_description', true);
+    $badge = get_post_meta($item_id, '_menu_item_badge', true);
+    $highlight = get_post_meta($item_id, '_menu_item_highlight', true);
+    ?>
+    <div class="gpress-menu-item-options">
+        <p class="description description-wide">
+            <label for="edit-menu-item-icon-<?php echo $item_id; ?>">
+                <?php _e('Menu Icon', 'gpress'); ?><br>
+                <input type="text" id="edit-menu-item-icon-<?php echo $item_id; ?>" 
+                       class="widefat" name="menu-item-icon[<?php echo $item_id; ?>]" 
+                       value="<?php echo esc_attr($icon); ?>" 
+                       placeholder="<?php esc_attr_e('🏠 or text', 'gpress'); ?>">
+            </label>
+        </p>
+        
+        <p class="description description-wide">
+            <label for="edit-menu-item-description-<?php echo $item_id; ?>">
+                <?php _e('Description', 'gpress'); ?><br>
+                <textarea id="edit-menu-item-description-<?php echo $item_id; ?>" 
+                          class="widefat" name="menu-item-description[<?php echo $item_id; ?>]" 
+                          rows="3"><?php echo esc_textarea($description); ?></textarea>
+            </label>
+        </p>
+        
+        <p class="description description-thin">
+            <label for="edit-menu-item-badge-<?php echo $item_id; ?>">
+                <?php _e('Badge', 'gpress'); ?><br>
+                <input type="text" id="edit-menu-item-badge-<?php echo $item_id; ?>" 
+                       class="widefat" name="menu-item-badge[<?php echo $item_id; ?>]" 
+                       value="<?php echo esc_attr($badge); ?>" 
+                       placeholder="<?php esc_attr_e('New', 'gpress'); ?>">
+            </label>
+        </p>
+        
+        <p class="description description-thin">
+            <label for="edit-menu-item-highlight-<?php echo $item_id; ?>">
+                <input type="checkbox" id="edit-menu-item-highlight-<?php echo $item_id; ?>" 
+                       name="menu-item-highlight[<?php echo $item_id; ?>]" value="1" 
+                       <?php checked($highlight, 1); ?>>
+                <?php _e('Highlight Item', 'gpress'); ?>
+            </label>
+        </p>
+    </div>
+    <?php
+}
+
+/**
+ * Navigation body classes
+ */
+function gpress_navigation_body_classes($classes) {
+    if (has_nav_menu('primary')) {
+        $classes[] = 'has-primary-menu';
+    }
+    
+    if (wp_is_mobile()) {
+        $classes[] = 'is-mobile-device';
+    }
+    
+    if (get_theme_mod('enable_mega_menu', false)) {
+        $classes[] = 'has-mega-menu';
+    }
+    
+    return $classes;
+}
 ```
 
 ## Testing
 
-1. **Menu Creation**: Create and test primary, secondary, and mobile menus
-2. **Accessibility Testing**: Use screen readers and keyboard navigation
-3. **Mobile Testing**: Verify mobile menu functionality across devices
-4. **Breadcrumb Testing**: Check breadcrumb generation on various page types
-5. **Performance Testing**: Ensure navigation doesn't impact Core Web Vitals
+1. **Menu Functionality Testing**:
+   - Create and configure primary, secondary, and mobile menus
+   - Test menu item custom fields (icons, badges, descriptions)
+   - Verify conditional asset loading works correctly
+   - Test mega menu functionality (if enabled)
+
+2. **Accessibility Testing**:
+   - Use screen readers (NVDA, JAWS, VoiceOver) for navigation
+   - Test keyboard navigation and focus management
+   - Verify ARIA labels and landmark structure
+   - Check skip links functionality
+
+3. **Mobile Testing**:
+   - Test mobile menu toggle and overlay
+   - Verify touch targets meet 44px minimum
+   - Check responsive navigation behavior
+   - Test keyboard navigation on mobile devices
+
+4. **Breadcrumb Testing**:
+   - Check breadcrumb generation on various page types
+   - Verify structured data markup (JSON-LD)
+   - Test hierarchical page/category navigation
+   - Validate screen reader announcements
+
+5. **Performance Testing**:
+   - Verify navigation assets load conditionally
+   - Check Core Web Vitals impact
+   - Test loading speed with/without navigation features
+   - Validate no JavaScript errors in console
 
 ## Next Steps
 
@@ -1062,9 +1233,11 @@ In Step 13, we'll implement comprehensive accessibility features to ensure WCAG 
 
 ## Key Benefits
 
+- Conditional navigation asset loading for optimal performance
 - Fully accessible navigation with ARIA support
 - Mobile-optimized responsive design
 - Keyboard navigation compliance
-- SEO-friendly breadcrumb structure
+- SEO-friendly breadcrumb structure with structured data
 - Advanced menu customization options
-- Performance-optimized implementation
+- Security-hardened navigation system
+- Progressive enhancement approach

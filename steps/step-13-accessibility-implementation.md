@@ -1,7 +1,7 @@
 # Step 13: Accessibility Implementation
 
 ## Overview
-This step implements comprehensive accessibility features to ensure WCAG 2.1 AA compliance. We'll focus on semantic HTML, ARIA attributes, keyboard navigation, screen reader support, and inclusive design patterns.
+This step implements comprehensive accessibility features to ensure WCAG 2.1 AA compliance. We'll focus on semantic HTML, ARIA attributes, keyboard navigation, screen reader support, and inclusive design patterns with conditional asset loading.
 
 ## Objectives
 - Achieve WCAG 2.1 AA compliance
@@ -10,6 +10,7 @@ This step implements comprehensive accessibility features to ensure WCAG 2.1 AA 
 - Ensure keyboard navigation support
 - Support screen readers and assistive technologies
 - Create inclusive design patterns
+- Implement conditional accessibility asset loading
 
 ## Implementation
 
@@ -20,7 +21,7 @@ Create `inc/accessibility.php`:
 ```php
 <?php
 /**
- * Accessibility Features
+ * GPress Accessibility Features
  */
 
 // Prevent direct access
@@ -29,25 +30,98 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Add accessibility enhancements to theme
+ * Initialize accessibility system
  */
-function modernblog2025_accessibility_setup() {
-    // Skip links for keyboard navigation
-    add_action('wp_body_open', 'modernblog2025_add_skip_links');
+function gpress_init_accessibility_system() {
+    // Core accessibility setup
+    add_action('after_setup_theme', 'gpress_accessibility_setup');
     
-    // Add accessibility stylesheet
-    add_action('wp_enqueue_scripts', 'modernblog2025_enqueue_accessibility_styles');
+    // Conditional accessibility asset loading
+    add_action('wp_enqueue_scripts', 'gpress_conditional_accessibility_assets');
     
-    // Enhance image alt text
-    add_filter('wp_get_attachment_image_attributes', 'modernblog2025_enhance_image_accessibility', 10, 3);
+    // Accessibility enhancements
+    add_action('wp_body_open', 'gpress_add_skip_links');
+    add_filter('wp_get_attachment_image_attributes', 'gpress_enhance_image_accessibility', 10, 3);
+    add_filter('the_content', 'gpress_enhance_content_accessibility');
+    add_action('wp_footer', 'gpress_accessibility_javascript');
     
-    // Add accessibility improvements to content
-    add_filter('the_content', 'modernblog2025_enhance_content_accessibility');
-    
-    // Add focus management
-    add_action('wp_footer', 'modernblog2025_focus_management_script');
+    // Add accessibility testing in dev mode
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        add_action('wp_footer', 'gpress_accessibility_dev_tools');
+    }
 }
-add_action('after_setup_theme', 'modernblog2025_accessibility_setup');
+add_action('after_setup_theme', 'gpress_init_accessibility_system');
+
+/**
+ * Accessibility setup
+ */
+function gpress_accessibility_setup() {
+    // Theme support for accessibility features
+    add_theme_support('accessible-colors');
+    add_theme_support('keyboard-navigation');
+    add_theme_support('screen-reader-text');
+    
+    // Remove title attribute from nav menu links
+    add_filter('nav_menu_link_attributes', 'gpress_remove_nav_title_attribute', 10, 4);
+    
+    // Enhance post navigation
+    add_filter('get_the_archive_title_prefix', '__return_empty_string');
+}
+
+/**
+ * Conditional accessibility asset loading
+ */
+function gpress_conditional_accessibility_assets() {
+    $load_accessibility = false;
+    
+    // Check if enhanced accessibility features are needed
+    if (is_singular() || is_archive() || is_search() || 
+        get_theme_mod('enable_accessibility_enhancements', true) ||
+        isset($_GET['accessibility']) ||
+        (function_exists('wp_get_current_user') && current_user_can('edit_posts'))) {
+        $load_accessibility = true;
+    }
+    
+    // Always load basic accessibility styles
+    wp_enqueue_style(
+        'gpress-accessibility-base',
+        get_theme_file_uri('/assets/css/accessibility-base.css'),
+        array('gpress-style'),
+        GPRESS_VERSION
+    );
+    
+    if ($load_accessibility) {
+        wp_enqueue_style(
+            'gpress-accessibility',
+            get_theme_file_uri('/assets/css/accessibility.css'),
+            array('gpress-accessibility-base'),
+            GPRESS_VERSION
+        );
+        
+        wp_enqueue_script(
+            'gpress-accessibility',
+            get_theme_file_uri('/assets/js/accessibility.js'),
+            array('jquery'),
+            GPRESS_VERSION,
+            array(
+                'strategy' => 'defer',
+                'in_footer' => true
+            )
+        );
+        
+        // Localize accessibility script
+        wp_localize_script('gpress-accessibility', 'gpressA11y', array(
+            'strings' => array(
+                'skip_to_content' => __('Skip to content', 'gpress'),
+                'skip_to_navigation' => __('Skip to navigation', 'gpress'),
+                'menu_expanded' => __('Menu expanded', 'gpress'),
+                'menu_collapsed' => __('Menu collapsed', 'gpress'),
+                'page_loaded' => __('Page loaded', 'gpress'),
+                'form_error' => __('Form contains errors', 'gpress')
+            )
+        ));
+    }
+}
 
 /**
  * Add skip links
