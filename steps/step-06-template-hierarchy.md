@@ -1,7 +1,14 @@
-# Step 6: WordPress Template Hierarchy
+# Step 6: WordPress Template Hierarchy with Smart Asset Integration
 
 ## Overview
-This step implements the complete WordPress template hierarchy for the **GPress** theme, extending beyond basic FSE templates to support custom post types, advanced taxonomies, and specialized content structures. We'll create a robust, scalable template system that handles all WordPress content types while maintaining performance and accessibility standards.
+This step implements the complete WordPress template hierarchy for the **GPress** theme with **Smart Asset Management System integration**. We'll extend beyond basic FSE templates to support custom post types, advanced taxonomies, and specialized content structures that work seamlessly with Step 7's optimization system, creating a robust, scalable template system with intelligent asset loading.
+
+## Integration with Smart Asset System
+This step **integrates with Step 7's Smart Asset Management System**:
+- **Template-Specific Loading**: Each template type triggers appropriate asset loading via Smart Asset Manager
+- **Custom Post Type Assets**: CPT-specific assets load only when those templates are used
+- **Taxonomy Optimization**: Taxonomy templates load specialized assets conditionally
+- **Hierarchy Intelligence**: Smart Asset Manager understands template hierarchy for optimal loading
 
 ## Objectives
 - Implement complete WordPress template hierarchy structure
@@ -36,18 +43,18 @@ templates/                   # Extended template directory
 ├── author-[nicename].html  # Specific author templates
 └── date-[format].html      # Date-based archive templates
 
-inc/                        # Enhanced PHP structure
-├── template-hierarchy.php  # Template hierarchy management
-├── custom-post-types.php   # Custom post type definitions
-├── custom-taxonomies.php   # Custom taxonomy definitions
-└── template-routing.php    # Advanced template routing
+inc/                        # Enhanced PHP structure with Smart Asset integration
+├── template-hierarchy.php  # Template hierarchy management with Smart Asset Manager integration
+├── custom-post-types.php   # Custom post type definitions with conditional loading
+├── custom-taxonomies.php   # Custom taxonomy definitions with asset optimization
+└── template-routing.php    # Advanced template routing with performance optimization
 
-assets/                     # Template-specific assets
-├── css/
-│   ├── post-types.css     # Custom post type styles
-│   ├── taxonomies.css     # Taxonomy archive styles
-│   └── hierarchy.css      # Template hierarchy styles
-└── js/
+**Note**: Template-specific assets are handled by Smart Asset Manager:
+- Custom post type styles: Loaded via Smart Asset Manager's `load_cpt_assets()` method
+- Core template styles: `assets/css/core.css` (contains base template styles from Step 7)
+- Template-specific assets: Loaded conditionally based on template detection
+
+**Integration with Step 7**: Uses Smart Asset Manager's template and post type detection for conditional loading
     ├── post-types.js      # Custom post type functionality
     └── template-loader.js  # Dynamic template loading
 ```

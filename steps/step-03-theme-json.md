@@ -1,15 +1,23 @@
-# Step 3: theme.json Setup for Full Site Editing
+# Step 3: theme.json Setup for Full Site Editing & Smart Asset Integration
 
 ## Overview
-This step transforms the **GPress** theme into a fully-featured Full Site Editing (FSE) theme by implementing theme.json configuration. We'll establish global styles, design tokens, block settings, and template configurations that provide users with powerful visual editing capabilities while maintaining performance and accessibility standards.
+This step transforms the **GPress** theme into a fully-featured Full Site Editing (FSE) theme by implementing theme.json configuration with **Smart Asset Management System integration**. We'll establish global styles, design tokens, block settings, and template configurations that work seamlessly with our optimization system from Step 7, providing users with powerful visual editing capabilities while maintaining exceptional performance.
+
+## Integration with Smart Asset System
+This step **integrates with Step 7's Smart Asset Management System**:
+- **Theme.json Configuration**: Optimized for performance with conditional loading support
+- **Font Loading Optimization**: Integration with Smart Asset Manager font detection
+- **FSE Performance**: Block and template assets managed by Smart Asset Manager
+- **Design Token Sync**: CSS custom properties aligned with Step 7's core.css system
 
 ## Objectives
-- Create comprehensive theme.json configuration for FSE
-- Establish design system with consistent color palettes and typography
-- Configure block editor settings and customization options
-- Implement responsive design tokens and spacing systems
-- Set up template and template part configurations
-- Enable advanced block customization capabilities
+- Create comprehensive theme.json configuration optimized for Smart Asset Management System
+- Establish design system synchronized with Step 7's CSS custom properties
+- Configure block editor settings with performance optimization integration
+- Implement responsive design tokens aligned with core.css architecture
+- Set up template configurations with conditional loading support
+- Enable advanced block customization with Smart Asset Manager integration
+- Optimize font loading and typography for performance
 
 ## What You'll Learn
 - FSE theme.json structure and best practices
@@ -62,6 +70,18 @@ README.md                   # Updated with FSE features documentation
         "layout": {
             "contentSize": "65ch",
             "wideSize": "1200px"
+        },
+        "custom": {
+            "gpress": {
+                "smartAssetLoading": true,
+                "conditionalStyles": true,
+                "performanceOptimization": true,
+                "fontLoadingStrategy": "swap",
+                "criticalCssInline": true,
+                "blockAssetOptimization": true,
+                "imageOptimization": true,
+                "lazyLoadingEnabled": true
+            }
         },
         "color": {
             "palette": [

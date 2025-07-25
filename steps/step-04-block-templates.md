@@ -1,15 +1,22 @@
-# Step 4: Block Templates Creation
+# Step 4: Block Templates Creation with Smart Asset Integration
 
 ## Overview
-This step creates comprehensive block-based templates for the **GPress** theme, establishing the foundation for Full Site Editing (FSE) functionality. We'll build semantic HTML templates using WordPress blocks that leverage our theme.json configuration, ensuring optimal performance, accessibility, and user experience across all page types and content structures.
+This step creates comprehensive block-based templates for the **GPress** theme with **Smart Asset Management System integration**. We'll build semantic HTML templates using WordPress blocks that leverage our theme.json configuration and work seamlessly with Step 7's optimization system, ensuring optimal performance, accessibility, and intelligent asset loading across all page types.
+
+## Integration with Smart Asset System
+This step **integrates with Step 7's Smart Asset Management System**:
+- **Template-Specific Loading**: Smart Asset Manager detects template types for conditional loading
+- **Block Asset Optimization**: Block-specific assets load only when blocks are present
+- **Performance Templates**: Templates optimized for Core Web Vitals and fast loading
+- **Context-Aware Assets**: Assets load based on template content and functionality
 
 ## Objectives
-- Create complete set of block templates for all page types
-- Implement semantic HTML structure with accessibility features
-- Optimize templates for performance and Core Web Vitals
-- Establish template hierarchy following WordPress standards
-- Configure templates for maximum user customization
-- Ensure mobile-first responsive design implementation
+- Create complete set of block templates optimized for Smart Asset Management System
+- Implement semantic HTML structure with accessibility and performance features
+- Build templates that trigger appropriate conditional asset loading from Step 7
+- Establish template hierarchy with context-aware optimization patterns
+- Configure templates for maximum customization while maintaining performance
+- Ensure templates work seamlessly with Smart Asset Manager detection logic
 
 ## What You'll Learn
 - Block template architecture and HTML structure

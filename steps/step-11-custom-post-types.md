@@ -1,7 +1,14 @@
-# Step 11: Custom Post Types & Taxonomies Implementation
+# Step 11: Custom Post Types & Taxonomies with Smart Asset Integration
 
 ## Overview
-This step implements advanced custom post types and taxonomies with conditional asset loading, optimized templates, and seamless integration with the existing theme architecture. We'll create a comprehensive system for managing diverse content types while maintaining performance and accessibility standards.
+This step implements advanced custom post types and taxonomies with **Smart Asset Management System integration**. We'll create a comprehensive system for managing diverse content types that works seamlessly with Step 7's conditional loading architecture, ensuring optimal performance through intelligent asset loading while maintaining accessibility standards.
+
+## Integration with Smart Asset System
+This step **integrates with Step 7's Smart Asset Management System**:
+- **CPT-Specific Loading**: Uses Smart Asset Manager's `load_cpt_assets()` method for conditional loading
+- **Content-Type Detection**: Automatically detects portfolio, testimonial, and team content for asset loading
+- **Gallery Optimization**: Portfolio gallery assets load only when galleries are present
+- **Performance CPTs**: All custom post types optimized for Core Web Vitals and fast loading
 
 ## Objectives
 - Implement custom post types with full FSE support
@@ -46,8 +53,13 @@ parts/
 ├── team-card.html                 # Team member card component
 └── cpt-filters.html               # Filtering component for archives
 
-assets/css/
-├── custom-post-types.css          # CPT-specific styles
+**Note**: CPT-specific assets are handled by Smart Asset Manager:
+- Portfolio assets: `portfolio.css` and `portfolio-gallery.js` (loaded via Smart Asset Manager for portfolio content)
+- Testimonial assets: `testimonials.css` and `testimonial-slider.js` (loaded for testimonial content)
+- Team assets: `team.css` and `team-showcase.js` (loaded for team content)
+- Core CPT styles: Included in `assets/css/core.css` from Step 7
+
+**Integration with Step 7**: Uses Smart Asset Manager's CPT detection (`$cpt_assets` array) for conditional loading
 ├── portfolio.css                  # Portfolio-specific styles
 ├── testimonials.css               # Testimonials-specific styles
 └── team.css                       # Team-specific styles
