@@ -26,19 +26,18 @@ This step implements comprehensive accessibility features to ensure WCAG 2.1 AA 
 ### 📁 Files to CREATE:
 ```
 inc/
-├── accessibility.php              # Core accessibility system management
-├── accessibility-enhancements.php # Advanced accessibility features
+├── accessibility.php              # Core accessibility system with Smart Asset Manager integration
+├── accessibility-enhancements.php # Advanced accessibility features with conditional loading
 ├── accessibility-testing.php      # Accessibility testing and validation
-├── aria-patterns.php             # ARIA design patterns implementation
-└── accessibility-optimization.php # Performance optimization for a11y
+└── aria-patterns.php             # ARIA design patterns implementation
 
-assets/css/
-├── accessibility.css             # Main accessibility styles
-├── accessibility-base.css        # Core accessibility styles (always loaded)
-├── high-contrast.css            # High contrast mode styles
-├── reduced-motion.css           # Reduced motion preferences
-├── screen-reader.css            # Screen reader optimizations
-└── accessibility-print.css      # Print accessibility styles
+**Note**: Accessibility assets are handled by Smart Asset Manager and core.css:
+- Core accessibility styles: Included in `assets/css/core.css` from Step 7 (always loaded)
+- Advanced a11y features: Loaded conditionally via Smart Asset Manager based on user preferences
+- High contrast/reduced motion: Handled via CSS media queries in core.css
+- Screen reader optimizations: Built into core.css structure
+
+**Integration with Step 7**: Uses Smart Asset Manager's context detection for accessibility enhancements
 
 assets/js/
 ├── accessibility.js             # Main accessibility JavaScript

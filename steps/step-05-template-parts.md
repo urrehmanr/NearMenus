@@ -1,7 +1,14 @@
-# Step 5: Template Parts Development
+# Step 5: Template Parts Development with Smart Asset Integration
 
 ## Overview
-This step creates reusable template parts for the **GPress** theme, establishing modular components that work seamlessly with our block templates. We'll build header, footer, sidebar, and other template parts using performance-optimized blocks while maintaining accessibility standards and providing maximum customization flexibility for users.
+This step creates reusable template parts for the **GPress** theme with **Smart Asset Management System integration**. We'll build header, footer, sidebar, and other template parts that work seamlessly with our block templates and Step 7's optimization system, using performance-optimized blocks with intelligent asset loading while maintaining accessibility standards and maximum customization flexibility.
+
+## Integration with Smart Asset System
+This step **integrates with Step 7's Smart Asset Management System**:
+- **Component Detection**: Smart Asset Manager detects active template parts for conditional loading
+- **Navigation Assets**: Navigation-specific assets load only when navigation parts are present
+- **Modular Performance**: Each template part optimized for performance and asset efficiency
+- **Context-Aware Loading**: Assets load based on which template parts are actually used
 
 ## Objectives
 - Create comprehensive template parts for header, footer, and sidebar
@@ -23,19 +30,21 @@ This step creates reusable template parts for the **GPress** theme, establishing
 
 ### 📁 **Files to CREATE** (New Files)
 ```
-parts/                       # Template parts directory
-├── header.html             # Main site header with navigation
+parts/                       # Template parts directory with Smart Asset integration
+├── header.html             # Main site header with navigation (triggers navigation.css via Smart Asset Manager)
 ├── footer.html             # Site footer with links and info
 ├── sidebar.html            # Sidebar with widgets and content
-├── navigation.html         # Standalone navigation component
+├── navigation.html         # Standalone navigation component (triggers navigation assets)
 ├── social-links.html       # Social media links component
 ├── site-branding.html      # Logo and site title component
 └── search-form.html        # Reusable search component
-assets/                     # Enhanced assets
-├── css/
-│   └── parts.css          # Template parts specific styles
-└── js/
-    └── navigation.js       # Navigation enhancement script
+
+**Note**: Template part styles are handled by Smart Asset Manager:
+- Navigation styles: `assets/css/navigation.css` (loaded via Smart Asset Manager when navigation parts detected)
+- Core styles: `assets/css/core.css` (contains base template part styles from Step 7)
+- Navigation JS: `assets/js/navigation.js` (loaded conditionally via Smart Asset Manager)
+
+**Integration with Step 7**: Uses Smart Asset Manager's component detection for conditional loading
 ```
 
 ### 📝 **Files to UPDATE** (Existing Files)
