@@ -28,19 +28,17 @@ Enhance the **GPress** theme with comprehensive Gutenberg block support, featuri
 ### 📁 Files to CREATE
 ```
 inc/
-├── block-manager.php           # Main block management system
-├── block-styles.php            # Custom block style registration
-├── block-patterns.php          # Block pattern registration and management
-├── block-variations.php        # Custom block variations
-├── block-editor-enhancements.php # Editor customizations and enhancements
-└── block-performance.php       # Block performance optimizations
+├── block-manager.php           # Main block management system with Smart Asset Manager integration
+├── block-styles.php            # Custom block style registration with conditional loading
+├── block-patterns.php          # Block pattern registration with performance optimization
+├── block-variations.php        # Custom block variations with Smart Asset Manager integration
+└── block-editor-enhancements.php # Editor customizations with conditional loading
 
-assets/css/
-├── blocks.css                  # Custom block styles (frontend)
-├── editor-blocks.css           # Block editor specific styles
-├── block-patterns.css          # Block pattern styles
-├── block-variations.css        # Block variation styles
-└── editor-enhancements.css     # Editor UI enhancements
+**Note**: Block CSS is handled by Smart Asset Manager:
+- Core block styles: `assets/css/blocks.css` (loaded conditionally via Smart Asset Manager)
+- Editor styles: Loaded only in admin via Smart Asset Manager context detection
+
+**Integration with Step 7**: Uses Smart Asset Manager's `page_has_blocks()` detection for conditional loading
 
 assets/js/
 ├── block-editor.js             # Block editor enhancements and controls
