@@ -556,18 +556,26 @@ function gpress_check_wordpress_org_compliance() {
         $issues[] = sprintf(__('%d incorrect text domain usage found', 'gpress'), $text_domain_issues);
     }
     
-    // Check for custom post types (should be removed)
-    $has_custom_post_types = false;
+    // Check for hardcoded custom post types (dynamic framework should be used instead)
+    $has_hardcoded_post_types = false;
     foreach ($php_files as $file) {
         $content = file_get_contents($file);
-        if (strpos($content, 'register_post_type') !== false) {
-            $has_custom_post_types = true;
+        // Skip the dynamic framework files
+        if (strpos($file, 'dynamic-post-types.php') !== false || 
+            strpos($file, 'dynamic-taxonomies.php') !== false) {
+            continue;
+        }
+        
+        // Check for hardcoded register_post_type calls outside the dynamic framework
+        if (strpos($content, 'register_post_type') !== false && 
+            strpos($content, 'get_option(\'gpress_custom_post_types') === false) {
+            $has_hardcoded_post_types = true;
             break;
         }
     }
     
-    if ($has_custom_post_types) {
-        $issues[] = __('Custom post types found - should be removed as requested', 'gpress');
+    if ($has_hardcoded_post_types) {
+        $issues[] = __('Hardcoded custom post types found - use dynamic framework instead', 'gpress');
     }
     
     return array(
@@ -2153,7 +2161,7 @@ This completes the comprehensive 20-step development plan for creating the **GPr
 ### 🔥 **Innovative Features**
 
 1. **Conditional Asset Loading**: First-of-its-kind system where assets load only when needed
-2. **No Bloat Philosophy**: Clean approach without unnecessary custom post types
+2. **Dynamic Content Framework**: Revolutionary system for creating unlimited custom post types and taxonomies without code
 3. **Progressive File Creation**: Each step builds functionally on the previous
 4. **Comprehensive Testing**: Detailed testing at every development stage
 5. **Quality-First Approach**: Multiple validation layers ensure professional standards

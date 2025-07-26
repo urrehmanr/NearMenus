@@ -1671,7 +1671,42 @@ npx lighthouse http://your-site.test --output json
 wp db query "SELECT COUNT(*) FROM wp_gpress_rum_data WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 DAY);"
 ```
 
-### 6. **Conditional Loading Test**
+### 6. **Dynamic Custom Post Types Performance Testing**
+```bash
+# Test custom post type performance (Step 11 Integration)
+# Create test custom post types via admin interface
+wp eval "
+if (function_exists('GPress_Dynamic_Post_Types::ajax_create_post_type')) {
+    \$_POST = array(
+        'post_type_key' => 'product',
+        'singular_name' => 'Product',
+        'plural_name' => 'Products',
+        'menu_icon' => 'dashicons-products',
+        'has_archive' => true,
+        'supports' => array('title', 'editor', 'thumbnail'),
+        'auto_generate_templates' => true,
+        'nonce' => wp_create_nonce('gpress_cpt_admin')
+    );
+    GPress_Dynamic_Post_Types::ajax_create_post_type();
+    echo 'Custom post type created for testing';
+} else {
+    echo 'Dynamic post types system not available';
+}
+"
+
+# Test CPT archive performance
+npx lighthouse http://your-site.test/product/ --output json
+
+# Test CPT single page performance  
+wp post create --post_type=product --post_title="Test Product" --post_content="Test content" --post_status=publish
+npx lighthouse http://your-site.test/product/test-product/ --output json
+
+# Verify dynamic asset loading for CPTs
+curl -s http://your-site.test/product/ | grep -q "dynamic-cpt.css"
+echo $? # Should be 0 (found) when viewing custom post type pages
+```
+
+### 7. **Conditional Loading Test**
 ```bash
 # Test admin-only asset loading
 curl -s http://your-site.test | grep -q "performance-tests.js"

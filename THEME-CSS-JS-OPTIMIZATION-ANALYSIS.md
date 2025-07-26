@@ -381,10 +381,14 @@ class GPress_Smart_Asset_Manager {
     
     private static function load_feature_assets() {
         // Custom post type specific assets
-        if (is_singular('portfolio') || is_post_type_archive('portfolio')) {
-            self::load_asset('gpress-portfolio', '/assets/css/portfolio.css');
-            self::load_asset('gpress-portfolio-js', '/assets/js/portfolio.js', array(), 'defer');
-        }
+        // Dynamic custom post type asset loading (Step 11 Integration)
+$custom_post_types = get_option('gpress_custom_post_types', array());
+foreach ($custom_post_types as $post_type => $config) {
+    if (is_singular($post_type) || is_post_type_archive($post_type)) {
+        self::load_asset("gpress-{$post_type}", "/assets/css/cpt-{$post_type}.css");
+        self::load_asset("gpress-{$post_type}-js", "/assets/js/cpt-{$post_type}.js", array(), 'defer');
+    }
+}
         
         // Admin-specific assets
         if (is_admin()) {
