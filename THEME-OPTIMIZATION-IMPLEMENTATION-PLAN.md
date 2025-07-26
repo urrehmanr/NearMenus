@@ -186,18 +186,24 @@ class GPress_Smart_Asset_Manager {
     private static function load_cpt_assets() {
         $post_type = get_post_type();
         
-        $cpt_assets = array(
-            'portfolio' => array('portfolio.css', 'portfolio-gallery.js'),
-            'testimonial' => array('testimonials.css', 'testimonial-slider.js'),
-            'team' => array('team.css', 'team-showcase.js')
-        );
+        // Get custom post types from dynamic framework (Step 11)
+        $custom_post_types = get_option('gpress_custom_post_types', array());
         
-        if (isset($cpt_assets[$post_type]) || is_post_type_archive($post_type)) {
-            if (isset($cpt_assets[$post_type])) {
-                foreach ($cpt_assets[$post_type] as $asset) {
-                    $extension = pathinfo($asset, PATHINFO_EXTENSION);
-                    if ($extension === 'css') {
-                        self::load_css_asset('cpt-' . $post_type, $asset);
+        // Load base dynamic CPT assets if we're on any custom post type page
+        if (array_key_exists($post_type, $custom_post_types) || 
+            is_post_type_archive(array_keys($custom_post_types))) {
+            
+            // Always load the base dynamic CPT styles
+            self::load_css_asset('dynamic-cpt', 'dynamic-cpt.css');
+            self::load_js_asset('dynamic-cpt', 'dynamic-cpt.js');
+            
+            // Check for post-type-specific assets
+            $css_file = "cpt-{$post_type}.css";
+            $js_file = "cpt-{$post_type}.js";
+            
+            // Load CSS if it exists
+            if (file_exists(get_theme_file_path("/assets/css/{$css_file}"))) {
+                self::load_css_asset("cpt-{$post_type}", $css_file);
                     } else {
                         self::load_js_asset('cpt-' . $post_type, $asset);
                     }

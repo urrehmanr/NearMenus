@@ -18,7 +18,7 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 - 🎨 **Full Site Editing (FSE)** support
 - 🛡️ **Security hardened** and optimized
 - 🌐 **Translation ready** for global audiences
-- 🧩 **Custom post types** (Portfolio, Testimonials)
+- 🧩 **Dynamic custom post types** (unlimited content types)
 - 🎛️ **Advanced navigation** with accessibility features
 - 📊 **Performance monitoring** and Core Web Vitals tracking
 
@@ -45,7 +45,7 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 
 ### Phase 4: Functionality & Features (Steps 11-12)
 **Timeline**: 2-3 days
-- **Step 11**: [Custom Post Types & Fields](./steps/step-11-custom-post-types.md)
+- **Step 11**: [Dynamic Custom Post Types & Taxonomies Framework](./steps/step-11-custom-post-types.md)
 - **Step 12**: [Navigation & Menus](./steps/step-12-navigation-menus.md)
 
 ### Phase 5: Accessibility & SEO (Steps 13-15)

@@ -58,7 +58,7 @@ patterns/
 ├── feature-grid.html           # Feature grid layout pattern
 ├── content-sidebar.html        # Content with sidebar pattern
 ├── image-text-split.html       # Image and text split layout
-├── testimonial-grid.html       # Testimonial grid pattern
+├── quote-grid.html            # Quote/testimonial grid pattern
 └── pricing-table.html          # Pricing table layout
 ```
 

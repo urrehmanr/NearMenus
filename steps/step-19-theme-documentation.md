@@ -2047,7 +2047,7 @@ function gpress_get_editor_help_content() {
         <h4>' . __('Block Patterns:', 'gpress') . '</h4>
         <ul>
             <li>' . __('Call to Action: Ready-made CTA sections', 'gpress') . '</li>
-            <li>' . __('Testimonials: Customer review layouts', 'gpress') . '</li>
+            <li>' . __('Quotes Grid: Quote and review layouts', 'gpress') . '</li>
             <li>' . __('FAQ Section: Frequently asked questions', 'gpress') . '</li>
         </ul>
     ';

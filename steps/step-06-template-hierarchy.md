@@ -793,17 +793,19 @@ add_action('switch_theme', 'gpress_clear_template_cache');
 add_action('wp_update_nav_menu', 'gpress_clear_template_cache');
 ```
 
-### 5. CREATE inc/custom-post-types.php (Custom Post Types)
+### 5. Integration with Dynamic Custom Post Types Framework
 
-**Purpose**: Define and register custom post types with optimized templates
+**Purpose**: Connect template hierarchy with the dynamic custom post types from Step 11
 
 ```php
 <?php
 /**
- * Custom Post Types for GPress Theme
+ * Template Hierarchy Integration with Dynamic Custom Post Types
+ * Demonstrates how templates work with the dynamic framework from Step 11
  *
  * @package GPress
- * @version 1.4.0
+ * @subpackage Template_Integration
+ * @version 1.0.0
  */
 
 // Prevent direct access
@@ -812,183 +814,163 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Register Portfolio custom post type
+ * Enhanced template hierarchy for dynamic custom post types
+ * This function works with any post type created via Step 11's dynamic framework
  */
-function gpress_register_portfolio_post_type() {
-    $labels = array(
-        'name'                  => _x('Portfolio', 'Post type general name', 'gpress'),
-        'singular_name'         => _x('Portfolio Item', 'Post type singular name', 'gpress'),
-        'menu_name'            => _x('Portfolio', 'Admin Menu text', 'gpress'),
-        'name_admin_bar'       => _x('Portfolio Item', 'Add New on Toolbar', 'gpress'),
-        'add_new'              => __('Add New', 'gpress'),
-        'add_new_item'         => __('Add New Portfolio Item', 'gpress'),
-        'new_item'             => __('New Portfolio Item', 'gpress'),
-        'edit_item'            => __('Edit Portfolio Item', 'gpress'),
-        'view_item'            => __('View Portfolio Item', 'gpress'),
-        'all_items'            => __('All Portfolio Items', 'gpress'),
-        'search_items'         => __('Search Portfolio Items', 'gpress'),
-        'parent_item_colon'    => __('Parent Portfolio Items:', 'gpress'),
-        'not_found'            => __('No portfolio items found.', 'gpress'),
-        'not_found_in_trash'   => __('No portfolio items found in Trash.', 'gpress'),
-        'featured_image'       => _x('Portfolio Image', 'Overrides the "Featured Image" phrase', 'gpress'),
-        'set_featured_image'   => _x('Set portfolio image', 'Overrides the "Set featured image" phrase', 'gpress'),
-        'remove_featured_image' => _x('Remove portfolio image', 'Overrides the "Remove featured image" phrase', 'gpress'),
-        'use_featured_image'   => _x('Use as portfolio image', 'Overrides the "Use as featured image" phrase', 'gpress'),
-        'archives'             => _x('Portfolio archives', 'The post type archive label', 'gpress'),
-        'insert_into_item'     => _x('Insert into portfolio item', 'Overrides the "Insert into post" phrase', 'gpress'),
-        'uploaded_to_this_item' => _x('Uploaded to this portfolio item', 'Overrides the "Uploaded to this post" phrase', 'gpress'),
-        'filter_items_list'    => _x('Filter portfolio items list', 'Screen reader text for the filter links', 'gpress'),
-        'items_list_navigation' => _x('Portfolio items list navigation', 'Screen reader text for the pagination', 'gpress'),
-        'items_list'           => _x('Portfolio items list', 'Screen reader text for the items list', 'gpress'),
-    );
-
-    $args = array(
-        'labels'             => $labels,
-        'public'             => true,
-        'publicly_queryable' => true,
-        'show_ui'            => true,
-        'show_in_menu'       => true,
-        'show_in_rest'       => true,
-        'rest_base'          => 'portfolio',
-        'query_var'          => true,
-        'rewrite'            => array('slug' => 'portfolio'),
-        'capability_type'    => 'post',
-        'has_archive'        => true,
-        'hierarchical'       => false,
-        'menu_position'      => 5,
-        'menu_icon'          => 'dashicons-portfolio',
-        'supports'           => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
-        'template_lock'      => false,
-        'template'           => array(
-            array('core/image'),
-            array('core/heading', array('placeholder' => 'Project Title')),
-            array('core/paragraph', array('placeholder' => 'Project description...')),
-            array('core/columns', array(), array(
-                array('core/column', array(), array(
-                    array('core/heading', array('content' => 'Technologies Used', 'level' => 3)),
-                    array('core/list')
-                )),
-                array('core/column', array(), array(
-                    array('core/heading', array('content' => 'Project Links', 'level' => 3)),
-                    array('core/buttons')
-                ))
-            ))
-        ),
-        'show_in_graphql'    => true,
-        'graphql_single_name' => 'portfolioItem',
-        'graphql_plural_name' => 'portfolioItems',
-    );
-
-    register_post_type('portfolio', $args);
-}
-add_action('init', 'gpress_register_portfolio_post_type');
-
-/**
- * Register Testimonials custom post type
- */
-function gpress_register_testimonials_post_type() {
-    $labels = array(
-        'name'                  => _x('Testimonials', 'Post type general name', 'gpress'),
-        'singular_name'         => _x('Testimonial', 'Post type singular name', 'gpress'),
-        'menu_name'            => _x('Testimonials', 'Admin Menu text', 'gpress'),
-        'name_admin_bar'       => _x('Testimonial', 'Add New on Toolbar', 'gpress'),
-        'add_new'              => __('Add New', 'gpress'),
-        'add_new_item'         => __('Add New Testimonial', 'gpress'),
-        'new_item'             => __('New Testimonial', 'gpress'),
-        'edit_item'            => __('Edit Testimonial', 'gpress'),
-        'view_item'            => __('View Testimonial', 'gpress'),
-        'all_items'            => __('All Testimonials', 'gpress'),
-        'search_items'         => __('Search Testimonials', 'gpress'),
-        'not_found'            => __('No testimonials found.', 'gpress'),
-        'not_found_in_trash'   => __('No testimonials found in Trash.', 'gpress'),
-    );
-
-    $args = array(
-        'labels'             => $labels,
-        'public'             => true,
-        'publicly_queryable' => true,
-        'show_ui'            => true,
-        'show_in_menu'       => true,
-        'show_in_rest'       => true,
-        'rest_base'          => 'testimonials',
-        'query_var'          => true,
-        'rewrite'            => array('slug' => 'testimonials'),
-        'capability_type'    => 'post',
-        'has_archive'        => true,
-        'hierarchical'       => false,
-        'menu_position'      => 6,
-        'menu_icon'          => 'dashicons-format-quote',
-        'supports'           => array('title', 'editor', 'thumbnail', 'custom-fields'),
-        'template'           => array(
-            array('core/quote', array('className' => 'testimonial-quote')),
-            array('core/columns', array(), array(
-                array('core/column', array('width' => '20%'), array(
-                    array('core/image', array('className' => 'testimonial-avatar'))
-                )),
-                array('core/column', array('width' => '80%'), array(
-                    array('core/heading', array('placeholder' => 'Client Name', 'level' => 4)),
-                    array('core/paragraph', array('placeholder' => 'Client Title & Company'))
-                ))
-            ))
-        ),
-        'show_in_graphql'    => true,
-        'graphql_single_name' => 'testimonial',
-        'graphql_plural_name' => 'testimonials',
-    );
-
-    register_post_type('testimonial', $args);
-}
-add_action('init', 'gpress_register_testimonials_post_type');
-
-/**
- * Add custom meta boxes for portfolio items
- */
-function gpress_add_portfolio_meta_boxes() {
-    add_meta_box(
-        'portfolio-details',
-        __('Portfolio Details', 'gpress'),
-        'gpress_portfolio_details_callback',
-        'portfolio',
-        'side',
-        'high'
-    );
-}
-add_action('add_meta_boxes', 'gpress_add_portfolio_meta_boxes');
-
-/**
- * Portfolio details meta box callback
- */
-function gpress_portfolio_details_callback($post) {
-    wp_nonce_field('gpress_portfolio_meta', 'gpress_portfolio_meta_nonce');
+function gpress_enhance_template_hierarchy() {
+    // Get all custom post types from the dynamic framework
+    $custom_post_types = get_option('gpress_custom_post_types', array());
     
-    $project_url = get_post_meta($post->ID, '_portfolio_project_url', true);
-    $github_url = get_post_meta($post->ID, '_portfolio_github_url', true);
-    $client_name = get_post_meta($post->ID, '_portfolio_client_name', true);
-    $project_date = get_post_meta($post->ID, '_portfolio_project_date', true);
+    if (empty($custom_post_types)) {
+        return; // No custom post types created yet
+    }
+    
+    foreach ($custom_post_types as $post_type => $config) {
+        // Add custom template hierarchy for each post type
+        add_filter('template_hierarchy', function($templates) use ($post_type) {
+            if (is_singular($post_type)) {
+                // Add more specific template options
+                array_unshift($templates, "single-{$post_type}-enhanced.html");
+                array_unshift($templates, "single-{$post_type}-detailed.html");
+            }
+            return $templates;
+        });
+        
+        // Add template suggestions based on post meta or taxonomies
+        add_filter("single_{$post_type}_template", function($template) use ($post_type) {
+            global $post;
+            
+            // Check for template variations based on custom taxonomies
+            $custom_taxonomies = get_option('gpress_custom_taxonomies', array());
+            foreach ($custom_taxonomies as $taxonomy => $tax_config) {
+                if (in_array($post_type, $tax_config['post_types'] ?? array())) {
+                    $terms = get_the_terms($post->ID, $taxonomy);
+                    if ($terms && !is_wp_error($terms)) {
+                        $term_slug = $terms[0]->slug;
+                        $term_template = locate_template("templates/single-{$post_type}-{$term_slug}.html");
+                        if ($term_template) {
+                            return $term_template;
+                        }
+                    }
+                }
+            }
+            
+            return $template;
+        });
+        
+        // Add archive template enhancements
+        add_filter("archive_{$post_type}_template", function($template) use ($post_type) {
+            // Check for layout variations
+            $layout = get_query_var('layout', 'grid');
+            $layout_template = locate_template("templates/archive-{$post_type}-{$layout}.html");
+            if ($layout_template) {
+                return $layout_template;
+            }
+            
+            return $template;
+        });
+    }
+}
+add_action('init', 'gpress_enhance_template_hierarchy', 25); // Run after dynamic post types are registered
+
+/**
+ * Dynamic query optimization for any custom post type
+ * Works with all post types created via the dynamic framework
+ */
+function gpress_optimize_dynamic_cpt_queries($query) {
+    if (!is_admin() && $query->is_main_query()) {
+        $custom_post_types = get_option('gpress_custom_post_types', array());
+        
+        foreach ($custom_post_types as $post_type => $config) {
+            // Optimize archive queries for each post type
+            if (is_post_type_archive($post_type)) {
+                // Set sensible defaults that work for any content type
+                $query->set('posts_per_page', 12); // Good for grid layouts
+                $query->set('orderby', 'date');
+                $query->set('order', 'DESC');
+                
+                // If the post type supports thumbnails, prioritize posts with images
+                if (post_type_supports($post_type, 'thumbnail')) {
+                    $query->set('meta_query', array(
+                        array(
+                            'key' => '_thumbnail_id',
+                            'compare' => 'EXISTS'
+                        )
+                    ));
+                }
+            }
+        }
+    }
+}
+add_action('pre_get_posts', 'gpress_optimize_dynamic_cpt_queries');
+
+/**
+ * Example: Extending Dynamic Custom Post Types with Custom Fields
+ * This shows how to add fields to any post type created via Step 11's dynamic framework
+ * Replace 'your_post_type' with the actual post type you created in Step 11
+ */
+
+/**
+ * Add custom meta boxes for dynamically created post types
+ * This example shows how to extend post types created via the dynamic framework
+ */
+function gpress_add_dynamic_cpt_meta_boxes() {
+    // Get all custom post types from the dynamic framework
+    $custom_post_types = get_option('gpress_custom_post_types', array());
+    
+    foreach ($custom_post_types as $post_type => $config) {
+        // Add meta boxes to post types that need extra fields
+        // This is just an example - customize based on your needs
+        if (in_array('custom-fields', $config['features'] ?? array())) {
+            add_meta_box(
+                "{$post_type}-details",
+                sprintf(__('%s Details', 'gpress'), $config['singular']),
+                'gpress_dynamic_cpt_meta_callback',
+                $post_type,
+                'side',
+                'high'
+            );
+        }
+    }
+}
+add_action('add_meta_boxes', 'gpress_add_dynamic_cpt_meta_boxes');
+
+/**
+ * Generic meta box callback for dynamic custom post types
+ * This shows a flexible approach that works with any post type
+ */
+function gpress_dynamic_cpt_meta_callback($post) {
+    $post_type = get_post_type($post);
+    wp_nonce_field("{$post_type}_meta", "{$post_type}_meta_nonce");
+    
+    // Example custom fields - customize these based on your post type needs
+    $custom_url = get_post_meta($post->ID, "_{$post_type}_custom_url", true);
+    $custom_date = get_post_meta($post->ID, "_{$post_type}_custom_date", true);
+    $custom_text = get_post_meta($post->ID, "_{$post_type}_custom_text", true);
     
     echo '<table class="form-table">';
     
-    echo '<tr><th><label for="portfolio_project_url">' . __('Project URL', 'gpress') . '</label></th>';
-    echo '<td><input type="url" id="portfolio_project_url" name="portfolio_project_url" value="' . esc_url($project_url) . '" class="regular-text" /></td></tr>';
+    echo '<tr><th><label for="' . $post_type . '_custom_url">' . __('Custom URL', 'gpress') . '</label></th>';
+    echo '<td><input type="url" id="' . $post_type . '_custom_url" name="' . $post_type . '_custom_url" value="' . esc_url($custom_url) . '" class="regular-text" /></td></tr>';
     
-    echo '<tr><th><label for="portfolio_github_url">' . __('GitHub URL', 'gpress') . '</label></th>';
-    echo '<td><input type="url" id="portfolio_github_url" name="portfolio_github_url" value="' . esc_url($github_url) . '" class="regular-text" /></td></tr>';
+    echo '<tr><th><label for="' . $post_type . '_custom_date">' . __('Custom Date', 'gpress') . '</label></th>';
+    echo '<td><input type="date" id="' . $post_type . '_custom_date" name="' . $post_type . '_custom_date" value="' . esc_attr($custom_date) . '" /></td></tr>';
     
-    echo '<tr><th><label for="portfolio_client_name">' . __('Client Name', 'gpress') . '</label></th>';
-    echo '<td><input type="text" id="portfolio_client_name" name="portfolio_client_name" value="' . esc_attr($client_name) . '" class="regular-text" /></td></tr>';
-    
-    echo '<tr><th><label for="portfolio_project_date">' . __('Project Date', 'gpress') . '</label></th>';
-    echo '<td><input type="date" id="portfolio_project_date" name="portfolio_project_date" value="' . esc_attr($project_date) . '" /></td></tr>';
+    echo '<tr><th><label for="' . $post_type . '_custom_text">' . __('Custom Text', 'gpress') . '</label></th>';
+    echo '<td><input type="text" id="' . $post_type . '_custom_text" name="' . $post_type . '_custom_text" value="' . esc_attr($custom_text) . '" class="regular-text" /></td></tr>';
     
     echo '</table>';
 }
 
 /**
- * Save portfolio meta data
+ * Save meta data for dynamic custom post types
+ * This generic function works with any post type created via the dynamic framework
  */
-function gpress_save_portfolio_meta($post_id) {
-    if (!isset($_POST['gpress_portfolio_meta_nonce']) || 
-        !wp_verify_nonce($_POST['gpress_portfolio_meta_nonce'], 'gpress_portfolio_meta')) {
+function gpress_save_dynamic_cpt_meta($post_id) {
+    $post_type = get_post_type($post_id);
+    
+    if (!isset($_POST["{$post_type}_meta_nonce"]) || 
+        !wp_verify_nonce($_POST["{$post_type}_meta_nonce"], "{$post_type}_meta")) {
         return;
     }
 
@@ -1000,105 +982,92 @@ function gpress_save_portfolio_meta($post_id) {
         return;
     }
 
+    // Generic field saving that works with any post type
     $fields = array(
-        'portfolio_project_url' => '_portfolio_project_url',
-        'portfolio_github_url' => '_portfolio_github_url',
-        'portfolio_client_name' => '_portfolio_client_name',
-        'portfolio_project_date' => '_portfolio_project_date'
+        "{$post_type}_custom_url" => "_{$post_type}_custom_url",
+        "{$post_type}_custom_date" => "_{$post_type}_custom_date", 
+        "{$post_type}_custom_text" => "_{$post_type}_custom_text"
     );
 
     foreach ($fields as $field_key => $meta_key) {
         if (isset($_POST[$field_key])) {
             $value = sanitize_text_field($_POST[$field_key]);
-            if ($field_key === 'portfolio_project_url' || $field_key === 'portfolio_github_url') {
+            if (strpos($field_key, '_url') !== false) {
                 $value = esc_url_raw($value);
             }
             update_post_meta($post_id, $meta_key, $value);
         }
     }
 }
-add_action('save_post_portfolio', 'gpress_save_portfolio_meta');
 
-/**
- * Customize portfolio post type queries
- */
-function gpress_modify_portfolio_query($query) {
-    if (!is_admin() && $query->is_main_query()) {
-        if (is_post_type_archive('portfolio')) {
-            $query->set('posts_per_page', 9);
-            $query->set('meta_key', '_thumbnail_id');
-            $query->set('orderby', 'date');
-            $query->set('order', 'DESC');
-        }
+// Add save action for all dynamic custom post types
+add_action('init', function() {
+    $custom_post_types = get_option('gpress_custom_post_types', array());
+    foreach ($custom_post_types as $post_type => $config) {
+        add_action("save_post_{$post_type}", 'gpress_save_dynamic_cpt_meta');
     }
-}
-add_action('pre_get_posts', 'gpress_modify_portfolio_query');
+}, 25);
 
 /**
- * Add portfolio items to main query on homepage
+ * Enhanced REST API support for dynamic custom post types
+ * This automatically adds REST API support for any post type created via the dynamic framework
  */
-function gpress_include_portfolio_in_home($query) {
-    if (!is_admin() && $query->is_home() && $query->is_main_query()) {
-        if (get_theme_mod('gpress_show_portfolio_on_home', false)) {
-            $query->set('post_type', array('post', 'portfolio'));
-        }
-    }
-}
-add_action('pre_get_posts', 'gpress_include_portfolio_in_home');
-
-/**
- * Custom post type REST API enhancements
- */
-function gpress_add_custom_post_type_rest_support() {
+function gpress_add_dynamic_cpt_rest_support() {
+    $custom_post_types = get_option('gpress_custom_post_types', array());
     
-    // Add custom fields to REST API
-    register_rest_field('portfolio', 'portfolio_meta', array(
-        'get_callback' => function($post) {
-            return array(
-                'project_url' => get_post_meta($post['id'], '_portfolio_project_url', true),
-                'github_url' => get_post_meta($post['id'], '_portfolio_github_url', true),
-                'client_name' => get_post_meta($post['id'], '_portfolio_client_name', true),
-                'project_date' => get_post_meta($post['id'], '_portfolio_project_date', true),
-            );
-        },
-        'schema' => array(
-            'description' => __('Portfolio meta data', 'gpress'),
-            'type' => 'object'
-        )
-    ));
-    
-    // Add featured image URL to REST API
-    register_rest_field(array('portfolio', 'testimonial'), 'featured_image_url', array(
-        'get_callback' => function($post) {
-            $image_id = get_post_thumbnail_id($post['id']);
-            if ($image_id) {
+    foreach ($custom_post_types as $post_type => $config) {
+        // Add custom fields to REST API for each post type
+        register_rest_field($post_type, "{$post_type}_meta", array(
+            'get_callback' => function($post) use ($post_type) {
                 return array(
-                    'full' => wp_get_attachment_image_url($image_id, 'full'),
-                    'large' => wp_get_attachment_image_url($image_id, 'large'),
-                    'medium' => wp_get_attachment_image_url($image_id, 'medium'),
-                    'thumbnail' => wp_get_attachment_image_url($image_id, 'thumbnail'),
+                    'custom_url' => get_post_meta($post['id'], "_{$post_type}_custom_url", true),
+                    'custom_date' => get_post_meta($post['id'], "_{$post_type}_custom_date", true),
+                    'custom_text' => get_post_meta($post['id'], "_{$post_type}_custom_text", true),
                 );
-            }
-            return null;
-        },
-        'schema' => array(
-            'description' => __('Featured image URLs', 'gpress'),
-            'type' => 'object'
-        )
-    ));
+            },
+            'schema' => array(
+                'description' => sprintf(__('%s meta data', 'gpress'), ucfirst($post_type)),
+                'type' => 'object'
+            )
+        ));
+        
+        // Add featured image URLs to REST API
+        register_rest_field($post_type, 'featured_image_url', array(
+            'get_callback' => function($post) {
+                $image_id = get_post_thumbnail_id($post['id']);
+                if ($image_id) {
+                    return array(
+                        'full' => wp_get_attachment_image_url($image_id, 'full'),
+                        'large' => wp_get_attachment_image_url($image_id, 'large'),
+                        'medium' => wp_get_attachment_image_url($image_id, 'medium'),
+                        'thumbnail' => wp_get_attachment_image_url($image_id, 'thumbnail'),
+                    );
+                }
+                return null;
+            },
+            'schema' => array(
+                'description' => __('Featured image URLs', 'gpress'),
+                'type' => 'object'
+            )
+        ));
+    }
 }
-add_action('rest_api_init', 'gpress_add_custom_post_type_rest_support');
+add_action('rest_api_init', 'gpress_add_dynamic_cpt_rest_support');
 
 /**
- * Add structured data for portfolio items
+ * Generic structured data for dynamic custom post types
+ * This automatically adds structured data for any post type created via the dynamic framework
  */
-function gpress_portfolio_structured_data() {
-    if (is_singular('portfolio')) {
+function gpress_dynamic_cpt_structured_data() {
+    $custom_post_types = get_option('gpress_custom_post_types', array());
+    $current_post_type = get_post_type();
+    
+    if (is_singular() && array_key_exists($current_post_type, $custom_post_types)) {
         global $post;
         
-        $project_url = get_post_meta($post->ID, '_portfolio_project_url', true);
-        $client_name = get_post_meta($post->ID, '_portfolio_client_name', true);
-        $project_date = get_post_meta($post->ID, '_portfolio_project_date', true);
+        $custom_url = get_post_meta($post->ID, "_{$current_post_type}_custom_url", true);
+        $custom_date = get_post_meta($post->ID, "_{$current_post_type}_custom_date", true);
+        $custom_text = get_post_meta($post->ID, "_{$current_post_type}_custom_text", true);
         
         $structured_data = array(
             '@context' => 'https://schema.org',
@@ -1112,19 +1081,16 @@ function gpress_portfolio_structured_data() {
             )
         );
         
-        if ($project_url) {
-            $structured_data['workExample'] = $project_url;
+        if ($custom_url) {
+            $structured_data['url'] = $custom_url;
         }
         
-        if ($client_name) {
-            $structured_data['client'] = array(
-                '@type' => 'Organization',
-                'name' => $client_name
-            );
+        if ($custom_date) {
+            $structured_data['dateCreated'] = $custom_date;
         }
         
-        if ($project_date) {
-            $structured_data['dateCreated'] = $project_date;
+        if ($custom_text) {
+            $structured_data['description'] = $custom_text;
         }
         
         if (has_post_thumbnail()) {
@@ -1134,7 +1100,7 @@ function gpress_portfolio_structured_data() {
         echo '<script type="application/ld+json">' . json_encode($structured_data, JSON_UNESCAPED_SLASHES) . '</script>';
     }
 }
-add_action('wp_head', 'gpress_portfolio_structured_data');
+add_action('wp_head', 'gpress_dynamic_cpt_structured_data');
 ```
 
 ## Testing This Step
@@ -1148,12 +1114,13 @@ ls -la templates/
 # Navigate to different content types and verify correct templates load
 ```
 
-### 2. Custom Post Type Test
-- [ ] Portfolio post type registered and functional
-- [ ] Testimonials post type working correctly
-- [ ] Custom meta fields saving properly
-- [ ] Archive pages display correctly
-- [ ] Single templates render properly
+### 2. Dynamic Custom Post Type Test  
+- [ ] Custom post types created via Step 11's dynamic framework are functional
+- [ ] Dynamic template generation working correctly
+- [ ] Custom meta fields saving properly for any post type
+- [ ] Archive pages display correctly for all custom post types
+- [ ] Single templates render properly for all custom post types
+- [ ] Conditional asset loading works for all custom post types
 
 ### 3. Template Routing Test
 - [ ] Specific page templates work (page-[slug].html)
@@ -1175,11 +1142,11 @@ lighthouse http://your-site.local --output html
 ```
 
 ### 5. SEO and Structured Data Test
-- [ ] Structured data implemented for portfolio
+- [ ] Structured data implemented for all dynamic custom post types
 - [ ] Meta tags correct for different templates
 - [ ] URLs properly structured
 - [ ] Breadcrumbs work with custom content
-- [ ] Sitemaps include custom post types
+- [ ] Sitemaps include all dynamic custom post types
 
 ## Expected Results
 
@@ -1202,5 +1169,5 @@ Proceed to [Step 7: Advanced CSS Architecture](./step-07-css-architecture.md) to
 
 **Performance Target Achieved**: ⚡ 96+ Lighthouse Score  
 **Template Hierarchy**: 📐 Complete WordPress Support  
-**Custom Content**: 🎯 Portfolio & Testimonials Ready  
+**Custom Content**: 🎯 Dynamic Custom Post Types Ready  
 **SEO Optimized**: 🚀 Structured Data & URLs

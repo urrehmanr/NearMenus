@@ -208,8 +208,9 @@ page_is_interactive() → loads core.css + core.js
 // Content length based loading
 estimated_reading_time() > 3 → loads reading-progress.js
 
-// Custom post type specific loading
-is_singular('portfolio') → loads portfolio.css + portfolio-gallery.js
+// Dynamic custom post type specific loading
+is_singular(array_keys(get_option('gpress_custom_post_types', []))) → loads dynamic-cpt.css + dynamic-cpt.js
+// Plus post-type-specific assets if they exist: cpt-{type}.css + cpt-{type}.js
 ```
 
 ## Testing and Validation
