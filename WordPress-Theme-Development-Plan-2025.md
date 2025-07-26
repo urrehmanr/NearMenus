@@ -31,7 +31,7 @@ This comprehensive development plan outlines the creation of a modern, high-perf
 
 ### Phase 4: Functionality & Features
 - **Step 10**: [Gutenberg Block Support](./steps/step-10-gutenberg-block-support.md)
-- **Step 11**: [Custom Post Types & Fields](./steps/step-11-custom-post-types.md)
+- **Step 11**: [Dynamic Custom Post Types & Taxonomies Framework](./steps/step-11-custom-post-types.md)
 - **Step 12**: [Navigation & Menus](./steps/step-12-navigation-menus.md)
 
 ### Phase 5: Accessibility & SEO

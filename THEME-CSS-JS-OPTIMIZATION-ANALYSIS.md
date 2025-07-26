@@ -37,9 +37,9 @@ This document provides a comprehensive analysis of all CSS and JavaScript files 
 - `assets/js/landmark-skip.js` - Landmark-based skip navigation (conditional: accessibility features)
 
 #### Content Management
-- `assets/js/cpt-manager.js` - Custom post types management (conditional: CPT usage)
-- `assets/js/portfolio-gallery.js` - Portfolio gallery features (conditional: portfolio CPT)
-- `assets/js/testimonial-slider.js` - Testimonial slider (conditional: testimonials CPT)
+- `assets/js/dynamic-cpt.js` - Dynamic custom post types management (conditional: any CPT usage)
+- `assets/js/cpt-[type].js` - Post-type-specific functionality (conditional: specific CPT exists)
+- `assets/js/dynamic-taxonomy.js` - Dynamic taxonomy features (conditional: custom taxonomies)
 - `assets/js/archive-filters.js` - Archive filtering (conditional: archive pages with filters)
 
 #### Documentation & Help
@@ -95,11 +95,9 @@ This document provides a comprehensive analysis of all CSS and JavaScript files 
 - `assets/css/comments.css` - Comment styles (conditional: comments enabled)
 
 #### Content Types
-- `assets/css/custom-post-types.css` - CPT styles (conditional: CPT usage)
-- `assets/css/portfolio.css` - Portfolio styles (conditional: portfolio CPT)
-- `assets/css/testimonials.css` - Testimonial styles (conditional: testimonials CPT)
-- `assets/css/team.css` - Team member styles (conditional: team CPT)
-- `assets/css/taxonomy.css` - Taxonomy styles (conditional: custom taxonomies)
+- `assets/css/dynamic-cpt.css` - Dynamic CPT base styles (conditional: any CPT usage)
+- `assets/css/cpt-[type].css` - Post-type-specific styles (conditional: specific CPT exists)
+- `assets/css/dynamic-taxonomy.css` - Dynamic taxonomy styles (conditional: custom taxonomies)
 
 #### Semantic & Accessibility
 - `assets/css/semantic.css` - Semantic structure styles (conditional: semantic features)
@@ -191,14 +189,16 @@ if (is_admin() && current_screen()->is_block_editor()) {
     - editor-enhancements.js
 }
 
-// Custom post type assets
-if (is_post_type_archive() || is_singular(array('portfolio', 'testimonial', 'team'))) {
-    - custom-post-types.css
-    - cpt-manager.js
-    // Specific CPT assets
-    if (is_post_type('portfolio')) {
-        - portfolio.css
-        - portfolio-gallery.js
+// Dynamic custom post type assets
+$custom_post_types = get_option('gpress_custom_post_types', array());
+if (is_post_type_archive(array_keys($custom_post_types)) || is_singular(array_keys($custom_post_types))) {
+    - dynamic-cpt.css
+    - dynamic-cpt.js
+    // Post-type-specific assets (if they exist)
+    $post_type = get_post_type();
+    if (file_exists("assets/css/cpt-{$post_type}.css")) {
+        - cpt-{$post_type}.css
+        - cpt-{$post_type}.js
     }
 }
 ```

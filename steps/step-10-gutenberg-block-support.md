@@ -50,11 +50,11 @@ assets/js/
 patterns/
 ├── hero-section.html           # Hero section block pattern
 ├── call-to-action.html         # CTA block pattern
-├── testimonials-grid.html      # Testimonials grid pattern
+├── quotes-grid.html            # Quotes/testimonials grid pattern
 ├── feature-comparison.html     # Feature comparison pattern
 ├── faq-section.html            # FAQ accordion pattern
 ├── pricing-table.html          # Pricing table pattern
-├── team-showcase.html          # Team member showcase pattern
+├── people-showcase.html        # People/team showcase pattern
 └── contact-section.html        # Contact section pattern
 ```
 
@@ -206,7 +206,7 @@ function gpress_enqueue_block_editor_assets() {
         'themeUrl' => get_template_directory_uri(),
         'patterns' => array(
             'cta' => __('Call to Action', 'gpress'),
-            'testimonials' => __('Testimonials', 'gpress'),
+            'quotes' => __('Quotes Grid', 'gpress'),
             'faq' => __('FAQ Section', 'gpress'),
             'features' => __('Feature Comparison', 'gpress')
         )
@@ -517,15 +517,15 @@ function gpress_register_block_patterns() {
         )
     );
     
-    // Testimonials pattern
+    // Quotes grid pattern
     register_block_pattern(
-        'gpress/testimonials',
+        'gpress/quotes-grid',
         array(
-            'title'       => __('Testimonials', 'gpress'),
-            'description' => __('A testimonials section with quotes and author information.', 'gpress'),
-            'content'     => gpress_get_pattern_content('testimonials'),
+            'title'       => __('Quotes Grid', 'gpress'),
+            'description' => __('A grid section with quotes and author information - works for testimonials, reviews, or any quotes.', 'gpress'),
+            'content'     => gpress_get_pattern_content('quotes-grid'),
             'categories'  => array('gpress-content'),
-            'keywords'    => array('testimonial', 'quote', 'review'),
+            'keywords'    => array('quote', 'testimonial', 'review', 'grid'),
         )
     );
     
@@ -1031,12 +1031,12 @@ function gpress_get_pattern_content($pattern_name) {
 <!-- /wp:group -->
 ```
 
-### File: `patterns/testimonials.html`
+### File: `patterns/quotes-grid.html`
 ```html
-<!-- wp:group {"className":"gpress-testimonials-section","layout":{"type":"constrained"}} -->
-<div class="wp-block-group gpress-testimonials-section">
+<!-- wp:group {"className":"gpress-quotes-section","layout":{"type":"constrained"}} -->
+<div class="wp-block-group gpress-quotes-section">
     <!-- wp:heading {"textAlign":"center","level":2,"style":{"spacing":{"margin":{"bottom":"3rem"}}}} -->
-    <h2 class="wp-block-heading has-text-align-center" style="margin-bottom:3rem">What Our Customers Say</h2>
+    <h2 class="wp-block-heading has-text-align-center" style="margin-bottom:3rem">What People Say</h2>
     <!-- /wp:heading -->
     
     <!-- wp:columns {"className":"is-style-gpress-card-columns"} -->
@@ -1381,8 +1381,8 @@ GPress includes comprehensive Gutenberg block support:
 ### Block Patterns
 - **Hero Sections**: Call-to-action and banner patterns
 - **Content Layouts**: Feature grids and comparison tables
-- **Interactive Elements**: FAQ sections and testimonial grids
-- **Business Patterns**: Pricing tables and team showcases
+- **Interactive Elements**: FAQ sections and quote grids
+- **Business Patterns**: Pricing tables and people showcases
 
 ### Performance Features
 - **Conditional Loading**: Block assets load only when blocks are present
@@ -1408,7 +1408,7 @@ GPress includes comprehensive Gutenberg block support:
 1. Open block inserter (+ button)
 2. Navigate to Patterns tab
 3. Look for "GPress" pattern categories
-4. Insert hero section, CTA, testimonials, and FAQ patterns
+4. Insert hero section, CTA, quotes grid, and FAQ patterns
 5. Verify patterns render correctly and are editable
 ```
 
